@@ -1,0 +1,54 @@
+import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
+import {FaAngleLeft, FaAngleRight} from 'react-icons/fa';
+
+export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtremes}) => {
+
+    const [sIndex, setSIndex] = useState(0);
+    const [pointI, setPointI] = useState(0);
+    useEffect(()=>{
+        onChange(sIndex+1)
+    },[sIndex])
+
+    const navigate = (amount) => {
+        if(!disabled){
+            if(amount < 0){
+                amount = Math.abs(amount);
+                setSIndex(curr=>curr-amount>0?curr-amount:0);
+                setPointI(curr=>curr-amount>0?curr-amount:0);
+            }else{
+                setSIndex(curr=>curr+amount<numPages?curr+amount:numPages-1);
+                setPointI(curr=>curr+amount<numPages-amount?curr+amount:numPages-amount);
+            }
+        }
+    }
+
+    return(
+        <div className={`navigator ${disabled? 'disabled' : ''}`}>
+            {pagesToShow && <>
+                {goToExtremes && <div className="number" onClick={()=>{setPointI(0); setSIndex(0)}}><FaAngleLeft/><FaAngleLeft/><FaAngleLeft/></div>}
+                <div className="number" onClick={()=>{navigate(-pagesToShow+1)}}><FaAngleLeft/><FaAngleLeft/></div>
+                <div className="number" onClick={()=>{navigate(-1)}}><FaAngleLeft/></div>
+            </>}
+            {Array.from(Array(pagesToShow-1).keys()).map( (n) => (
+                <div key={`num${n}`} className={`number ${pointI + n === sIndex? 'active' : ''}`} onClick={()=>{setSIndex(pointI + n)}}>{pointI + n + 1}</div>
+            ))}
+            {pagesToShow && <>
+                <div className="number" onClick={()=>{navigate(1)}}><FaAngleRight/></div>
+                <div className="number" onClick={()=>{navigate(pagesToShow-1)}}><FaAngleRight/><FaAngleRight/></div>
+                {goToExtremes && <div className="number" onClick={()=>{setPointI(numPages-pagesToShow-1); setSIndex(numPages-1)}}><FaAngleRight/><FaAngleRight/><FaAngleRight/></div>}
+            </>}
+        </div>
+    )
+}
+
+Navigator.propTypes = {
+    pagesToShow: PropTypes.number,
+    numPages: PropTypes.number,
+    goToExtremes: PropTypes.bool
+  };
+
+Navigator.defaultProps = {
+    pagesToShow: 10,
+    numPages: 100,
+}

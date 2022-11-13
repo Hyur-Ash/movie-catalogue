@@ -2,8 +2,9 @@ import { ContextProvider } from '/lib/Context';
 import { ToastContainer } from 'react-toastify';
 import '../styles/globals.scss';
 import 'react-toastify/dist/ReactToastify.css';
+import '/components/Navigator.scss';
 //date/time pickers
-// import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'react-calendar/dist/Calendar.css';
 // import 'react-clock/dist/Clock.css';
 // import 'react-time-picker/dist/TimePicker.css';
@@ -14,6 +15,7 @@ function MyApp({ Component, pageProps }) {
   
 
   return(<>
+      <h1>Hyur&apos;s Movie Catalogue</h1>
       <ContextProvider>
         <Component {...pageProps} />
       </ContextProvider>

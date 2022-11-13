@@ -1,0 +1,31 @@
+$blue: hsl(240, 67%, 62%);
+.navigator{
+    display: flex;
+    gap: .2em;
+    justify-content: center;
+    padding: 1rem 0;
+    .number{
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: .75em;
+      color: white;
+      background-color: $blue;
+      cursor: pointer;
+      user-select: none;
+      &:not(.active){
+        opacity: .5;
+      }
+    }
+    &.disabled{
+      .number{
+        opacity: .5;
+        cursor: not-allowed;
+        &:not(.active){
+          opacity: .25;
+        }
+      }
+    }
+  }
