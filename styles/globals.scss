@@ -1,0 +1,428 @@
+$blue: hsl(240, 67%, 62%);
+$green: hsl(125, 67%, 62%);
+$yellow: hsl(46, 67%, 62%);
+$red: hsl(0, 67%, 62%);
+$grey: hsl(0, 0%, 62%);
+$bcn: #EE162D;
+$caixa: #6CB33F;
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    font-size: 16px;
+}
+
+a {
+  color: inherit !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+h1{
+  font-size: 2em;
+}
+h2{
+  font-size: 1.75em;
+  text-align: center;
+  &.bcn{color:$bcn}
+  &.caixa{color:$caixa}
+}
+
+header{
+  padding: 2em .5em;
+}
+
+.sub-header{
+  margin-bottom: 2em;
+}
+
+.my-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main{
+  width: 800px;
+  max-width: 100%;
+}
+
+.title{
+  text-align: center;
+}
+
+.main-link{
+  color: $blue !important;
+}
+
+.text-center{
+  text-align: center;
+}
+
+.button{
+  background-color: $blue;
+  padding: .5em 1.5em;
+  border-radius: .5em;
+  color: white !important;
+  font-size: 1em;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  &.red{background-color: $red;}
+  &.green{background-color: $green; color: black !important;}
+  &.yellow{background-color: $yellow; color:black !important;}
+  &.grey{background-color: $grey;}
+  &:disabled{
+    opacity: .5;
+    cursor: not-allowed;
+  }
+}
+.buttons{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin: 1rem 0;
+}
+
+.ordered-assets{
+  display: flex;
+  flex-direction: column;
+  .asset{
+    &.primary{
+      font-weight: 500;
+      order: -1;
+    }
+    &.secondary{
+      font-style: italic;
+      font-weight: 400;
+      &::after{
+        content: ")"
+      }
+      &::before{
+        content: "("
+      }
+    }
+  }
+}
+
+.bank-assets{
+  display: flex;
+  gap: 2em;
+  justify-content: center;
+  padding: 1em;
+  flex-wrap: wrap;
+  .bank-asset{
+    font-size: 1em;
+    text-align: center;
+    &.total{
+      order: -1;
+      width: 100%;
+    }
+  }
+  .bank-link{
+    border: 3px solid black;
+    padding: 1rem;
+    border-radius: .5rem;
+    transition: .25s;
+    h2{transition: .25s;}
+    width: 200px;
+    &.bcn{
+      h2{color: $bcn;}
+      border-color: $bcn;
+      &:hover{
+        color: $bcn !important;
+        h2{color: white !important;}
+        background-color: $bcn;
+      }
+    }
+    &.caixa{
+      h2{color: $caixa;}
+      border-color: $caixa;
+      &:hover{
+        h2{color: white !important;}
+        color: $caixa !important;
+        background-color: $caixa;
+      }
+    }
+    &.total{
+      &:hover{
+        h2{color: white;}
+        color: black;
+        background-color: black;
+      }
+    }
+    .date{
+      font-size: .75em;
+    }
+  }
+}
+
+.settings{
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  .setting{
+    .enabler{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-weight: 500;
+    }
+    .title{
+      text-transform: capitalize;
+    }
+    .selector{
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      select{
+        padding: .5em;
+        font-size: 1em;
+        background-color: #4D4D4D;
+        color: white;
+      }
+    }
+    .form{
+      margin-top: 1rem;
+      section{
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        margin-bottom: 1rem;
+        .input{
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          input{
+            padding: .5em 1em;
+            font-size: 1rem;
+            max-height: 3rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+.meetings{
+  padding: 1rem;
+  max-width: 100%;
+  @media screen and (max-width: 460px){
+    padding: 0;
+  }
+  .tr{
+    display: grid;
+    grid-template-columns: minmax(62.5px, 1fr) minmax(72.5px, 1fr) minmax(45px, 1fr) minmax(48px, 1fr) minmax(35px, 1fr);
+    .th{
+      font-weight: bold;
+      background-color: lightblue;
+      @media screen and (max-width: 460px){
+        font-size: .75em;
+      }
+    }
+    .th, .td{
+      padding: 0.5em 0.1em;
+      @media screen and (max-width: 460px){
+        margin: 0;
+      }
+      display: flex;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+    }
+    .td{
+      border-left: 1px solid black;
+      border-top: 1px solid black;
+      &.red{color: $red;}
+      &.green{color: $green;}
+      &.yellow{color: $yellow;}
+      &.state{
+        font-weight: bold;
+        flex-direction: column;
+        .state-text{
+          @media screen and (max-width: 480px){
+            display: none;
+          }
+        }
+        svg{
+          @media screen and (max-width: 480px){
+            font-size: 1.25rem;
+          }
+        }
+      }
+      @media screen and (max-width: 460px){
+        font-size: .75em;
+      }
+    }
+    &.today{
+      .td{
+        background-color: lightgoldenrodyellow;
+      }
+    }
+  }
+}
+
+.sub-header-image{
+  display: flex;
+  justify-content: center;
+}
+
+.bank-data{
+  padding: 1rem 0;
+  text-align: center;
+  >section{
+    margin-bottom: 2rem;
+    h3{
+      text-align: center;
+      margin-bottom: .5rem;
+      background-color: #F2F2F2;
+      padding: .5em;
+    }
+    >main{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      h4{text-align: center}
+    }
+    .movements{
+      display: grid;
+      .tr{
+        font-size: .75em;
+        display: grid;
+        align-items: center;
+        grid-template-columns: minmax(80px, 15%) auto minmax(90px, 15%);
+        &.row-total{
+          grid-template-columns: minmax(80px, 15%) auto minmax(90px, 15%) 50px;
+        }
+        border-bottom: 1px solid lightgray;
+        padding: .25rem .5rem;
+        .th, .td{
+          padding: .1em .25em;
+        }
+        .th{
+          border-color: black;
+          font-weight: 500;
+          text-transform: capitalize;
+        }
+        .col1{
+          text-align: left;
+        }
+        .col2{
+          text-align: right;
+          &.td{
+            font-weight: 500;
+            &.pos{
+              color: $caixa;
+            }
+            &.neg{
+              color: $bcn;
+            }
+          }
+        }
+        .col3{
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white !important;
+          margin-left: .5rem;
+          border-radius: 50%;
+          padding: 0.5rem 0;
+          &.bcn{
+            background-color: $bcn;
+          }
+          &.caixa{
+            background-color: $caixa;
+          }
+          cursor: pointer;
+        }
+        &.today{
+          background-color: lightgoldenrodyellow;
+        }
+      }
+    }
+  }
+  &.bcn{
+    h3{
+      color: $bcn;
+    }
+  }
+  &.caixa{
+    h3{
+      color: $caixa;
+    }
+  }
+}
+
+.react-date-picker__wrapper, .react-time-picker__wrapper {
+  border: none !important;
+}
+.react-date-picker__clear-button, .react-time-picker__clear-button, .react-date-picker__calendar-button{
+  display: none !important;
+}
+
+.form-control.date-time{
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: .5rem;
+}
+
+.logs{
+  height: 60vh;
+  overflow: auto;
+  .log{
+    padding: .5rem 1rem;
+    border-bottom: 1px solid grey;
+    &.error{
+      background-color: hsl(0, 100%, 65%);
+      color: white;
+      font-weight: 500;
+    }
+    .message{
+    }
+  }
+}
+
+.currency-rates{
+  text-align: center;
+  padding: .5rem 0;
+  .buttons{
+    margin: .5rem 0;
+  }
+  .last-update{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+  }
+  .convertion-rates{
+    width: 200px;
+    max-width: 100%;
+    padding: .5rem 1rem;
+    margin: auto;
+    .rate{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      .text{
+        font-weight: 500;
+      }
+    }
+  }
+}
