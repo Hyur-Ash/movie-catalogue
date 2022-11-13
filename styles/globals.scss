@@ -1,7 +1,10 @@
 $blue: hsl(240, 67%, 62%);
+$lightblue: hsl(183, 67%, 62%);
 $green: hsl(125, 67%, 62%);
+$lightgreen: hsl(85, 67%, 62%);
 $yellow: hsl(46, 67%, 62%);
 $red: hsl(0, 67%, 62%);
+$orange: hsl(27, 67%, 62%);
 $grey: hsl(0, 0%, 62%);
 
 html,
@@ -36,7 +39,8 @@ main{
   padding: 1rem;
 }
 h1{
-  margin-top: 60px;
+  margin-top: 60px !important;
+  padding: 0 1em;
 }
 h1,h2,h3{
   text-align: center;
@@ -78,7 +82,7 @@ button{
   }
 }
 
-.movies{
+.medias{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
@@ -88,11 +92,57 @@ button{
   @media screen and (max-width: 460px){
     grid-template-columns: repeat(2, 1fr);
   }
-  .movie{
-    img{
-      width: 100%;
+}
+.media{
+  img{
+    width: 100%;
+  }
+  cursor: pointer;
+  position: relative;
+  .flag-container{
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 15px;
+    padding: 0 5px;
+    .flag{
+      width: 2rem !important;
+      height: 2rem !important;
     }
-    cursor: pointer;
+  }
+  .upcoming-alert{
+    text-transform: uppercase;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: $red;
+    color: white;
+    font-weight: 500;
+    padding: .5rem;
+    box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
+  }
+  .vote-average{
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: white;
+    background-color: black;
+    border-radius: 50%;
+    width: 2.5em;
+    height: 2.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &.red{background-color: $red;}
+    &.orange{background-color: $orange;}
+    &.yellow{background-color: $yellow;}
+    &.lightgreen{background-color: $lightgreen;}
+    &.green{background-color: $green;}
+    &.lightblue{background-color: $lightblue;}
+    color: black;
+    font-weight: 500;
+    box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
   }
 }
 
@@ -111,8 +161,51 @@ button{
 }
 
 .language-selector{
-  position: fixed;
-  top: 1rem;
-  z-index: 1;
-  right: 1rem;
+  &.fixed{
+    position: fixed;
+    top: 1rem;
+    z-index: 1;
+    right: 1rem;
+  }
 }
+
+.modal-title{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.single-media{
+  h3{
+    font-size: 1.5em;
+    margin: 1rem 0;
+  }
+  h4{
+    font-size: 1.25em;
+    margin: .5em 0 .25em;
+  }
+  .media-info{
+    width: 800px;
+    max-width: 100%;
+    margin: auto;
+    &::after{
+      content: '';
+      clear: both;
+      display: table;
+    }
+    .media{
+      float: left;
+      margin-right: 1rem;
+      max-width: 250px;
+      @media screen and (max-width: 1000px){
+        max-width: 150px;
+      }
+    }
+  }
+  .trailer{
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+  }
+}
+

@@ -256,6 +256,57 @@
     "Search": {
         "it": "Cerca",
         "ru": "Поиск"
-    }      
+    },
+    "Hyur's Movie Catalogue":{
+        "it": "Catalogo Cinematografico di Hyur"
+    },
+    "upcoming":{
+        "it": "in arrivo"
+    },
+    "Original title":{
+        "it": "Titolo originale"
+    },
+    "Status":{
+        "it": "Status"
+    },
+    "Revenue":{
+        "it": "Incasso"
+    },
+    "Runtime":{
+        "it": "Durata"
+    },
+    "Genres":{
+        "it": "Generi"
+    },
+    "Genere":{
+        "it": "Genere"
+    },
+    "Production countries":{
+        "it": "Paesi di produzione"
+    },
+    "Production country":{
+        "it": "Paese di produzione"
+    },
+    "Spoken language":{
+        "it": "Lingua parlata"
+    },
+    "Spoken languages":{
+        "it": "Lingue parlate"
+    },
+    "Overview":{
+        "it": "Trama"
+    },
+    "hours":{
+        "it": "ore"
+    },
+    "minutes":{
+        "it": "minuti"
+    },
+    "and":{
+        "it": "e"
+    },
+    "Release date":{
+        "it": "Data di rilascio"
+    }              
 }
 }

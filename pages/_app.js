@@ -15,7 +15,6 @@ function MyApp({ Component, pageProps }) {
   
 
   return(<>
-      <h1>Hyur&apos;s Movie Catalogue</h1>
       <ContextProvider>
         <Component {...pageProps} />
       </ContextProvider>

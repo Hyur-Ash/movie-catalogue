@@ -5,18 +5,28 @@ import {Form, FormGroup, Label, Input} from 'reactstrap';
 import Select from 'react-select'; 
 import {Navigator} from '/components/Navigator';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import axios from 'axios';
+import {useLocalStorage} from '/lib/useLocalStorage';
+import moment from 'moment';
+import ReactCountryFlag from "react-country-flag";
 
 export default function Home() {
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(()=>{
+    setIsMounted(true);
+  },[]);
+
   const {
     movieGenres, tvGenres, yearsContent, sortValues,
-    movies, loadMovies, loadingMovies,
+    medias, singleMedia, setSingleMedia, loadMedias, loadingMedias, loadSingleMedia,
     totalPages, setCurrentPage, 
-    translate, websiteLang, setWebsiteLang
+    translate, websiteLang, setWebsiteLang, languageCodes
   } = useContext(Context);
 
   const tmdb_main_url_img_low = "https://www.themoviedb.org/t/p/w220_and_h330_face";
   const tmdb_main_url_img_high = "https://www.themoviedb.org/t/p/original";
+  const youtube_api_key = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
   const [genres, setGenres] = useState(movieGenres);
 
@@ -46,7 +56,7 @@ export default function Home() {
     ]
   }
 
-  const [formValues, setFormValues] = useState({
+  const [formValues, setFormValues] = useLocalStorage('formValues', {
     mediaType: formOptions.mediaType[0],
     withGenres: [],
     withoutGenres: [],
@@ -55,8 +65,23 @@ export default function Home() {
     year: '',
   });
   useEffect(()=>{
-    setGenres(formValues.mediaType.value === 'movie' ? movieGenres : tvGenres);
-    setFormValues(curr=>({...curr, withGenres: [], withoutGenres: [],}));
+    const genres = formValues.mediaType.value === 'movie' ? movieGenres : tvGenres;
+    setGenres(genres);
+    setFormValues(curr=>{
+      if(!curr){return curr}
+      const newWithGenres = [], newWithoutGenres = [];
+      curr.withGenres.forEach((g)=>{
+        if(genres.map(g=>g.id).includes(g.value)){
+          newWithGenres.push(g);
+        }
+      });
+      curr.withoutGenres.forEach((g)=>{
+        if(genres.map(g=>g.id).includes(g.value)){
+          newWithGenres.push(g);
+        }
+      });
+      return {...curr, withGenres: newWithGenres, withoutGenres: newWithoutGenres,}
+    });
   },[formValues.mediaType]);
 
   const changeFormValue = (key, value) => {
@@ -68,24 +93,82 @@ export default function Home() {
     {value: "en", label: capitalize(translate("english"))},
     {value: "ru", label: capitalize(translate("russian"))},
   ];
+  const currentLanguage = languagesOptions.filter(l=>l.value===websiteLang)[0].label.toLowerCase();
 
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [showMovieModal, setShowMovieModal] = useState(false);
   const closeMovieModal = () => {
-    setShowMovieModal(curr=>!curr);
-    setSelectedMovie(null);
+    setSingleMedia(null);
+    setTrailerVideoId(null);
   }
 
-  return (
+  const [trailerVideoId, setTrailerVideoId] = useState(null);
+  const [trailerIds, setTrailerIds] = useLocalStorage('trailerIds', {});
+  const loadTrailerLink = (media) => {
+    const q = `${media.title} ${media.release_date.substring(0,4)} trailer ${currentLanguage}`;
+    if(trailerIds[q]){
+      setTrailerVideoId(trailerIds[q]);
+    }else{
+      const params = {
+        key: youtube_api_key,
+        q
+      }
+      axios.get('https://www.googleapis.com/youtube/v3/search', {params})
+      .then(res=>{
+        if(res.data.items.length > 0){
+          const id = res.data.items[0]?.id?.videoId ?? null;
+          setTrailerIds(curr=>({...curr, [q]: id}));
+          setTrailerVideoId(id);
+        }
+      })
+      .catch(err=>{
+        console.error(err);
+      })
+    }
+  }
+
+  const voteColor = (vote) => {
+    return vote > 3 ? vote > 4.5 ? vote > 6 ? vote > 7.5 ? vote > 9? "lightblue" : "green" : "lightgreen" : "yellow" : "orange" : "red";
+  }
+
+  const getFlag = (code) => {
+    return languageCodes[code] ?? code;
+  }
+
+  const Media = ({data, showTitle}) => {
+    return(
+      <div className="media" onClick={()=>{
+        loadTrailerLink(data);
+        loadSingleMedia(data.id);
+      }}>
+        {moment(data.release_date,"YYYY-MM-DD") < moment(Date.now()) &&
+          <div className={`vote-average ${voteColor(data.vote_average)}`}>{data.vote_average}</div>
+        }
+        {moment(data.release_date,"YYYY-MM-DD") > moment(Date.now()) && 
+          <div className="upcoming-alert">{translate("upcoming")}</div>
+        }
+        <div className="flag-container">
+          <ReactCountryFlag 
+            className={`flag code-${data.original_language}`} 
+            countryCode={getFlag(data.original_language)}
+            svg
+          />
+        </div>
+        <img alt={data.title} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `img/not-found.jpg`}/>
+        {showTitle && data.title}
+      </div>
+    )
+  }
+
+  return isMounted && (<>
+    <h1>{translate("Hyur's Movie Catalogue")}</h1>
     <div className="my-container">
 
       <Head>
-        <title>Hyur&apos;s Movie Catalogue</title>
+        <title>{translate("Hyur's Movie Catalogue")}</title>
         <meta name="description" content="Created by Hyur" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="language-selector">
+      <div className="language-selector fixed">
         <Select
             instanceId={"language"} 
             options={languagesOptions}
@@ -155,43 +238,75 @@ export default function Home() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMovies} onClick={()=>{loadMovies(formValues)}}>{translate("Search")}</button>
+            <button disabled={loadingMedias} onClick={()=>{loadMedias(formValues)}}>{translate("Search")}</button>
           </div>
         </div>
-        {movies.length > 0 && <>
+        {medias.length > 0 && <>
           <Navigator
-            disabled={loadingMovies}
+            disabled={loadingMedias}
             pagesToShow={7}
             numPages={totalPages}
             onChange={(pageNum)=>{setCurrentPage(pageNum)}}
           />
-          <div className="movies">
-            {movies.map((movie,i) => (
-              <div className="movie" key={`movie${i}`} onClick={()=>{
-                setSelectedMovie(movie);
-                setShowMovieModal(true);
-              }}>
-                <img alt={movie.title} src={movie.poster_path? `${tmdb_main_url_img_low}/${movie.poster_path}` : `img/not-found.jpg`}/>
-                {movie.title}
-              </div>
-            ))}
+          <div className="medias">
+            {medias.map((media, i) => <Media showTitle data={media} key={`media${i}`}/>)}
           </div>
         </>}
       </main>
-      {selectedMovie && 
+      {singleMedia && singleMedia[websiteLang] &&
         <div className="overlay-backdrop">
-          <img alt={selectedMovie.title} src={selectedMovie.backdrop_path? `${tmdb_main_url_img_high}/${selectedMovie.backdrop_path}` : `img/not-found.jpg`}/>
+          <img alt={singleMedia[websiteLang].title} src={singleMedia[websiteLang].backdrop_path? `${tmdb_main_url_img_high}/${singleMedia[websiteLang].backdrop_path}` : `img/not-found.jpg`}/>
         </div>
       }
-      {selectedMovie && 
-        <Modal isOpen={showMovieModal} toggle={closeMovieModal}>
-          <ModalHeader toggle={closeMovieModal}>{selectedMovie.title}</ModalHeader>
+      {!loadingMedias && singleMedia && singleMedia[websiteLang] &&
+        <Modal className="single-media" isOpen={singleMedia !== null} toggle={closeMovieModal} size={"xl"}>
+          <ModalHeader toggle={closeMovieModal}>
+            <div className="modal-title">
+              {singleMedia[websiteLang].title}
+              <div className="language-selector">
+                <Select
+                    instanceId={"language"} 
+                    options={languagesOptions}
+                    value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
+                    onChange={(e)=>{setWebsiteLang(e.value)}}
+                  />
+              </div>
+            </div>
+          </ModalHeader>
           <ModalBody>
-            {selectedMovie.overview}
+            <div className="media-info">
+              <Media data={singleMedia[websiteLang]}/>
+              <div className="general-info">
+                <div><strong>{translate("Original title")}:</strong> {singleMedia[websiteLang].original_title}</div>
+                <div><strong>{translate("Release date")}:</strong> {moment(singleMedia[websiteLang].release_date, "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
+                <div><strong>{translate("Budget")}:</strong> {singleMedia[websiteLang].budget}</div>
+                <div><strong>{translate("Revenue")}:</strong> {singleMedia[websiteLang].revenue}</div>
+                <div><strong>{translate("Runtime")}:</strong> {Math.floor(parseInt(singleMedia[websiteLang].runtime)/60)} {translate("hours")} {translate("and")} {Math.floor(((parseInt(singleMedia[websiteLang].runtime)/60) - Math.floor(parseInt(singleMedia[websiteLang].runtime)/60))*60)} {translate("minutes")}</div>
+                <div><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}:</strong> {singleMedia[websiteLang].genres.map((g,i)=>i<singleMedia[websiteLang].genres.length-1?g.name+", ":g.name)}</div>
+                <div><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}:</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
+                <div><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}:</strong> {singleMedia[websiteLang].spoken_languages.map((g,i)=>i<singleMedia[websiteLang].spoken_languages.length-1?g.name+", ":g.name)}</div>
+              </div>
+              <div className="overview">
+                <h4>{translate("Overview")}</h4>
+                {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
+              </div>
+            </div>
+            <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
+            {trailerVideoId && 
+              <div className="trailer">
+                <iframe style={{width: "calc(1600px / 3)", height:"calc(900px / 3", maxWidth: "100%"}} 
+                width="1600" 
+                height="900" 
+                src={`https://www.youtube.com/embed/${trailerVideoId}`}
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen></iframe>
+              </div>
+            }
           </ModalBody>
         </Modal>
       }
 
     </div>
-  )
+  </>)
 }
