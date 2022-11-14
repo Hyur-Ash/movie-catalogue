@@ -321,6 +321,9 @@
     },
     "Select...":{
         "it": "Seleziona..."
+    },
+    "Any":{
+        "it": "Qualsiasi"
     }                  
 }
 }

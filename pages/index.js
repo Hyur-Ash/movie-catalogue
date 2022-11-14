@@ -48,7 +48,7 @@ export default function Home() {
       {value: 'tv', label: translate('TV Show')}
     ],
     genres: genres.map(g=>({value: g.id, label: translate(g.name)})),
-    years: yearsContent.map(g=>({value: g.id, label: g.name})),
+    years: [{value: "", label: translate("Any")}, ...yearsContent.map(g=>({value: g.id, label: g.name}))],
     sortValues: sortValues.map(g=>({value: g.id, label: translate(g.name)})),
     orderValues: [
       {value: 'desc', label: translate('Descending')},
@@ -56,13 +56,28 @@ export default function Home() {
     ]
   };
 
+  const properNames = {
+    movie: {
+      release_date: "release_date",
+      title: "title",
+      original_title: "original_title",
+      runtime: "runtime"
+    },
+    tv: {
+      release_date: "first_air_date",
+      title: "name",
+      original_title: "original_name",
+      runtime: "episode_run_time"
+    }
+  }
+  const [currentNames, setCurrentNames] = useState(properNames.movie);
   const [formValues, setFormValues] = useLocalStorage('formValues', {
     mediaType: formOptions.mediaType[0],
     withGenres: [],
     withoutGenres: [],
     sortBy: formOptions.sortValues[0],
     orderBy: formOptions.orderValues[0],
-    year: '',
+    year: formOptions.years[0],
   });
   useEffect(()=>{
     const genres = formValues.mediaType.value === 'movie' ? movieGenres : tvGenres;
@@ -82,6 +97,7 @@ export default function Home() {
       });
       return {...curr, withGenres: newWithGenres, withoutGenres: newWithoutGenres,}
     });
+    setCurrentNames(properNames[formValues.mediaType.value]);
   },[formValues.mediaType]);
 
   useEffect(()=>{
@@ -92,6 +108,7 @@ export default function Home() {
         withoutGenres: formOptions.genres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
         sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
         orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
+        year: formOptions.years.filter(m=>m.value===curr.year.value)[0],
     }));
   },[websiteLang]) 
 
@@ -114,7 +131,7 @@ export default function Home() {
   const [trailerVideoId, setTrailerVideoId] = useState(null);
   const [trailerIds, setTrailerIds] = useLocalStorage('trailerIds', {});
   const loadTrailerLink = (media) => {
-    const q = `${media.title} ${media.release_date.substring(0,4)} trailer ${currentLanguage}`;
+    const q = `${media[currentNames.title]} ${media[currentNames.release_date].substring(0,4)} trailer ${currentLanguage}`;
     if(trailerIds[q]){
       setTrailerVideoId(trailerIds[q]);
     }else{
@@ -150,10 +167,10 @@ export default function Home() {
         loadTrailerLink(data);
         loadSingleMedia(data.id);
       }}>
-        {moment(data.release_date,"YYYY-MM-DD") < moment(Date.now()) &&
+        {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) &&
           <div className={`vote-average ${voteColor(data.vote_average)}`}>{data.vote_average}</div>
         }
-        {moment(data.release_date,"YYYY-MM-DD") > moment(Date.now()) && 
+        {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) && 
           <div className="upcoming-alert">{translate("upcoming")}</div>
         }
         <div className="flag-container">
@@ -167,6 +184,15 @@ export default function Home() {
         {showTitle && data.title}
       </div>
     )
+  }
+
+  const getRuntime = (time) => {
+    console.log(time)
+    time = Array.isArray(time) ? time[0] : time;
+    const hours = Math.floor(parseInt(time)/60);
+    const minutes = Math.floor(((time/60) - Math.floor(time/60))*60);
+    return `${hours > 0 ? `${hours} ${translate("hours")} ${translate("and")} ` : ''}${minutes} ${translate("minutes")}`;
+    
   }
 
   return isMounted && (<>
@@ -276,7 +302,7 @@ export default function Home() {
         <Modal className="single-media" isOpen={singleMedia !== null} toggle={closeMovieModal} size={"xl"}>
           <ModalHeader toggle={closeMovieModal}>
             <div className="modal-title">
-              {singleMedia[websiteLang].title}
+              {singleMedia[websiteLang][currentNames.title]}
               <div className="language-selector">
                 <Select
                     instanceId={"language"} 
@@ -291,11 +317,9 @@ export default function Home() {
             <div className="media-info">
               <Media data={singleMedia[websiteLang]}/>
               <div className="general-info">
-                <div><strong>{translate("Original title")}:</strong> {singleMedia[websiteLang].original_title}</div>
-                <div><strong>{translate("Release date")}:</strong> {moment(singleMedia[websiteLang].release_date, "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
-                <div><strong>{translate("Budget")}:</strong> {singleMedia[websiteLang].budget}</div>
-                <div><strong>{translate("Revenue")}:</strong> {singleMedia[websiteLang].revenue}</div>
-                <div><strong>{translate("Runtime")}:</strong> {Math.floor(parseInt(singleMedia[websiteLang].runtime)/60)} {translate("hours")} {translate("and")} {Math.floor(((parseInt(singleMedia[websiteLang].runtime)/60) - Math.floor(parseInt(singleMedia[websiteLang].runtime)/60))*60)} {translate("minutes")}</div>
+                <div><strong>{translate("Original title")}:</strong> {singleMedia[websiteLang][currentNames.original_title]}</div>
+                <div><strong>{translate("Release date")}:</strong> {moment(singleMedia[websiteLang][currentNames.release_date], "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
+                <div><strong>{translate("Runtime")}:</strong> {getRuntime(singleMedia[websiteLang][currentNames.runtime])}</div>
                 <div><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}:</strong> {singleMedia[websiteLang].genres.map((g,i)=>i<singleMedia[websiteLang].genres.length-1?g.name+", ":g.name)}</div>
                 <div><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}:</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
                 <div><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}:</strong> {singleMedia[websiteLang].spoken_languages.map((g,i)=>i<singleMedia[websiteLang].spoken_languages.length-1?g.name+", ":g.name)}</div>
