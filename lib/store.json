@@ -151,13 +151,12 @@
     }
 ],
 "sortValues": [
-    "popularity", 
-    "release_date",
-    "revenue",
-    "primary_release_date",
-    "original_title",
-    "vote_average",
-    "vote_count"
+    {"id": "popularity", "name":"Popularity"},
+    {"id": "primary_release_date", "name":"Release Date"},
+    {"id": "revenue", "name":"Revenue"},
+    {"id": "original_title", "name":"Original title"},
+    {"id": "vote_average", "name":"Vote Average"},
+    {"id": "vote_count", "name":"Vote Count"}
 ],
 "translations": {
     "Media type": {
@@ -307,6 +306,21 @@
     },
     "Release date":{
         "it": "Data di rilascio"
-    }              
+    },
+    "Popularity":{
+        "it": "Popolarità"
+    },
+    "Release Date":{
+        "it": "Data di rilascio"
+    },
+    "Vote Average":{
+        "it": "Votazione Media"
+    },
+    "Vote Count":{
+        "it": "Numero Votazioni"
+    },
+    "Select...":{
+        "it": "Seleziona..."
+    }                  
 }
 }

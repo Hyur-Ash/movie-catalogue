@@ -49,12 +49,12 @@ export default function Home() {
     ],
     genres: genres.map(g=>({value: g.id, label: translate(g.name)})),
     years: yearsContent.map(g=>({value: g.id, label: g.name})),
-    sortValues: sortValues.map(g=>({value: g, label: translate(capitalize(g.replaceAll('_', ' ')))})),
+    sortValues: sortValues.map(g=>({value: g.id, label: translate(g.name)})),
     orderValues: [
       {value: 'desc', label: translate('Descending')},
       {value: 'asc', label: translate('Ascending')},
     ]
-  }
+  };
 
   const [formValues, setFormValues] = useLocalStorage('formValues', {
     mediaType: formOptions.mediaType[0],
@@ -83,6 +83,17 @@ export default function Home() {
       return {...curr, withGenres: newWithGenres, withoutGenres: newWithoutGenres,}
     });
   },[formValues.mediaType]);
+
+  useEffect(()=>{
+    setFormValues(curr=>({
+        ...curr,
+        mediaType: formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0],
+        withGenres: formOptions.genres.map(m=>curr.withGenres.map(w=>w.value).includes(m.value) && m),
+        withoutGenres: formOptions.genres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
+        sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
+        orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
+    }));
+  },[websiteLang]) 
 
   const changeFormValue = (key, value) => {
     setFormValues(curr=>({...curr, [key]: value}));
@@ -197,6 +208,7 @@ export default function Home() {
               value={formValues.withGenres}
               isMulti
               onChange={(e)=>{changeFormValue('withGenres', e)}}
+              placeholder={translate("Select...")}
             />
           </div>
           <div className="form-group">
@@ -207,6 +219,7 @@ export default function Home() {
               value={formValues.withoutGenres}
               isMulti
               onChange={(e)=>{changeFormValue('withoutGenres', e)}}
+              placeholder={translate("Select...")}
             />
           </div>
           <div className="form-group">
@@ -216,6 +229,7 @@ export default function Home() {
               options={formOptions.years}
               value={formValues.year}
               onChange={(e)=>{changeFormValue('year', e)}}
+              placeholder={translate("Select...")}
             />
           </div>
           <div className="form-group">
