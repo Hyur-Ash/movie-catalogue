@@ -26,10 +26,9 @@ export const MediaPopup = ({mediaType, id}) => {
         translate, websiteLang, setWebsiteLang, languageCodes, languagesOptions
     } = useContext(Context);
 
-    const currentLanguage = languagesOptions.filter(l=>l.value===websiteLang)[0].label.toLowerCase();
+    const currentLanguage = languagesOptions.filter(l=>l.value===websiteLang)[0].label;
 
     const getRuntime = (time) => {
-        console.log(time)
         time = Array.isArray(time) ? time[0] : time;
         const hours = Math.floor(parseInt(time)/60);
         const minutes = Math.floor(((time/60) - Math.floor(time/60))*60);
@@ -46,7 +45,6 @@ export const MediaPopup = ({mediaType, id}) => {
     const [trailerVideoId, setTrailerVideoId] = useState(null);
     const [trailerIds, setTrailerIds] = useLocalStorage('trailerIds', {});
     const loadTrailerLink = (media) => {
-        console.log(media)
         const q = `${media[currentNames.title]} ${media[currentNames.release_date].substring(0,4)} trailer ${currentLanguage}`;
         if(trailerIds[q]){
             setTrailerVideoId(trailerIds[q]);
@@ -88,14 +86,15 @@ export const MediaPopup = ({mediaType, id}) => {
         {!loadingMedias && singleMedia && singleMedia[websiteLang] &&
             <Modal className="single-media" isOpen={singleMedia !== null} toggle={closeMediaModal} size={"xl"}>
             <ModalHeader toggle={closeMediaModal}>
-                <div className="modal-title">
+                <div className="c-modal-title">
                 {singleMedia[websiteLang][currentNames.title]}
-                <div className="language-selector">
+                <div className="language-selector variant">
                     <Select
                         instanceId={"language"} 
                         options={languagesOptions}
                         value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
                         onChange={(e)=>{setWebsiteLang(e.value)}}
+                        isSearchable={false}
                     />
                 </div>
                 </div>

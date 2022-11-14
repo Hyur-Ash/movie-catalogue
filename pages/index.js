@@ -69,7 +69,7 @@ export default function Home() {
         });
         curr.withoutGenres.forEach((g)=>{
           if(genres.map(g=>g.id).includes(g.value)){
-            newWithGenres.push(g);
+            newWithoutGenres.push(g);
           }
         });
         return {...curr, withGenres: newWithGenres, withoutGenres: newWithoutGenres,}
@@ -94,8 +94,8 @@ export default function Home() {
     setFormValues(curr=>({
         ...curr,
         mediaType: formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0],
-        withGenres: formOptions.genres.map(m=>curr.withGenres.map(w=>w.value).includes(m.value) && m),
-        withoutGenres: formOptions.genres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
+        withGenres: allGenres.map(m=>curr.withGenres.map(w=>w.value).includes(m.value) && m),
+        withoutGenres: allGenres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
         sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
         orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
         year: formOptions.years.filter(m=>m.value===curr.year.value)[0],
@@ -108,6 +108,15 @@ export default function Home() {
 
   
   return isMounted && (<>
+    <div className="language-selector">
+      <Select
+          instanceId={"language"} 
+          options={languagesOptions}
+          value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
+          onChange={(e)=>{setWebsiteLang(e.value)}}
+          isSearchable={false}
+        />
+    </div>
     <h1>{translate("Hyur's Movie Catalogue")}</h1>
     <div className="my-container">
 
@@ -116,15 +125,6 @@ export default function Home() {
         <meta name="description" content="Created by Hyur" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <div className="language-selector fixed">
-        <Select
-            instanceId={"language"} 
-            options={languagesOptions}
-            value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
-            onChange={(e)=>{setWebsiteLang(e.value)}}
-          />
-      </div>
 
       <main>
         <div className="form">
@@ -202,9 +202,7 @@ export default function Home() {
           />
           <div className="medias">
             {medias.map((media, i) => (
-              <MediaCover showTitle data={media} key={`media${i}`} onClick={()=>{
-                router.push(`/${lastSearch.mediaType.value}/${media.id}`);
-              }}/>
+              <MediaCover showTitle data={media} key={`media${i}`} href={`/${lastSearch.mediaType.value}/${media.id}`}/>
             ))}
           </div>
         </>}

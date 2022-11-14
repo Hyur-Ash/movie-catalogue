@@ -1,8 +1,9 @@
 import {useContext} from 'react';
 import { Context } from '/lib/Context';
 import moment from 'moment';
+import Link from 'next/link';
 
-export const MediaCover = ({data, showTitle, onClick}) => {
+export const MediaCover = ({data, showTitle, href}) => {
 
     const tmdb_main_url_img_low = "https://www.themoviedb.org/t/p/w220_and_h330_face";
 
@@ -15,7 +16,7 @@ export const MediaCover = ({data, showTitle, onClick}) => {
     }
 
     return(
-      <div className={`media ${onClick ? 'clickable' : ''}`} onClick={()=>{onClick && onClick();}}>
+      <Link href={href ?? ''} className={`media ${href ? 'clickable' : ''}`}>
         {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) &&
           <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
         }
@@ -27,6 +28,6 @@ export const MediaCover = ({data, showTitle, onClick}) => {
         </div>
         <img alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `img/not-found.jpg`}/>
         {showTitle && data[currentNames.title]}
-      </div>
+      </Link>
     )
   }

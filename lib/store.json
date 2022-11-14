@@ -220,13 +220,13 @@
         "it": "Famiglia"
     },
     "Fantasy": {
-        "it": "Fantasia"
+        "it": "Fantasy"
     },
     "History": {
         "it": "Storia"
     },
     "Horror": {
-        "it": "Orrore"
+        "it": "Horror"
     },
     "Music": {
         "it": "Musica"
@@ -238,7 +238,8 @@
         "it": "Romantico"
     },
     "Science Fiction": {
-        "it": "Fantascienza"
+        "it": "Fantascienza",
+        "en": "Sci-fi"
     },
     "TV Movie": {
         "it": "Film TV"
