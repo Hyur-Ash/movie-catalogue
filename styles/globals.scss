@@ -30,16 +30,22 @@ a {
 
 .my-container{
   display: flex;
-  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 main{
   width: 800px;
   max-width: 100%;
   padding: 1rem;
+  margin:auto;
 }
 h1{
   padding: .5em 1em;
+  display: flex;
+  gap: 1em;
+  justify-content: center;
 }
 h1,h2,h3{
   text-align: center;
@@ -55,16 +61,18 @@ h1,h2,h3{
     display: grid;
     gap: 1rem;
     grid-template-columns: 200px 400px;
+    align-items: center;
     @media screen and (max-width: 700px){
       grid-template-columns: 1fr;
     }
     &.submit{
       display: flex;
       justify-content: center;
+      margin-bottom: 1rem;
     }
   }
 }
-button{
+button, .c-button{
   background-color: $blue;
   padding: .5em 1.5em;
   border-radius: .5em;
@@ -101,7 +109,23 @@ button{
   &.clickable{
     cursor: pointer;
   }
-  position: relative;
+  .cover{
+    position: relative;
+    .add-favorites, .icon-container.hide{
+      opacity: 0;
+      transition: .5s;
+    }
+    &:hover{
+      .add-favorites, .icon-container.hide{
+        opacity: 1;
+      }
+    }
+    @media screen and (max-width: 960px){
+      .add-favorites, .icon-container.hide{
+        opacity: 1;
+      } 
+    }
+  }
   .flag-container{
     position: absolute;
     top: 5px;
@@ -167,7 +191,6 @@ button{
   position: relative;
   z-index: 10;
   max-width: 5.5rem;
-  margin: 1rem 1rem 0 auto;
   div{
     border: none !important;
     &[class*='control']{
@@ -184,13 +207,45 @@ button{
     margin: unset;
     order: -1;
   }
-  &.fixed{
-    position: fixed;
-    top: 1rem;
-    z-index: 2;
-    right: 1rem;
+}
+
+header{
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 1rem 1rem 0 auto;
+}
+
+.menu{
+  .icon{
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: #5D5DDF;
   }
 }
+
+.icon-container{
+  position: absolute;
+  bottom: .5rem;
+  right: .5rem;
+  background-color: rgba(0,0,0,.5);
+  padding: .3rem;
+  border-radius: 50%;
+}
+
+.add-favorites, .is-favorites{
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 2rem;
+  cursor: pointer;
+}
+.is-favorites{
+  color: hsl(48, 100%, 50%);
+  &.trash{
+    color: rgb(217, 217, 217);
+  }
+}
+
 
 .c-modal-title{
   display: flex;
@@ -239,5 +294,48 @@ button{
 .lang-flag{
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.message{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.media-select{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  .media-option{
+    font-size: 2em;
+    background-color: #5D5DDF;
+    color: white;
+    padding: 1rem;
+    user-select: none;
+    cursor: pointer;
+    &:not(.active){
+      opacity: .5;
+    }
+  }
+}
+
+.year-group{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5em;
+  >div{
+    width: 100%;
+    &.half{
+      width: 47.5%;
+    }
+  }
+}
+
+.year-label{
+  @media screen and (max-width: 700px){
+    display: flex;
+    gap: 1rem;
+  }
 }
 

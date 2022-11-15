@@ -257,8 +257,8 @@
         "it": "Cerca",
         "ru": "Поиск"
     },
-    "Hyur's Movie Catalogue":{
-        "it": "Catalogo Cinematografico di Hyur"
+    "Hyur's Media Catalogue":{
+        "it": "Catalogo Multimediale di Hyur"
     },
     "upcoming":{
         "it": "in arrivo"
@@ -325,6 +325,25 @@
     },
     "Any":{
         "it": "Qualsiasi"
-    }                  
+    },
+    "Favorites":{
+        "it": "Preferiti"
+    }, 
+    "You have no favorite Movies.":{
+        "it": "Non hai Film preferiti."
+    },
+    "You have no favorite TV Shows.":{
+        "it": "Non hai Serie TV preferite."
+    },
+    "From":{
+        "it": "Da"
+    },
+    "to":{
+        "it": "a"
+    },
+    "Range":{
+        "it": "Intervallo"
+    }
+                       
 }
 }

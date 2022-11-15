@@ -2,13 +2,21 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import {FaAngleLeft, FaAngleRight} from 'react-icons/fa';
 
-export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtremes}) => {
+export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtremes, currentPage, forcePageChange, setForcePageChange}) => {
 
-    const [sIndex, setSIndex] = useState(0);
-    const [pointI, setPointI] = useState(0);
+    const [sIndex, setSIndex] = useState(currentPage-1);
+    const [pointI, setPointI] = useState(currentPage-1);
     useEffect(()=>{
         onChange(sIndex+1)
     },[sIndex])
+
+    useEffect(()=>{
+        if(forcePageChange){
+            setSIndex(forcePageChange-1);
+            setPointI(forcePageChange-1);
+            setForcePageChange(null);
+        }
+    },[forcePageChange])
 
     const navigate = (amount) => {
         if(!disabled){

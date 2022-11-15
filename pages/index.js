@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import {useState, useEffect, useContext} from 'react';
+import {useState, useEffect, useContext, useRef} from 'react';
 import { Context } from '/lib/Context';
 import {Form, FormGroup, Label, Input} from 'reactstrap';
 import Select from 'react-select'; 
@@ -10,10 +10,10 @@ import {useLocalStorage} from '/lib/useLocalStorage';
 import {useRouter} from 'next/router';
 import moment from 'moment';
 import {MediaCover} from '/components/MediaCover';
+import {FaStar} from 'react-icons/fa';
+import Link from 'next/link';
 
 export default function Home() {
-
-  const router = useRouter();
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(()=>{
@@ -23,9 +23,9 @@ export default function Home() {
   const {
     movieGenres, tvGenres, yearsContent, sortValues,
     medias, singleMedia, setSingleMedia, loadMedias, loadingMedias, loadSingleMedia, lastSearch,
-    totalPages, setCurrentPage, 
+    totalPages, currentPage, setCurrentPage, 
     translate, websiteLang, setWebsiteLang, languageCodes,
-    currentNames, languagesOptions
+    currentNames, languagesOptions, isYearRange, setIsYearRange
   } = useContext(Context);
 
   const [genres, setGenres] = useState(movieGenres);
@@ -53,7 +53,8 @@ export default function Home() {
     withoutGenres: [],
     sortBy: formOptions.sortValues[0],
     orderBy: formOptions.orderValues[0],
-    year: formOptions.years[0],
+    yearFrom: formOptions.years[0],
+    yearTo: formOptions.years[0],
   });
   useEffect(()=>{
     if(formValues){
@@ -90,6 +91,23 @@ export default function Home() {
     }
   },[formValues?.withGenres, formValues?.withoutGenres])
 
+  const formValue = (value) => {
+    return value.length > 0 ? parseInt(value) : 0;
+  }
+  const toValue = (value) => {
+    return value.length > 0 ? parseInt(value) : 3000;
+  }
+  useEffect(()=>{
+    if(formValues){
+      const from = formValue(formValues.yearFrom.value);
+      const to = toValue(formValues.yearTo.value);
+      if(to < from){
+        const option = formOptions.years.filter(y=>y.value === (from + 1).toString())[0];
+        changeFormValue('yearTo', option ?? formOptions.years[0]);
+      }
+    }
+  },[formValues?.yearFrom, formValues?.yearTo])
+
   useEffect(()=>{
     setFormValues(curr=>({
         ...curr,
@@ -98,7 +116,8 @@ export default function Home() {
         withoutGenres: allGenres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
         sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
         orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
-        year: formOptions.years.filter(m=>m.value===curr.year.value)[0],
+        yearFrom: formOptions.years.filter(m=>m.value===curr.yearFrom.value)[0],
+        yearTo: formOptions.years.filter(m=>m.value===curr.yearTo.value)[0],
     }));
   },[websiteLang]) 
 
@@ -106,22 +125,30 @@ export default function Home() {
     setFormValues(curr=>({...curr, [key]: value}));
   }
 
-  
+  const scrollElementRef = useRef();
+
+  const [forcePageChange, setForcePageChange] = useState(null);
+
   return isMounted && (<>
-    <div className="language-selector">
-      <Select
-          instanceId={"language"} 
-          options={languagesOptions}
-          value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
-          onChange={(e)=>{setWebsiteLang(e.value)}}
-          isSearchable={false}
-        />
-    </div>
-    <h1>{translate("Hyur's Movie Catalogue")}</h1>
+    <header>
+      <div className="menu">
+        <Link href="/favorites"><FaStar className="icon favorites"/></Link>
+      </div>
+      <div className="language-selector">
+        <Select
+            instanceId={"language"} 
+            options={languagesOptions}
+            value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
+            onChange={(e)=>{setWebsiteLang(e.value)}}
+            isSearchable={false}
+          />
+      </div>
+    </header>
+    <h1>{translate("Hyur's Media Catalogue")}</h1>
     <div className="my-container">
 
       <Head>
-        <title>{translate("Hyur's Movie Catalogue")}</title>
+        <title>{translate("Hyur's Media Catalogue")}</title>
         <meta name="description" content="Created by Hyur" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -161,14 +188,40 @@ export default function Home() {
             />
           </div>
           <div className="form-group">
-            <label>{translate("Year")}</label>
-            <Select
-              instanceId={"year"} 
-              options={formOptions.years}
-              value={formValues.year}
-              onChange={(e)=>{changeFormValue('year', e)}}
-              placeholder={translate("Select...")}
-            />
+            <label className="year-label">
+              {translate("Year")}
+              <FormGroup switch>
+                  <Input
+                    type="switch"
+                    role="switch"
+                    checked={isYearRange}
+                    onChange={() => {setIsYearRange(!isYearRange);}}
+                  />
+                  <Label>{translate("Range")}</Label>
+              </FormGroup>
+            </label>
+            <div className="year-group">
+            {isYearRange && translate("From")}
+              <Select
+                className={isYearRange? 'half' : ''}
+                instanceId={"yearFrom"} 
+                options={formOptions.years}
+                value={formValues.yearFrom}
+                onChange={(e)=>{changeFormValue('yearFrom', e)}}
+                placeholder={translate("Select...")}
+              />
+              {isYearRange && translate("to")}
+              {isYearRange &&
+                <Select
+                  className={isYearRange? 'half' : ''}
+                  instanceId={"yearTo"} 
+                  options={formOptions.years.filter(f=>(toValue(f.value) > formValue(formValues.yearFrom.value)))}
+                  value={formValues.yearTo}
+                  onChange={(e)=>{changeFormValue('yearTo', e)}}
+                  placeholder={translate("Select...")}
+                />
+              }
+            </div>
           </div>
           <div className="form-group">
             <label>{translate("Sort By")}</label>
@@ -190,15 +243,19 @@ export default function Home() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias} onClick={()=>{loadMedias(formValues)}}>{translate("Search")}</button>
+            <button disabled={loadingMedias} onClick={()=>{loadMedias(formValues); setForcePageChange(1)}}>{translate("Search")}</button>
           </div>
         </div>
+        <div ref={scrollElementRef}></div>
         {medias.length > 0 && <>
           <Navigator
+            forcePageChange={forcePageChange}
+            setForcePageChange={setForcePageChange}
+            currentPage={currentPage}
             disabled={loadingMedias}
             pagesToShow={7}
             numPages={totalPages}
-            onChange={(pageNum)=>{setCurrentPage(pageNum)}}
+            onChange={(pageNum)=>{setCurrentPage(pageNum); scrollElementRef.current.scrollIntoView();}}
           />
           <div className="medias">
             {medias.map((media, i) => (
