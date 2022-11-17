@@ -59,7 +59,7 @@ export default function Favorites() {
         <h1>{translate("Favorites")}</h1>
         <div className="my-container">
             <Head>
-                <title>{translate("Hyur's Media Catalogue")}</title>
+                <title>{translate("Hyur's Media Library")}</title>
                 <meta name="description" content="Created by Hyur" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
@@ -67,36 +67,20 @@ export default function Favorites() {
             <main>
                 <MediaSelect value={selectedMedia} onChange={(mediaType)=>{setSelectedMedia1(mediaType)}}/>
 
-                {selectedMedia === 'movie' &&
-                    <div className="media-group">
-                        {favorites.movie.length === 0 ?
-                            <h3>{translate("You have no favorite Movies.")}</h3>
-                        :
-                            <div className="medias">
-                                {favorites.movie.map((media, i) => (
-                                    <MediaCover withDeleteIcon showTitle data={media} key={`movie${i}`} href={`/movie/${media.id}`}/>
-                                ))}
-                            </div>
-                        }
-                    </div>
-                }
-
-                {selectedMedia === 'tv' && 
-                    <div className="media-group">
-                        {favorites.tv.length === 0 ?
-                            <div className="message">
-                                <h3>{translate("You have no favorite TV Shows.")}</h3>
-                                <Link className="c-button" href="/">Discover</Link>
-                            </div>
-                        :
-                            <div className="medias">
-                                {favorites.tv.map((media, i) => (
-                                    <MediaCover withDeleteIcon showTitle data={media} key={`tv${i}`} href={`/tv/${media.id}`}/>
-                                ))}
-                            </div>
-                        }
-                    </div>
-                }
+                <div className="media-group">
+                    {favorites[selectedMedia].length === 0 ?
+                        <div className="message">
+                            <h3>{translate(`You have no favorite ${selectedMedia === 'movie' ? 'Movies' : 'TV Shows'}.`)}</h3>
+                            <Link className="c-button" href="/">{translate("Discover")}</Link>
+                        </div>
+                    :
+                        <div className="medias">
+                            {favorites[selectedMedia].map((media, i) => (
+                                <MediaCover withDeleteIcon showTitle data={media} key={`media${i}`} href={`/${selectedMedia}/${media.id}`}/>
+                            ))}
+                        </div>
+                    }
+                </div>
 
         </main>
     </div>

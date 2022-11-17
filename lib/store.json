@@ -257,8 +257,8 @@
         "it": "Cerca",
         "ru": "Поиск"
     },
-    "Hyur's Media Catalogue":{
-        "it": "Catalogo Multimediale di Hyur"
+    "Hyur's Media Library":{
+        "it": "Mediateca di Hyur"
     },
     "upcoming":{
         "it": "in arrivo"
@@ -343,6 +343,9 @@
     },
     "Range":{
         "it": "Intervallo"
+    },
+    "Discover":{
+        "it": "Scopri"
     }
                        
 }
