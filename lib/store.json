@@ -367,6 +367,9 @@
     },
     "ongoing":{
         "it": "in corso"
+    },
+    "canceled":{
+        "it": "annullata"
     }
                        
 }
