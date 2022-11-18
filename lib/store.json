@@ -355,6 +355,18 @@
     },
     "No results found.":{
         "it": "Nessun risultato trovato."
+    },
+    "Number of Seasons":{
+        "it": "Numero di stagioni"
+    },
+    "Number of Episodes":{
+        "it": "Numero di episodi"
+    },
+    "ended":{
+        "it": "conclusa"
+    },
+    "ongoing":{
+        "it": "in corso"
     }
                        
 }

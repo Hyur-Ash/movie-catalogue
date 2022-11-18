@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {FaStar, FaRegStar, FaTrash} from 'react-icons/fa';
 import {useRouter} from 'next/router';
 
-export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType}) => {
+export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, showStatus}) => {
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(()=>{
@@ -84,9 +84,19 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType}) =
             <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
             <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
           </>}
-          {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) && 
+          {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) ? 
             <div className="upcoming-alert">{translate("upcoming")}</div>
-          }
+            : <>
+            {showStatus && mediaType === 'tv' && <>
+              {data.status === 'Canceled' ? 
+                <div className="canceled-alert">{translate("canceled")}</div>
+              : data.in_production ? 
+                <div className="ongoing-alert">{translate("ongoing")}</div>
+              :
+                <div className="ended-alert">{translate("ended")}</div>
+              }
+            </>}
+          </>}
           <div className="flag-container">
             <img className="flag" alt={data.original_language} src={`/img/flags/${data.original_language}.svg`}/>
           </div>

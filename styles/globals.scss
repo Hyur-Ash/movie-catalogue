@@ -114,6 +114,7 @@ button, .c-button{
     cursor: pointer;
   }
   .cover{
+    box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
     position: relative;
     .add-favorites, .icon-container.hide{
       opacity: 0;
@@ -145,13 +146,46 @@ button, .c-button{
   .upcoming-alert{
     text-transform: uppercase;
     position: absolute;
-    top: 0;
+    bottom: 0;
     right: 0;
+    height: 2.5rem;
     background-color: $red;
     color: white;
     font-weight: 500;
     padding: .5rem;
-    box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
+  }
+  .ongoing-alert{
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2.5rem;
+    background-color: $yellow;
+    color: black;
+    font-weight: 500;
+    padding: .5rem;
+  }
+  .canceled-alert{
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2.5rem;
+    background-color: $red;
+    color: white;
+    font-weight: 500;
+    padding: .5rem;
+  }
+  .ended-alert{
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2.5rem;
+    background-color: $green;
+    color: black;
+    font-weight: 500;
+    padding: .5rem;
   }
   .vote-average{
     position: absolute;

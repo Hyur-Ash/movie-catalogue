@@ -103,10 +103,14 @@ export const MediaPopup = ({mediaType, id}) => {
             </ModalHeader>
             <ModalBody>
                 <div className="media-info">
-                <MediaCover mediaType={mediaType} data={singleMedia[websiteLang]}/>
+                <MediaCover showStatus mediaType={mediaType} data={singleMedia[websiteLang]}/>
                 <div className="general-info">
                     <div><strong>{translate("Original title")}:</strong> {singleMedia[websiteLang][currentNames.original_title]}</div>
                     <div><strong>{translate("Release date")}:</strong> {moment(singleMedia[websiteLang][currentNames.release_date], "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
+                    {mediaType === 'tv' && <>
+                        <div><strong>{translate("Number of Seasons")}:</strong> {singleMedia[websiteLang].number_of_seasons}</div>
+                        <div><strong>{translate("Number of Episodes")}:</strong> {singleMedia[websiteLang].number_of_episodes}</div>
+                    </>}
                     <div><strong>{translate("Runtime")}:</strong> {getRuntime(singleMedia[websiteLang][currentNames.runtime])}</div>
                     <div><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}:</strong> {singleMedia[websiteLang].genres.map((g,i)=>i<singleMedia[websiteLang].genres.length-1?g.name+", ":g.name)}</div>
                     <div><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}:</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
