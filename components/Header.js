@@ -14,7 +14,7 @@ import {FaStar} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 
-export default function({data, showTitle, href, withDeleteIcon}){
+export default function Header({data, showTitle, href, withDeleteIcon}){
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
