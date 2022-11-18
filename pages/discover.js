@@ -23,10 +23,10 @@ export default function Discover() {
 
   const {
     movieGenres, tvGenres, yearsContent, sortValues,
-    medias, singleMedia, setSingleMedia, loadMedias, loadingMedias, loadSingleMedia, lastSearch,
-    totalPages, currentPage, setCurrentPage, 
+    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
+    totalDPages, currentDPage, setCurrentDPage, 
     translate, websiteLang, setWebsiteLang, languageCodes,
-    currentNames, languagesOptions, isYearRange, setIsYearRange
+    languagesOptions, isYearRange, setIsYearRange, fromValue, toValue
   } = useContext(Context);
 
   const [genres, setGenres] = useState(movieGenres);
@@ -48,7 +48,7 @@ export default function Discover() {
     ]
   };
 
-  const [formValues, setFormValues] = useLocalStorage('formValues', {
+  const [formValues, setFormValues] = useLocalStorage('discoverValues', {
     mediaType: formOptions.mediaType[0],
     withGenres: [],
     withoutGenres: [],
@@ -92,15 +92,9 @@ export default function Discover() {
     }
   },[formValues?.withGenres, formValues?.withoutGenres])
 
-  const formValue = (value) => {
-    return value.length > 0 ? parseInt(value) : 0;
-  }
-  const toValue = (value) => {
-    return value.length > 0 ? parseInt(value) : 3000;
-  }
   useEffect(()=>{
     if(formValues){
-      const from = formValue(formValues.yearFrom.value);
+      const from = fromValue(formValues.yearFrom.value);
       const to = toValue(formValues.yearTo.value);
       if(to < from){
         const option = formOptions.years.filter(y=>y.value === (from + 1).toString())[0];
@@ -136,7 +130,7 @@ export default function Discover() {
       <meta name="description" content="Created by Hyur" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Header/>
+    <Header />
     <div className="my-container">
       
       <h2 className="page-title">{translate("Discover")}</h2>
@@ -189,7 +183,7 @@ export default function Discover() {
               </FormGroup>
             </label>
             <div className="year-group">
-            {isYearRange && <span>{translate("From")}</span>}
+              {isYearRange && <span>{translate("From")}</span>}
               <Select
                 className={isYearRange? 'half' : ''}
                 instanceId={"yearFrom"} 
@@ -203,7 +197,7 @@ export default function Discover() {
                 <Select
                   className={isYearRange? 'half' : ''}
                   instanceId={"yearTo"} 
-                  options={formOptions.years.filter(f=>(toValue(f.value) > formValue(formValues.yearFrom.value)))}
+                  options={formOptions.years.filter(f=>(toValue(f.value) > fromValue(formValues.yearFrom.value)))}
                   value={formValues.yearTo}
                   onChange={(e)=>{changeFormValue('yearTo', e)}}
                   placeholder={translate("Select...")}
@@ -231,23 +225,23 @@ export default function Discover() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias} onClick={()=>{loadMedias(formValues); setForcePageChange(1)}}>{translate("Search")}</button>
+            <button disabled={loadingMedias} onClick={()=>{discoverMedias(formValues); setForcePageChange(1)}}>{translate("Discover")}</button>
           </div>
         </div>
         <div ref={scrollElementRef}></div>
-        {medias.length > 0 && <>
+        {discoveredMedias.length > 0 && <>
           <Navigator
             forcePageChange={forcePageChange}
             setForcePageChange={setForcePageChange}
-            currentPage={currentPage}
+            currentPage={currentDPage}
             disabled={loadingMedias}
             pagesToShow={7}
-            numPages={totalPages}
-            onChange={(pageNum)=>{setCurrentPage(pageNum); scrollElementRef.current.scrollIntoView();}}
+            numPages={totalDPages}
+            onChange={(pageNum)=>{setCurrentDPage(pageNum); scrollElementRef.current.scrollIntoView();}}
           />
           <div className="medias">
-            {medias.map((media, i) => (
-              <MediaCover showTitle data={media} key={`media${i}`} href={`/${lastSearch.mediaType.value}/${media.id}`}/>
+            {discoveredMedias.map((media, i) => (
+              <MediaCover mediaType={lastDiscover.mediaType.value} showTitle data={media} key={`media${i}`} href={`/${lastDiscover.mediaType.value}/${media.id}`}/>
             ))}
           </div>
         </>}

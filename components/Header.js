@@ -10,11 +10,13 @@ import {useLocalStorage} from '/lib/useLocalStorage';
 import {useRouter} from 'next/router';
 import moment from 'moment';
 import {MediaCover} from '/components/MediaCover';
-import {FaStar} from 'react-icons/fa';
+import {FaStar, FaFilm, FaSearch} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 
 export default function Header({data, showTitle, href, withDeleteIcon}){
+    
+    const router = useRouter();
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -23,20 +25,27 @@ export default function Header({data, showTitle, href, withDeleteIcon}){
 
     const {
         movieGenres, tvGenres, yearsContent, sortValues,
-        medias, singleMedia, setSingleMedia, loadMedias, loadingMedias, loadSingleMedia, lastSearch,
-        totalPages, currentPage, setCurrentPage, 
+        discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
+        totalDPages, currentDPage, setCurrentDPage, 
         translate, websiteLang, setWebsiteLang, languageCodes,
-        currentNames, languagesOptions, isYearRange, setIsYearRange
+        languagesOptions, isYearRange, setIsYearRange,
     } = useContext(Context);
+
+    const menuVoices = [
+        {name: translate("Search"), href: '/', icon: <FaSearch className="icon"/>},
+        {name: translate("Discover"), href: '/discover', icon: <FaFilm className="icon"/>},
+        {name: translate("Favorites"), href: '/favorites', icon: <FaStar className="icon"/>},
+    ]
 
     return isMounted && (
         <header>
-            <div className="logo">
-                <Link href="/"><LogoIcon className="logo-icon"/></Link>
-                <h1>{translate("Hyur's Media Library")}</h1>
+            <div className="logo-container">
+                <Link className="logo" href="/"><h1><LogoIcon className="logo-icon"/><span>{translate("Hyur's Media Library")}</span></h1></Link>
             </div>
             <nav>
-                <Link href="/favorites"><FaStar className="icon favorites"/></Link>
+                {menuVoices.map((voice, i) => router.pathname !== voice.href && (
+                    <Link key={`menu-voice-${i}`} className="menu-voice" href={voice.href}><div className="content">{voice.icon}<span>{voice.name}</span></div></Link>
+                ))}
             </nav>
             <div className="language-selector">
                 <Select

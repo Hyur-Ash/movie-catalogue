@@ -38,7 +38,7 @@ export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtrem
                 <div className="number" onClick={()=>{navigate(-pagesToShow+1)}}><FaAngleLeft/><FaAngleLeft/></div>
                 <div className="number" onClick={()=>{navigate(-1)}}><FaAngleLeft/></div>
             </>}
-            {Array.from(Array(pagesToShow-1).keys()).map( (n) => (
+            {Array.from(Array(pagesToShow-1).keys()).map( (n) => n < numPages && (
                 <div key={`num${n}`} className={`number ${pointI + n === sIndex? 'active' : ''}`} onClick={()=>{setSIndex(pointI + n)}}>{pointI + n + 1}</div>
             ))}
             {pagesToShow && <>

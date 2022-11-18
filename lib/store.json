@@ -346,6 +346,15 @@
     },
     "Discover":{
         "it": "Scopri"
+    },
+    "Movies":{
+        "it": "Film"
+    },
+    "TV Shows":{
+        "it": "Serie TV"
+    },
+    "No results found.":{
+        "it": "Nessun risultato trovato."
     }
                        
 }

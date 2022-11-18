@@ -1,4 +1,4 @@
-$blue: hsl(240, 67%, 67.5%) !default;
+$blue: hsl(240, 67%, 67.5%);
 $lightblue: hsl(183, 67%, 67.5%);
 $green: hsl(125, 67%, 67.5%);
 $lightgreen: hsl(85, 67%, 67.5%);
@@ -157,23 +157,35 @@ button, .c-button{
     position: absolute;
     top: 5px;
     right: 5px;
-    color: white;
-    background-color: black;
+    color: black;
+    background-color: white;
     border-radius: 50%;
-    width: 2.5em;
-    height: 2.5em;
+    width: 2.75rem;
+    height: 2.75rem;
     display: flex;
     justify-content: center;
-    align-items: center;
+    padding-top: .2rem;
     &.red{background-color: red; color: white;}
     &.orange{background-color: orange;}
     &.yellow{background-color: yellow;}
     &.lightgreen{background-color: lightgreen;}
     &.green{background-color: green; color:white;}
     &.lightblue{background-color: lightblue;}
-    color: black;
     font-weight: 500;
     box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
+  }
+  .vote-count{
+    background-color: transparent;
+    position: absolute;
+    top: calc(5px + 1.4rem);
+    right: 5px;
+    font-size: calc(2rem / 3);
+    color: black;
+    width: 2.75rem;
+    text-align: center;
+    &.red, &.green{
+      color: white;
+    }
   }
 }
 
@@ -224,26 +236,54 @@ header{
   background-color: $black;
   box-shadow: 0px 0px 3px 0px rgba(255,255,255,0.5);
   padding: 1rem 1.5rem;
-  .logo{
+  .logo-container{
     display: flex;
-    gap: 1rem;
     align-items: center;
-    .logo-icon{
-      font-size: 2rem;
-    }
-    h1{
-      font-size: clamp(2vw, 2rem, 5vw);
-      @media screen and (max-width: 640px){
-        display: none;
+    .logo{
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      h1{
+        .logo-icon{
+          font-size: 2rem;
+        }
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: clamp(2vw, 2rem, 5vw);
+        span{
+          @media screen and (max-width: 700px){
+            display: none;
+          }
+        }
       }
     }
   }
   nav{
     margin-left: auto;
-    .icon{
-      font-size: 1.25rem;
-      cursor: pointer;
-      color: $blue;
+    display: flex;
+    align-items: center;
+    .menu-voice{
+      .content{
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        .icon{
+          font-size: 1.25rem;
+          cursor: pointer;
+          color: white;
+        }
+        span{
+          @media screen and (max-width: 700px){
+            display: none;
+          }
+        }
+      }
+      &:not(:last-child) .content::after{
+        content:"|";
+        margin: 0 1rem 0 .5rem;
+      }
     }
   }
 }

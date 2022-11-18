@@ -21,12 +21,14 @@ export const MediaPopup = ({mediaType, id}) => {
 
     const {
         movieGenres, tvGenres, yearsContent, sortValues,
-        medias, singleMedia, setSingleMedia, loadMedias, loadingMedias, loadSingleMedia, lastSearch,
-        totalPages, setCurrentPage, currentNames,
-        translate, websiteLang, setWebsiteLang, languageCodes, languagesOptions, originLink
+        discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
+        totalDPages, setCurrentDPage,
+        translate, websiteLang, setWebsiteLang, languageCodes, languagesOptions, originLink, properNames
     } = useContext(Context);
 
     const currentLanguage = languagesOptions.filter(l=>l.value===websiteLang)[0].label;
+
+    const currentNames = properNames[mediaType];
 
     const getRuntime = (time) => {
         time = Array.isArray(time) ? time[0] : time;
@@ -77,7 +79,7 @@ export const MediaPopup = ({mediaType, id}) => {
         }
     },[singleMedia])
 
-    return isMounted && id && (<>
+    return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&
             <div className="overlay-backdrop">
             <img alt={singleMedia[websiteLang].title} src={singleMedia[websiteLang].backdrop_path? `${tmdb_main_url_img_high}/${singleMedia[websiteLang].backdrop_path}` : `img/not-found.jpg`}/>
@@ -101,7 +103,7 @@ export const MediaPopup = ({mediaType, id}) => {
             </ModalHeader>
             <ModalBody>
                 <div className="media-info">
-                <MediaCover data={singleMedia[websiteLang]}/>
+                <MediaCover mediaType={mediaType} data={singleMedia[websiteLang]}/>
                 <div className="general-info">
                     <div><strong>{translate("Original title")}:</strong> {singleMedia[websiteLang][currentNames.original_title]}</div>
                     <div><strong>{translate("Release date")}:</strong> {moment(singleMedia[websiteLang][currentNames.release_date], "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
@@ -110,10 +112,12 @@ export const MediaPopup = ({mediaType, id}) => {
                     <div><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}:</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
                     <div><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}:</strong> {singleMedia[websiteLang].spoken_languages.map((g,i)=>i<singleMedia[websiteLang].spoken_languages.length-1?g.name+", ":g.name)}</div>
                 </div>
-                <div className="overview">
-                    <h4>{translate("Overview")}</h4>
-                    {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
-                </div>
+                {singleMedia.en.overview.length > 0 &&
+                    <div className="overview">
+                        <h4>{translate("Overview")}</h4>
+                        {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
+                    </div>
+                }
                 </div>
                 <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
                 {trailerVideoId && 

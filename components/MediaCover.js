@@ -1,28 +1,34 @@
-import {useContext, useEffect} from 'react';
+import {useState, useContext, useEffect} from 'react';
 import { Context } from '/lib/Context';
 import moment from 'moment';
 import Link from 'next/link';
 import {FaStar, FaRegStar, FaTrash} from 'react-icons/fa';
 import {useRouter} from 'next/router';
 
-export const MediaCover = ({data, showTitle, href, withDeleteIcon}) => {
+export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType}) => {
+
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(()=>{
+    setIsMounted(true);
+  },[]);
 
     const tmdb_main_url_img_low = "https://www.themoviedb.org/t/p/w220_and_h330_face";
 
     const router = useRouter();
 
     const {
-        translate, currentNames, favorites, setFavorites, lastSearch, setOriginLink
+        translate, favorites, setFavorites, setOriginLink, properNames
     } = useContext(Context);
+
+    const currentNames = properNames[mediaType];
 
     const voteColor = (vote) => {
         return vote > 3 ? vote > 4.5 ? vote > 6 ? vote > 7.5 ? vote > 9? "lightblue" : "green" : "lightgreen" : "yellow" : "orange" : "red";
     }
 
     const favoritesIncludes = (id) => {
-      const mediaType = lastSearch.mediaType.value;
       let isIncluded = false;
-      if(favorites){
+      if(favorites && favorites[mediaType]){
         favorites[mediaType].forEach(media=>{
           if(media.id === id){
             isIncluded = true;
@@ -34,7 +40,6 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon}) => {
 
     const addFavorite = (data) => {
       setFavorites(curr=>{
-        const mediaType = lastSearch.mediaType.value;
         return {
           ...curr,
           [mediaType]: [
@@ -46,7 +51,6 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon}) => {
     }
     
     const removeFavorite = (id) => {
-      const mediaType = lastSearch.mediaType.value;
       const curr = {...favorites};
       curr[mediaType].forEach((media, i)=>{
         if(media.id===id){
@@ -57,7 +61,7 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon}) => {
       setFavorites(curr);
     }
 
-    return(
+    return isMounted && mediaType && (
       <Link href={href ?? ''} className={`media ${href ? 'clickable' : ''}`} onClick={(e)=>{
         if(e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
           e.preventDefault();
@@ -76,9 +80,10 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon}) => {
               <FaRegStar className="add-favorites" onClick={()=>{addFavorite(data)}}/>
             }
           </div>
-          {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) &&
+          {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
             <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
-          }
+            <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
+          </>}
           {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) && 
             <div className="upcoming-alert">{translate("upcoming")}</div>
           }
