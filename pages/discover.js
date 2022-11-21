@@ -45,8 +45,11 @@ export default function Discover() {
     orderValues: [
       {value: 'desc', label: translate('Descending')},
       {value: 'asc', label: translate('Ascending')},
-    ]
+    ],
+    originalLanguages: languageCodes.map(lc=>({value: lc.code, label: translate(lc.name)})),
   };
+
+  console.log(formOptions)
 
   const [formValues, setFormValues] = useLocalStorage('discoverValues', {
     mediaType: formOptions.mediaType[0],
@@ -56,6 +59,7 @@ export default function Discover() {
     orderBy: formOptions.orderValues[0],
     yearFrom: formOptions.years[0],
     yearTo: formOptions.years[0],
+    originalLanguage: [],
   });
   useEffect(()=>{
     if(formValues){
@@ -113,6 +117,7 @@ export default function Discover() {
         orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
         yearFrom: formOptions.years.filter(m=>m.value===curr.yearFrom.value)[0],
         yearTo: formOptions.years.filter(m=>m.value===curr.yearTo.value)[0],
+        originalLanguage: formOptions.originalLanguages.filter(m=>m.value===curr.originalLanguage.value)[0],
     }));
   },[websiteLang]) 
 
@@ -166,6 +171,17 @@ export default function Discover() {
               value={formValues.withoutGenres}
               isMulti
               onChange={(e)=>{changeFormValue('withoutGenres', e)}}
+              placeholder={translate("Select...")}
+            />
+          </div>
+          <div className="form-group">
+            <label>{translate("Original language")}</label>
+            <Select
+              instanceId={"originalLanguage"} 
+              options={formOptions.originalLanguages}
+              value={formValues.originalLanguage}
+              isMulti
+              onChange={(e)=>{changeFormValue('originalLanguage', e)}}
               placeholder={translate("Select...")}
             />
           </div>

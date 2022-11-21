@@ -113,6 +113,9 @@ button, .c-button{
   &.clickable{
     cursor: pointer;
   }
+  &:not(.clickable){
+    cursor: unset;
+  }
   .cover{
     box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
     position: relative;

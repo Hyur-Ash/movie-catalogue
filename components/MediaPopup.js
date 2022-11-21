@@ -23,7 +23,7 @@ export const MediaPopup = ({mediaType, id}) => {
         movieGenres, tvGenres, yearsContent, sortValues,
         discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
         totalDPages, setCurrentDPage,
-        translate, websiteLang, setWebsiteLang, languageCodes, languagesOptions, originLink, properNames
+        translate, websiteLang, setWebsiteLang, languagesOptions, originLink, properNames
     } = useContext(Context);
 
     const currentLanguage = languagesOptions.filter(l=>l.value===websiteLang)[0].label;
@@ -40,7 +40,7 @@ export const MediaPopup = ({mediaType, id}) => {
     const closeMediaModal = () => {
         setSingleMedia(null);
         setTrailerVideoId(null);
-        router.push(originLink);
+        router.push(originLink || '/');
     }
 
     const youtube_api_key = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
@@ -71,7 +71,7 @@ export const MediaPopup = ({mediaType, id}) => {
 
     useEffect(()=>{
         loadSingleMedia(mediaType, id);
-    },[]);
+    },[websiteLang]);
     
     useEffect(()=>{
         if(singleMedia){

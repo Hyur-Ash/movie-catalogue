@@ -27,7 +27,7 @@ export default function Favorites() {
     movieGenres, tvGenres, yearsContent, sortValues,
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalDPages, setCurrentDPage, 
-    translate, websiteLang, setWebsiteLang, languageCodes,
+    translate, websiteLang, setWebsiteLang,
     languagesOptions, favorites, setFavorites
   } = useContext(Context);
 

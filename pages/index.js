@@ -25,7 +25,7 @@ export default function Discover() {
     movieGenres, tvGenres, yearsContent, sortValues,
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalSPages, currentSPage, setCurrentSPage, 
-    translate, websiteLang, setWebsiteLang, languageCodes,
+    translate, websiteLang, setWebsiteLang, 
     languagesOptions, isYearRange, setIsYearRange, searchedMedias, searchMedias, fromValue, toValue,
     lastSearch
   } = useContext(Context);

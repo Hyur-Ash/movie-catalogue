@@ -27,7 +27,7 @@ export default function Header({data, showTitle, href, withDeleteIcon}){
         movieGenres, tvGenres, yearsContent, sortValues,
         discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
         totalDPages, currentDPage, setCurrentDPage, 
-        translate, websiteLang, setWebsiteLang, languageCodes,
+        translate, websiteLang, setWebsiteLang, 
         languagesOptions, isYearRange, setIsYearRange,
     } = useContext(Context);
 
