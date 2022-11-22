@@ -558,6 +558,9 @@
     },
     "Original language":{
         "it": "Lingua originale"
+    },
+    "Vote average":{
+        "it": "Votazione media"
     }                       
 }
 }

@@ -26,13 +26,19 @@ export default function Discover() {
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalDPages, currentDPage, setCurrentDPage, 
     translate, websiteLang, setWebsiteLang, languageCodes,
-    languagesOptions, isYearRange, setIsYearRange, fromValue, toValue
+    languagesOptions, fromValue, toValue,
+    isYearRange, setIsYearRange,
+    isVoteAverageRange, setIsVoteAverageRange,
+    isVoteCountRange, setIsVoteCountRange,
   } = useContext(Context);
 
   const [genres, setGenres] = useState(movieGenres);
 
   const allGenres = genres.map(g=>({value: g.id, label: translate(g.name)}));
   const [availableGenres, setAvailableGenres] = useState(JSON.parse(JSON.stringify(allGenres)));
+
+  const allVotes = Array.from({ length: 11 }).map((el, i)=>({value: i, label: i}));
+  const [availableVotes, setAvailableVotes] = useState(JSON.parse(JSON.stringify(allVotes)));
 
   const formOptions = {
     mediaType: [
@@ -46,10 +52,10 @@ export default function Discover() {
       {value: 'desc', label: translate('Descending')},
       {value: 'asc', label: translate('Ascending')},
     ],
-    originalLanguages: languageCodes.map(lc=>({value: lc.code, label: translate(lc.name)})),
+    originalLanguages: [{value: "", label: translate("Any")}, ...languageCodes.map(lc=>({value: lc.code, label: translate(lc.name)}))],
+    votes: allVotes,
   };
 
-  console.log(formOptions)
 
   const [formValues, setFormValues] = useLocalStorage('discoverValues', {
     mediaType: formOptions.mediaType[0],
@@ -59,7 +65,11 @@ export default function Discover() {
     orderBy: formOptions.orderValues[0],
     yearFrom: formOptions.years[0],
     yearTo: formOptions.years[0],
-    originalLanguage: [],
+    originalLanguage: formOptions.originalLanguages[0],
+    voteAverageFrom: formOptions.votes[0],
+    voteAverageTo: formOptions.votes[formOptions.votes.length-1],
+    voteCountFrom: '',
+    voteCountTo: '',
   });
   useEffect(()=>{
     if(formValues){
@@ -98,6 +108,20 @@ export default function Discover() {
 
   useEffect(()=>{
     if(formValues){
+      const newAvailableVotes = [];
+      allVotes.forEach(g=>{
+        if(g.value < formValues.voteAverageFrom.value){return;}
+        newAvailableVotes.push(g);
+      });
+      setAvailableVotes(newAvailableVotes);
+      if(formValues.voteAverageTo.value < formValues.voteAverageFrom.value){
+        changeFormValue('voteAverageTo', formValues.voteAverageFrom);
+      }
+    }
+  },[formValues?.voteAverageFrom])
+
+  useEffect(()=>{
+    if(formValues){
       const from = fromValue(formValues.yearFrom.value);
       const to = toValue(formValues.yearTo.value);
       if(to < from){
@@ -107,6 +131,15 @@ export default function Discover() {
     }
   },[formValues?.yearFrom, formValues?.yearTo])
 
+  const getAverageTo = (curr) => {
+    const voteSearch = availableVotes.filter(m=>m.value===curr.voteAverageTo.value);
+    if(voteSearch && voteSearch[0]){
+      return voteSearch[0];
+    }else{
+      return availableVotes.votes[0];
+    }
+    
+  }
   useEffect(()=>{
     setFormValues(curr=>({
         ...curr,
@@ -117,12 +150,47 @@ export default function Discover() {
         orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
         yearFrom: formOptions.years.filter(m=>m.value===curr.yearFrom.value)[0],
         yearTo: formOptions.years.filter(m=>m.value===curr.yearTo.value)[0],
-        originalLanguage: formOptions.originalLanguages.filter(m=>m.value===curr.originalLanguage.value)[0],
+        originalLanguage: formOptions.originalLanguages.filter(m=>m.value===curr.originalLanguage?.value)[0],
+        voteAverageFrom: formOptions.votes.filter(m=>m.value===curr.voteAverageFrom.value)[0],
+        voteAverageTo: getAverageTo(curr),
     }));
   },[websiteLang]) 
 
   const changeFormValue = (key, value) => {
     setFormValues(curr=>({...curr, [key]: value}));
+  }
+
+  const handleVoteCount = (dir, value, force) => {
+    value = parseInt(value);
+    let from, to;
+    if(!value && value !== 0){
+      if(force){
+        value = 0;
+      }else{
+        if(dir === 'from'){
+          from = '';
+          to = formValues.voteCountTo;
+        }else{
+          to = '';
+          from = formValues.voteCountFrom;
+        }
+      }
+    }
+    else if(dir === 'from'){
+      from = value < 0? 0 : value;
+      to = formValues.voteCountTo >= from ? formValues.voteCountTo : from;
+    }else{
+      to = value < 0? 0 : value 
+      from = formValues.voteCountFrom <= to ? formValues.voteCountFrom : to;
+    }
+    setFormValues(curr=>({...curr, 
+      voteCountFrom: from, 
+      voteCountTo: to
+    }));
+  }
+
+  const handleVoteAverage = (dir, value) => {
+    
   }
 
   const scrollElementRef = useRef();
@@ -180,7 +248,6 @@ export default function Discover() {
               instanceId={"originalLanguage"} 
               options={formOptions.originalLanguages}
               value={formValues.originalLanguage}
-              isMulti
               onChange={(e)=>{changeFormValue('originalLanguage', e)}}
               placeholder={translate("Select...")}
             />
@@ -219,6 +286,86 @@ export default function Discover() {
                   placeholder={translate("Select...")}
                 />
               }
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="year-label">
+              {translate("Vote average")}
+              {formValues.mediaType.value === 'movie' &&
+                <FormGroup switch>
+                    <Input
+                      type="switch"
+                      role="switch"
+                      checked={isVoteAverageRange}
+                      onChange={() => {setIsVoteAverageRange(!isVoteAverageRange);}}
+                    />
+                    <Label>{translate("Range")}</Label>
+                </FormGroup>
+              }
+            </label>
+            <div className="year-group">
+              <span>{translate("From")}</span>
+              <Select
+                className={formValues.mediaType.value === 'movie' && isVoteAverageRange && 'half'}
+                instanceId={"voteAverageFrom"} 
+                options={formOptions.votes}
+                value={formValues.voteAverageFrom}
+                onChange={(e)=>{changeFormValue('voteAverageFrom', e)}}
+                placeholder={translate("Select...")}
+              />
+              {formValues.mediaType.value === 'movie' && <>
+                {isVoteAverageRange && <span>{translate("to")}</span>}
+                {isVoteAverageRange &&
+                  <Select
+                    className={'half'}
+                    instanceId={"voteAverageTo"} 
+                    options={availableVotes}
+                    value={formValues.voteAverageTo}
+                    onChange={(e)=>{changeFormValue('voteAverageTo', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                }
+              </>}
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="year-label">
+              {translate("Vote count")}
+              {formValues.mediaType.value === 'movie' &&
+                <FormGroup switch>
+                    <Input
+                      type="switch"
+                      role="switch"
+                      checked={isVoteCountRange}
+                      onChange={() => {setIsVoteCountRange(!isVoteCountRange);}}
+                    />
+                    <Label>{translate("Range")}</Label>
+                </FormGroup>
+              }
+            </label>
+            <div className="year-group">
+              <span>{translate("From")}</span>
+              <Input
+                className={formValues.mediaType.value === 'movie' && isVoteCountRange ? 'half' : ''}
+                type="number"
+                value={formValues.voteCountFrom}
+                onChange={(e)=>{handleVoteCount('from', e.target.value)}}
+                onBlur={(e)=>{handleVoteCount('from', e.target.value, true)}}
+                min={0}
+              />
+              {formValues.mediaType.value === 'movie' && <>
+                {isVoteCountRange && <span>{translate("to")}</span>}
+                {isVoteCountRange &&
+                  <Input
+                    className={'half'}
+                    type="number"
+                    value={formValues.voteCountTo}
+                    onChange={(e)=>{handleVoteCount('to', e.target.value)}}
+                    onBlur={(e)=>{handleVoteCount('to', e.target.value, true)}}
+                    min={0}
+                  />
+                }
+              </>}
             </div>
           </div>
           <div className="form-group">
