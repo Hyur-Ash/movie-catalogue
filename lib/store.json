@@ -561,6 +561,9 @@
     },
     "Vote average":{
         "it": "Votazione media"
-    }                       
+    }, 
+    "Vote count":{
+        "it": "Numero votazioni"
+    }                      
 }
 }
