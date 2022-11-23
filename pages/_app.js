@@ -20,7 +20,7 @@ function MyApp({ Component, pageProps }) {
     setIsMounted(true);
   },[]);
 
-  const appVersion = '1.25';
+  const appVersion = '1.3';
   const [version, setVersion] = useLocalStorage('version', '0');
 
   useEffect(()=>{

@@ -160,20 +160,16 @@ export default function Discover() {
     setFormValues(curr=>({...curr, [key]: value}));
   }
 
-  const handleVoteCount = (dir, value, force) => {
+  const handleVoteCount = (dir, value) => {
     value = parseInt(value);
     let from, to;
     if(!value && value !== 0){
-      if(force){
-        value = 0;
+      if(dir === 'from'){
+        from = '';
+        to = formValues.voteCountTo;
       }else{
-        if(dir === 'from'){
-          from = '';
-          to = formValues.voteCountTo;
-        }else{
-          to = '';
-          from = formValues.voteCountFrom;
-        }
+        to = '';
+        from = formValues.voteCountFrom;
       }
     }
     else if(dir === 'from'){
@@ -350,7 +346,7 @@ export default function Discover() {
                 type="number"
                 value={formValues.voteCountFrom}
                 onChange={(e)=>{handleVoteCount('from', e.target.value)}}
-                onBlur={(e)=>{handleVoteCount('from', e.target.value, true)}}
+                // onBlur={(e)=>{handleVoteCount('from', e.target.value, true)}}
                 min={0}
               />
               {formValues.mediaType.value === 'movie' && <>
@@ -361,7 +357,7 @@ export default function Discover() {
                     type="number"
                     value={formValues.voteCountTo}
                     onChange={(e)=>{handleVoteCount('to', e.target.value)}}
-                    onBlur={(e)=>{handleVoteCount('to', e.target.value, true)}}
+                    // onBlur={(e)=>{handleVoteCount('to', e.target.value, true)}}
                     min={0}
                   />
                 }
