@@ -564,6 +564,15 @@
     }, 
     "Vote count":{
         "it": "Numero votazioni"
-    }                      
+    },
+    "Search Trailer on YouTube":{
+        "it": "Cerca Trailer su YouTube"
+    },
+    "Behind the Scenes":{
+        "it": "Dietro le Quinte"
+    },
+    "Reset":{
+        "it": "Azzera"
+    }                       
 }
 }

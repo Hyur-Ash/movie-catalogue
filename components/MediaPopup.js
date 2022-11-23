@@ -45,7 +45,9 @@ export const MediaPopup = ({mediaType, id}) => {
     }
 
     const getYouTubeSearchLink = (media) => {
-        const query = `${media[currentNames.title]} ${media[currentNames.release_date].substring(0,4)} trailer ${websiteLang}`;
+        console.log(media[currentNames.primary_release_date])
+        const date = media[currentNames.primary_release_date]? media[currentNames.primary_release_date].substring(0, 4) : media[currentNames.release_date]? media[currentNames.release_date].substring(0, 4) : '';
+        const query = `${media[currentNames.title]} ${date} trailer ${websiteLang}`;
         return `https://www.youtube.com/results?search_query=${query}`;
     }
 
@@ -142,16 +144,11 @@ export const MediaPopup = ({mediaType, id}) => {
                             onClick={()=>{
                                 setSelectedCategory(i);
                             }}
-                        >{mc}    
+                        >{translate(mc)}    
                         </div>
                     ))}
                 </div>
                 <div className="media-videos">
-                    {!mediaVideos && 
-                        <Link href={getYouTubeSearchLink(singleMedia[websiteLang])} target="_blank" className="c-button">
-                            {translate("Search trailer on YouTube")}
-                        </Link>
-                    }
                     {mediaVideos && mediaVideos.map(mv => mv.site === 'YouTube' && mv.type === mediaCategories[selectedCategory] && (
                         <Link href={`https://www.youtube.com/watch?v=${mv.key}`} target="_blank" className={`media-video`}>
                             <img src={`https://img.youtube.com/vi/${mv.key}/0.jpg`} />
@@ -162,6 +159,11 @@ export const MediaPopup = ({mediaType, id}) => {
                             {mv.name && <div className="title">{mv.name}</div>}
                         </Link>
                     ))}
+                </div>
+                <div className="media-videos">
+                    <Link href={getYouTubeSearchLink(singleMedia[websiteLang])} target="_blank" className="c-button">
+                        {translate("Search Trailer on YouTube")}
+                    </Link>
                 </div>
             </ModalBody>
             </Modal>
