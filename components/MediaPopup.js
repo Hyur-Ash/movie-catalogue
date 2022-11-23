@@ -7,9 +7,12 @@ import {useLocalStorage} from '/lib/useLocalStorage';
 import {useRouter} from 'next/router';
 import moment from 'moment';
 import {MediaCover} from '/components/MediaCover';
+import {FaPlayCircle} from 'react-icons/fa';
+import Link from 'next/link';
 
 export const MediaPopup = ({mediaType, id}) => {
 
+    const tmdb_main_url_img_low = "https://www.themoviedb.org/t/p/w220_and_h330_face";
     const tmdb_main_url_img_high = "https://www.themoviedb.org/t/p/original";
     
     const router = useRouter();
@@ -20,13 +23,12 @@ export const MediaPopup = ({mediaType, id}) => {
     },[]);
 
     const {
+        tmdb_main_url, tmdb_api_key,
         movieGenres, tvGenres, yearsContent, sortValues,
         discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
         totalDPages, setCurrentDPage,
         translate, websiteLang, setWebsiteLang, languagesOptions, originLink, properNames
     } = useContext(Context);
-
-    const currentLanguage = languagesOptions.filter(l=>l.value===websiteLang)[0].label;
 
     const currentNames = properNames[mediaType];
 
@@ -39,45 +41,78 @@ export const MediaPopup = ({mediaType, id}) => {
 
     const closeMediaModal = () => {
         setSingleMedia(null);
-        setTrailerVideoId(null);
         router.push(originLink || '/');
     }
 
-    const youtube_api_key = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
-    const [trailerVideoId, setTrailerVideoId] = useState(null);
-    const [trailerIds, setTrailerIds] = useLocalStorage('trailerIds', {});
-    const loadTrailerLink = (media) => {
-        const q = `${media[currentNames.title]} ${media[currentNames.release_date].substring(0,4)} trailer ${currentLanguage}`;
-        if(trailerIds[q]){
-            setTrailerVideoId(trailerIds[q]);
-        }else{
-            const params = {
-                key: youtube_api_key,
-                q
-            }
-            axios.get('https://www.googleapis.com/youtube/v3/search', {params})
-            .then(res=>{
-                if(res.data.items.length > 0){
-                const id = res.data.items[0]?.id?.videoId ?? null;
-                setTrailerIds(curr=>({...curr, [q]: id}));
-                setTrailerVideoId(id);
-                }
-            })
-            .catch(err=>{
-                console.error(err);
-            })
+    const getYouTubeSearchLink = (media) => {
+        const query = `${media[currentNames.title]} ${media[currentNames.release_date].substring(0,4)} trailer ${websiteLang}`;
+        return `https://www.youtube.com/results?search_query=${query}`;
+    }
+
+    const [mediaVideos, setMediaVideos] = useState([]);
+    const [mediaCategories, setMediaCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(0);
+    const loadMediaVideos = (mediaType, id) => {
+        const params = {
+            api_key: tmdb_api_key,
+            language: websiteLang,
         }
+        axios.get(`${tmdb_main_url}/${mediaType}/${id}/videos`, {params})
+        .then(res=>{
+            console.log(res.data.results)
+            if(res.data.results && res.data.results.length > 0){
+                setMediaVideos(res.data.results.reverse());
+            }else{
+                setMediaVideos(null);
+            }
+        })
+        .catch(err=>{
+            console.error(err);
+        })
     }
 
     useEffect(()=>{
-        loadSingleMedia(mediaType, id);
-    },[websiteLang]);
-    
-    useEffect(()=>{
-        if(singleMedia){
-            loadTrailerLink(singleMedia[websiteLang]);
+        if(mediaVideos){
+            const categories = [];
+            mediaVideos.forEach((mv)=>{
+                if(!categories.includes(mv.type)){
+                    categories.push(mv.type);
+                }
+            });
+            setMediaCategories(categories);
         }
-    },[singleMedia])
+    },[mediaVideos])
+
+    useEffect(()=>{
+        loadSingleMedia(mediaType, id);
+        loadMediaVideos(mediaType, id, websiteLang)
+    },[websiteLang]);
+
+    const [videoData, setVideoData] = useState(null);
+    const VideoModal = ({videoData}) => {
+        console.log({videoData})
+        return videoData && (
+            <Modal className="single-media" isOpen={videoData !== null} toggle={()=>{setVideoData(null)}} fullscreen size={"xl"}>
+                <ModalHeader toggle={()=>{setVideoData(null)}}>
+                    <div className="c-modal-title">
+                        <img className="flag" alt={videoData.iso_639_1} src={`/img/flags/${videoData.iso_639_1}.svg`}/>
+                        {videoData.name}
+                    </div>
+                </ModalHeader>
+                <ModalBody>
+                <iframe 
+                    style={{width: "100%", aspectRatio: "16/9"}} 
+                    // width="1600" 
+                    // height="900" 
+                    src={`https://www.youtube.com/embed/${videoData.key}`}
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen 
+                />
+                </ModalBody>
+            </Modal>
+        )
+    }
 
     return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&
@@ -90,15 +125,15 @@ export const MediaPopup = ({mediaType, id}) => {
             <ModalHeader toggle={closeMediaModal}>
                 <div className="c-modal-title">
                 {singleMedia[websiteLang][currentNames.title]}
-                <div className="language-selector variant">
-                    <Select
-                        instanceId={"language"} 
-                        options={languagesOptions}
-                        value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
-                        onChange={(e)=>{setWebsiteLang(e.value)}}
-                        isSearchable={false}
-                    />
-                </div>
+                    <div className="language-selector variant">
+                        <Select
+                            instanceId={"language"} 
+                            options={languagesOptions}
+                            value={languagesOptions.filter(l=>l.value === websiteLang)[0]}
+                            onChange={(e)=>{setWebsiteLang(e.value)}}
+                            isSearchable={false}
+                        />
+                    </div>
                 </div>
             </ModalHeader>
             <ModalBody>
@@ -124,19 +159,39 @@ export const MediaPopup = ({mediaType, id}) => {
                 }
                 </div>
                 <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
-                {trailerVideoId && 
-                <div className="trailer">
-                    <iframe style={{width: "calc(1600px / 3)", height:"calc(900px / 3", maxWidth: "100%"}} 
-                    width="1600" 
-                    height="900" 
-                    src={`https://www.youtube.com/embed/${trailerVideoId}`}
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen></iframe>
+                <div className="media-categories">
+                    {mediaCategories.map( (mc, i) => (
+                        <div 
+                            key={`mc${i}`} 
+                            style={{width:`calc(100% / ${mediaCategories.length})`}} 
+                            className={`media-category ${i === selectedCategory? 'active' : ''}`} 
+                            onClick={()=>{
+                                setSelectedCategory(i);
+                            }}
+                        >{mc}    
+                        </div>
+                    ))}
                 </div>
-                }
+                <div className="media-videos">
+                    {!mediaVideos && 
+                        <Link href={getYouTubeSearchLink(singleMedia[websiteLang])} target="_blank" className="c-button">
+                            {translate("Search trailer on YouTube")}
+                        </Link>
+                    }
+                    {mediaVideos && mediaVideos.map(mv => mv.site === 'YouTube' && mv.type === mediaCategories[selectedCategory] && (
+                        <Link href={`https://www.youtube.com/watch?v=${mv.key}`} target="_blank" className={`media-video`}>
+                            <img src={`https://img.youtube.com/vi/${mv.key}/0.jpg`} />
+                            <div className="overlay">
+                                <FaPlayCircle className="play-circle"/>
+                            </div>
+                            {mv.official && <div className="official">{translate("Official")}</div>}
+                            {mv.name && <div className="title">{mv.name}</div>}
+                        </Link>
+                    ))}
+                </div>
             </ModalBody>
             </Modal>
         }
+        <VideoModal videoData={videoData} />
     </>)
 }

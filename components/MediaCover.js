@@ -93,7 +93,7 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
         <div className="flag-container">
           <img className="flag" alt={data.original_language} src={`/img/flags/${data.original_language}.svg`}/>
         </div>
-        <img alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `img/not-found.jpg`}/>
+        <img alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `/img/not-found.jpg`}/>
       </div>
       {showTitle && data[currentNames.title]}
     </>)

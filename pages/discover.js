@@ -29,7 +29,7 @@ export default function Discover() {
     languagesOptions, fromValue, toValue,
     isYearRange, setIsYearRange,
     isVoteAverageRange, setIsVoteAverageRange,
-    isVoteCountRange, setIsVoteCountRange,
+    isVoteCountRange, setIsVoteCountRange, setDiscoveredMedias,
   } = useContext(Context);
 
   const [genres, setGenres] = useState(movieGenres);
@@ -56,8 +56,7 @@ export default function Discover() {
     votes: allVotes,
   };
 
-
-  const [formValues, setFormValues] = useLocalStorage('discoverValues', {
+  const firstFormValues = {
     mediaType: formOptions.mediaType[0],
     withGenres: [],
     withoutGenres: [],
@@ -70,7 +69,8 @@ export default function Discover() {
     voteAverageTo: formOptions.votes[formOptions.votes.length-1],
     voteCountFrom: '',
     voteCountTo: '',
-  });
+  }
+  const [formValues, setFormValues] = useLocalStorage('discoverValues', firstFormValues);
   useEffect(()=>{
     if(formValues){
       const genres = formValues.mediaType.value === 'movie' ? movieGenres : tvGenres;
@@ -385,6 +385,7 @@ export default function Discover() {
           </div>
           <div className="form-group submit">
             <button disabled={loadingMedias} onClick={()=>{discoverMedias(formValues); setForcePageChange(1)}}>{translate("Discover")}</button>
+            <button className="red" onClick={()=>{setFormValues(firstFormValues); setDiscoveredMedias([])}}>{translate("Reset")}</button>
           </div>
         </div>
         <div ref={scrollElementRef}></div>
