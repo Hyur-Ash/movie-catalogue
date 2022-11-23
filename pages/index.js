@@ -108,7 +108,7 @@ export default function Discover() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias} onClick={()=>{searchMedias(formValues); setForcePageChange(1)}}>{translate("Search")}</button>
+            <button disabled={loadingMedias === true} onClick={()=>{searchMedias(formValues); setForcePageChange(1)}}>{translate("Search")}</button>
           </div>
         </div>
         <div ref={scrollElementRef}></div>
@@ -117,7 +117,7 @@ export default function Discover() {
             forcePageChange={forcePageChange}
             setForcePageChange={setForcePageChange}
             currentPage={currentSPage}
-            disabled={loadingMedias}
+            disabled={loadingMedias === true}
             pagesToShow={7}
             numPages={totalSPages}
             onChange={(pageNum)=>{setCurrentSPage(pageNum); scrollElementRef.current.scrollIntoView();}}

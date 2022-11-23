@@ -384,17 +384,17 @@ export default function Discover() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias} onClick={()=>{discoverMedias(formValues); setForcePageChange(1)}}>{translate("Discover")}</button>
+            <button disabled={loadingMedias === true} onClick={()=>{discoverMedias(formValues); setForcePageChange(1)}}>{translate("Discover")}</button>
             <button className="red" onClick={()=>{setFormValues(firstFormValues); setDiscoveredMedias([])}}>{translate("Reset")}</button>
           </div>
         </div>
-        <div ref={scrollElementRef}></div>
+        <div style={{height: "70px"}} ref={scrollElementRef}></div>
         {discoveredMedias.length > 0 && <>
           <Navigator
             forcePageChange={forcePageChange}
             setForcePageChange={setForcePageChange}
             currentPage={currentDPage}
-            disabled={loadingMedias}
+            disabled={loadingMedias === true}
             pagesToShow={7}
             numPages={totalDPages}
             onChange={(pageNum)=>{setCurrentDPage(pageNum); scrollElementRef.current.scrollIntoView();}}

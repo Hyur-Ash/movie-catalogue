@@ -96,7 +96,7 @@ export const MediaPopup = ({mediaType, id}) => {
             <img alt={singleMedia[websiteLang].title} src={singleMedia[websiteLang].backdrop_path? `${tmdb_main_url_img_high}/${singleMedia[websiteLang].backdrop_path}` : `img/not-found.jpg`}/>
             </div>
         }
-        {!loadingMedias && singleMedia && singleMedia[websiteLang] &&
+        {loadingMedias !== true && singleMedia && singleMedia[websiteLang] &&
             <Modal className="single-media" isOpen={singleMedia !== null} toggle={closeMediaModal} size={"xl"}>
             <ModalHeader toggle={closeMediaModal}>
                 <div className="c-modal-title">

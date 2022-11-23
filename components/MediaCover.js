@@ -4,6 +4,7 @@ import moment from 'moment';
 import Link from 'next/link';
 import {FaStar, FaRegStar, FaTrash} from 'react-icons/fa';
 import {useRouter} from 'next/router';
+import noImage from '/public/img/not-found.jpg';
 
 export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, showStatus}) => {
 
@@ -61,42 +62,50 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
       setFavorites(curr);
     }
 
-    const Content = () => (<>
-      <div className="cover">
-        <div className={`icon-container ${favoritesIncludes(data.id)? withDeleteIcon? 'hide' : '' : 'hide'}`}>
-          {favoritesIncludes(data.id) ?
-            withDeleteIcon ? 
-              <FaTrash className="is-favorites trash" onClick={()=>{removeFavorite(data.id)}}/>
-              :
-              <FaStar className="is-favorites" onClick={()=>{removeFavorite(data.id)}}/>
-            :
-            <FaRegStar className="add-favorites" onClick={()=>{addFavorite(data)}}/>
-          }
-        </div>
-        {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
-          <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
-          <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
-        </>}
-        {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) ? 
-          <div className="upcoming-alert">{translate("upcoming")}</div>
-        : <>
-          {showStatus && mediaType === 'tv' && <>
-            {data.status === 'Canceled' ? 
-              <div className="canceled-alert">{translate("canceled")}</div>
-            : data.in_production ? 
-              <div className="ongoing-alert">{translate("ongoing")}</div>
-            :
-              <div className="ended-alert">{translate("ended")}</div>
-            }
+    const Content = () => {
+      const [thumbnailLoaded, setThumbnailloaded] = useState(true);
+      const [mainPicLoaded, setMainPicLoaded] = useState(false);
+      return (<>
+        <div className="cover">
+          <div style={{opacity: mainPicLoaded ? 0 : 1}} id={`thumbnail_${data.id}`} className="thumbnail"></div>
+          {thumbnailLoaded && <>
+            <div className={`icon-container ${favoritesIncludes(data.id)? withDeleteIcon? 'hide' : '' : 'hide'}`}>
+              {favoritesIncludes(data.id) ?
+                withDeleteIcon ? 
+                  <FaTrash className="is-favorites trash" onClick={()=>{removeFavorite(data.id)}}/>
+                  :
+                  <FaStar className="is-favorites" onClick={()=>{removeFavorite(data.id)}}/>
+                :
+                <FaRegStar className="add-favorites" onClick={()=>{addFavorite(data)}}/>
+              }
+            </div>
+            {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
+              <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
+              <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
+            </>}
+            {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) ? 
+              <div className="upcoming-alert">{translate("upcoming")}</div>
+            : <>
+              {showStatus && mediaType === 'tv' && <>
+                {data.status === 'Canceled' ? 
+                  <div className="canceled-alert">{translate("canceled")}</div>
+                : data.in_production ? 
+                  <div className="ongoing-alert">{translate("ongoing")}</div>
+                :
+                  <div className="ended-alert">{translate("ended")}</div>
+                }
+              </>}
+            </>}
+            <div className="flag-container">
+              <img className="flag" alt={data.original_language} src={`/img/flags/${data.original_language}.svg`}/>
+            </div>
+            <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : noImage.src} 
+            onLoad={()=>{setMainPicLoaded(true)}}/>
           </>}
-        </>}
-        <div className="flag-container">
-          <img className="flag" alt={data.original_language} src={`/img/flags/${data.original_language}.svg`}/>
         </div>
-        <img alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `/img/not-found.jpg`}/>
-      </div>
-      {showTitle && data[currentNames.title]}
-    </>)
+        {showTitle && data[currentNames.title]}
+      </>)
+    }
 
     return isMounted && mediaType && (<>
     {href ? 
