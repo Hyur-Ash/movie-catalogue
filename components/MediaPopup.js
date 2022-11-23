@@ -88,32 +88,6 @@ export const MediaPopup = ({mediaType, id}) => {
         loadMediaVideos(mediaType, id, websiteLang)
     },[websiteLang]);
 
-    const [videoData, setVideoData] = useState(null);
-    const VideoModal = ({videoData}) => {
-        console.log({videoData})
-        return videoData && (
-            <Modal className="single-media" isOpen={videoData !== null} toggle={()=>{setVideoData(null)}} fullscreen size={"xl"}>
-                <ModalHeader toggle={()=>{setVideoData(null)}}>
-                    <div className="c-modal-title">
-                        <img className="flag" alt={videoData.iso_639_1} src={`/img/flags/${videoData.iso_639_1}.svg`}/>
-                        {videoData.name}
-                    </div>
-                </ModalHeader>
-                <ModalBody>
-                <iframe 
-                    style={{width: "100%", aspectRatio: "16/9"}} 
-                    // width="1600" 
-                    // height="900" 
-                    src={`https://www.youtube.com/embed/${videoData.key}`}
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen 
-                />
-                </ModalBody>
-            </Modal>
-        )
-    }
-
     return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&
             <div className="overlay-backdrop">
@@ -192,6 +166,5 @@ export const MediaPopup = ({mediaType, id}) => {
             </ModalBody>
             </Modal>
         }
-        <VideoModal videoData={videoData} />
     </>)
 }
