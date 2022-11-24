@@ -3,6 +3,7 @@ import { Context } from '/lib/Context';
 import moment from 'moment';
 import Link from 'next/link';
 import {FaStar, FaRegStar, FaTrash} from 'react-icons/fa';
+import {AiOutlineLoading} from 'react-icons/ai';
 import {useRouter} from 'next/router';
 import noImage from '/public/img/not-found.jpg';
 
@@ -18,7 +19,7 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
     const router = useRouter();
 
     const {
-        translate, favorites, setFavorites, setOriginLink, properNames
+        translate, favorites, setFavorites, setOriginLink, properNames, loadingMedias
     } = useContext(Context);
 
     const currentNames = properNames[mediaType];
@@ -67,7 +68,7 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
       const [mainPicLoaded, setMainPicLoaded] = useState(false);
       return (<>
         <div className="cover">
-          <div style={{opacity: mainPicLoaded ? 0 : 1}} id={`thumbnail_${data.id}`} className="thumbnail"></div>
+          <div style={{opacity: mainPicLoaded ? 0 : 1}} id={`thumbnail_${data.id}`} className="thumbnail"><AiOutlineLoading className="loader"/></div>
           {thumbnailLoaded && <>
             <div className={`icon-container ${favoritesIncludes(data.id)? withDeleteIcon? 'hide' : '' : 'hide'}`}>
               {favoritesIncludes(data.id) ?
@@ -103,7 +104,7 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
             onLoad={()=>{setMainPicLoaded(true)}}/>
           </>}
         </div>
-        {showTitle && data[currentNames.title]}
+        {showTitle && <div className="cover-title">{ loadingMedias !== true? data[currentNames.title] : ''}</div>}
       </>)
     }
 

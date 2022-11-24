@@ -7,6 +7,7 @@ $blue: hsl(240, 67%, 67.5%);
   z-index: 1;
   display: block;
   top: 70px;
+  margin-bottom: .25rem;
   @media screen and (max-width: 960px){
     top: 60px;
   }

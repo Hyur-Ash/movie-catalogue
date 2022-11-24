@@ -117,6 +117,9 @@ button, .c-button{
     cursor: unset;
   }
   .cover{
+    width: 180px;
+    max-width: 100%;
+    aspect-ratio: 18/27;
     box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
     position: relative;
     .add-favorites, .icon-container.hide{
@@ -133,8 +136,6 @@ button, .c-button{
         opacity: 1;
       } 
     }
-    width: 180px;
-    height: 270px;
     .thumbnail{
       position: absolute;
       top: 0;
@@ -142,14 +143,31 @@ button, .c-button{
       width: 100%;
       height: 100%;
       background-color: #333333;
-      // z-index: 1;
-      transition: .5s;
+      z-index: 1;
+      transition: .25s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      @keyframes infiniteRotate {    
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+      }
+      .loader{
+        font-size: 2rem;
+        color: white;
+        animation: infiniteRotate .5s linear infinite;
+      }
     }
     .main-image{
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
+  }
+  .cover-title{
+    margin-top: .5rem;
+    height: 50px;
+    overflow: hidden;
   }
   .flag-container{
     position: absolute;
@@ -474,6 +492,9 @@ header{
       color: black;
       font-weight: 500;
       font-size: 1.1rem;
+      @media screen and (max-width: 1000px){
+        font-size: 1rem;
+      }
     }
     &:hover{
       .overlay{
