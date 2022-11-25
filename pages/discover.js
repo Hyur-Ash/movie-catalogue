@@ -23,13 +23,13 @@ export default function Discover() {
 
   const {
     movieGenres, tvGenres, yearsContent, sortValues,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
+    discoveredMedias, singleMedia, setSingleMedia, loadingMedias, setLoadingMedias, loadSingleMedia,
     totalDPages, currentDPage, setCurrentDPage, 
     translate, websiteLang, setWebsiteLang, languageCodes,
     languagesOptions, fromValue, toValue,
-    isYearRange, setIsYearRange,
+    isYearRange, setIsYearRange, properNames,
     isVoteAverageRange, setIsVoteAverageRange,
-    isVoteCountRange, setIsVoteCountRange, setDiscoveredMedias,
+    isVoteCountRange, setIsVoteCountRange, setDiscoveredMedias, tmdb_api_key, tmdb_main_url,
   } = useContext(Context);
 
   const [genres, setGenres] = useState(movieGenres);
@@ -185,13 +185,78 @@ export default function Discover() {
     }));
   }
 
-  const handleVoteAverage = (dir, value) => {
-    
-  }
-
   const scrollElementRef = useRef();
 
   const [forcePageChange, setForcePageChange] = useState(null);
+
+  const [lastDiscover, setLastDiscover] = useLocalStorage('lastDiscover', []);
+  const [pages, setPages] = useLocalStorage('discoverPages', []);
+  const [currentPage, setCurrentPage] = useState(pages.length);
+  useEffect(()=>{
+    console.log(pages);
+  },[pages])
+
+  const resetResults = () => {
+    setPages([]);
+    setCurrentPage(0);
+  }
+  
+  const discoverMedias = (data) => {
+    resetResults();
+    setLastDiscover(data);
+    loadPage(0, data);
+  }
+
+  const loadPage = (pageNum, lastDiscover) => {
+    if(pages[pageNum]){return;}
+    const {
+      mediaType, sortBy, orderBy, withGenres, 
+      withoutGenres, originalLanguage, voteAverageFrom, 
+      voteCountFrom, voteAverageTo, voteCountTo, 
+      yearFrom, yearTo} = lastDiscover;
+    const currentNames = properNames[mediaType.value];
+    const params = {
+        api_key: tmdb_api_key,
+        sort_by: `${sortBy.value}.${orderBy.value}`,
+        with_genres: `${withGenres.map(e=>e.value).toString()}`,
+        without_genres: `${withoutGenres.map(e=>e.value).toString()}`,
+        page: pageNum + 1,
+        language: websiteLang,
+        with_original_language: originalLanguage.value === 'any' ? '' : originalLanguage.value,
+        ["vote_average.gte"]: voteAverageFrom.value === 'any' ? '' : voteAverageFrom.value.toString(),
+        ["vote_count.gte"]: voteCountFrom.toString(),
+    }
+    if(mediaType.value === 'movie'){
+      if(isVoteAverageRange){
+          params["vote_average.lte"] = voteAverageTo.value === 'any' ? '' :voteAverageTo.value.toString();
+      }
+      if(isVoteCountRange){
+          params["vote_count.lte"] = voteCountTo.toString();
+      }
+    }
+    if(!isYearRange){
+        params[currentNames.primary_release_year] = yearFrom.value;
+    }else{
+        params[currentNames["primary_release_date.gte"]] = yearFrom.value.length > 0 ? yearFrom.value : '0';
+        params[currentNames["primary_release_date.lte"]] = yearTo.value.length > 0 ? yearTo.value : '3000';
+    }
+    axios.get(`${tmdb_main_url}/discover/${mediaType.value}`, {params})
+    .then(res=>{
+        setPages(curr=>{
+          const newPages = [...curr];
+          newPages[pageNum] = res.data;
+          return newPages;
+        });
+        setLoadingMedias(Date.now());
+    })
+    .catch(err=>{
+        console.error(err);
+        setLoadingMedias(Date.now());
+    });
+  }
+  useEffect(()=>{
+    // discoverMedias();
+  },[]);
 
   return isMounted && (<>
     <Head>
@@ -384,26 +449,25 @@ export default function Discover() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias === true} onClick={()=>{discoverMedias(formValues); setForcePageChange(1)}}>{translate("Discover")}</button>
-            <button className="red" onClick={()=>{setFormValues(firstFormValues); setDiscoveredMedias([])}}>{translate("Reset")}</button>
+            <button disabled={loadingMedias === true} onClick={()=>{discoverMedias(formValues)}}>{translate("Discover")}</button>
+            <button className="red" onClick={()=>{setFormValues(firstFormValues); resetResults();}}>{translate("Reset")}</button>
           </div>
         </div>
         <div style={{height: "70px"}} ref={scrollElementRef}></div>
-        {discoveredMedias.length > 0 && <>
-          <Navigator
-            forcePageChange={forcePageChange}
-            setForcePageChange={setForcePageChange}
-            currentPage={currentDPage}
-            disabled={loadingMedias === true}
-            pagesToShow={7}
-            numPages={totalDPages}
-            onChange={(pageNum)=>{setCurrentDPage(pageNum); scrollElementRef.current.scrollIntoView();}}
-          />
-          <div className="medias">
-            {discoveredMedias.map((media, i) => (
-              <MediaCover mediaType={lastDiscover.mediaType.value} showTitle data={media} key={`media${i}`} href={`/${lastDiscover.mediaType.value}/${media.id}`}/>
-            ))}
-          </div>
+        {pages && pages.length > 0 && <>
+          {pages.map( (page, p) => (
+            <div key={`page${p}`} className={`page page${p}`}>
+              <div className="medias">
+                {page.results.map((media, i) => (
+                  <MediaCover mediaType={lastDiscover.mediaType.value} showTitle data={media} key={`media${i}`} href={`/${lastDiscover.mediaType.value}/${media.id}`}/>
+                ))}
+              </div>
+            </div>
+          ))}
+          <button onClick={()=>{
+            loadPage(currentPage+1, formValues);
+            setCurrentPage(curr=>curr+1);
+          }}>Load more...</button>
         </>}
       </main>
 
