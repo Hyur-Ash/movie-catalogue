@@ -454,6 +454,7 @@ export default function Discover() {
           </div>
         </div>
         <div style={{height: "70px"}} ref={scrollElementRef}></div>
+        <div className="current-page" style={{fontSize:"2rem", color:"white"}}>{currentPage}</div>
         {pages && pages.length > 0 && <>
           {pages.map( (page, p) => (
             <div key={`page${p}`} className={`page page${p}`}>
