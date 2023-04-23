@@ -6,9 +6,10 @@ export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtrem
 
     const [sIndex, setSIndex] = useState(currentPage-1);
     const [pointI, setPointI] = useState(currentPage-1);
-    useEffect(()=>{
-        onChange(sIndex+1)
-    },[sIndex])
+    const changeSIndex = (value) => {
+        setSIndex(value);
+        onChange(value+1)
+    }
 
     useEffect(()=>{
         if(forcePageChange){
@@ -22,10 +23,10 @@ export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtrem
         if(!disabled){
             if(amount < 0){
                 amount = Math.abs(amount);
-                setSIndex(curr=>curr-amount>0?curr-amount:0);
+                changeSIndex(curr=>curr-amount>0?curr-amount:0);
                 setPointI(curr=>curr-amount>0?curr-amount:0);
             }else{
-                setSIndex(curr=>curr+amount<numPages?curr+amount:numPages-1);
+                changeSIndex(curr=>curr+amount<numPages?curr+amount:numPages-1);
                 setPointI(curr=>curr+amount<numPages-amount?curr+amount:numPages-amount);
             }
         }
@@ -35,17 +36,17 @@ export const Navigator = ({pagesToShow, numPages, onChange, disabled, goToExtrem
         <div className={`navigator ${disabled? 'disabled' : ''}`}>
             <div className="numbers">
                 {pagesToShow && <>
-                    {goToExtremes && <div className="number" onClick={()=>{setPointI(0); setSIndex(0)}}><FaAngleLeft/><FaAngleLeft/><FaAngleLeft/></div>}
+                    {goToExtremes && <div className="number" onClick={()=>{setPointI(0); changeSIndex(0)}}><FaAngleLeft/><FaAngleLeft/><FaAngleLeft/></div>}
                     <div className="number" onClick={()=>{navigate(-pagesToShow+1)}}><FaAngleLeft/><FaAngleLeft/></div>
                     <div className="number" onClick={()=>{navigate(-1)}}><FaAngleLeft/></div>
                 </>}
                 {Array.from(Array(pagesToShow-1).keys()).map( (n) => n < numPages && (
-                    <div key={`num${n}`} className={`number ${pointI + n === sIndex? 'active' : ''}`} onClick={()=>{setSIndex(pointI + n)}}>{pointI + n + 1}</div>
+                    <div key={`num${n}`} className={`number ${pointI + n === sIndex? 'active' : ''}`} onClick={()=>{changeSIndex(pointI + n)}}>{pointI + n + 1}</div>
                 ))}
                 {pagesToShow && <>
                     <div className="number" onClick={()=>{navigate(1)}}><FaAngleRight/></div>
                     <div className="number" onClick={()=>{navigate(pagesToShow-1)}}><FaAngleRight/><FaAngleRight/></div>
-                    {goToExtremes && <div className="number" onClick={()=>{setPointI(numPages-pagesToShow-1); setSIndex(numPages-1)}}><FaAngleRight/><FaAngleRight/><FaAngleRight/></div>}
+                    {goToExtremes && <div className="number" onClick={()=>{setPointI(numPages-pagesToShow-1); changeSIndex(numPages-1)}}><FaAngleRight/><FaAngleRight/><FaAngleRight/></div>}
                 </>}
             </div>
         </div>

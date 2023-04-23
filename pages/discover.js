@@ -1,3 +1,4 @@
+import STORE from '/lib/store.json';
 import Head from 'next/head';
 import {useState, useEffect, useContext, useRef} from 'react';
 import { Context } from '/lib/Context';
@@ -16,20 +17,21 @@ import Link from 'next/link';
 
 export default function Discover() {
 
+  const router = useRouter();
+  
+  const {languageCodes, movieGenres, tvGenres, sortValues} = STORE;
+
   const [isMounted, setIsMounted] = useState(false);
   useEffect(()=>{
     setIsMounted(true);
   },[]);
 
   const {
-    movieGenres, tvGenres, yearsContent, sortValues,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-    totalDPages, currentDPage, setCurrentDPage, 
-    translate, websiteLang, setWebsiteLang, languageCodes,
-    languagesOptions, fromValue, toValue,
+    tmdb_api_key, tmdb_main_url,
+    yearsContent,
+    loadingMedias, setLoadingMedias, properNames,
+    translate, websiteLang,
     isYearRange, setIsYearRange,
-    isVoteAverageRange, setIsVoteAverageRange,
-    isVoteCountRange, setIsVoteCountRange, setDiscoveredMedias,
   } = useContext(Context);
 
   const [genres, setGenres] = useState(movieGenres);
@@ -185,13 +187,106 @@ export default function Discover() {
     }));
   }
 
-  const handleVoteAverage = (dir, value) => {
-    
+  const [lastDiscover, setLastDiscover] = useLocalStorage('lastDiscover', null);
+  const [medias, setMedias] = useState([]);
+  const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 1);
+  const [totalPages, setTotalPages] = useState();
+  const discoverMedias = (formValues) => {
+      setLastDiscover(JSON.parse(JSON.stringify(formValues)));
+      setLoadingMedias(true);
+      loadPage(1, formValues, true);
   }
+  const loadPage = (pageNum, lastDiscover, resetMedias, scrollTop) => {
+    const currentNames = properNames[lastDiscover.mediaType.value];
+    const params = {
+        api_key: tmdb_api_key,
+        sort_by: `${lastDiscover.sortBy.value}.${lastDiscover.orderBy.value}`,
+        with_genres: `${lastDiscover.withGenres.map(e=>e.value).toString()}`,
+        without_genres: `${lastDiscover.withoutGenres.map(e=>e.value).toString()}`,
+        page: pageNum,
+        language: websiteLang,
+        with_original_language: lastDiscover.originalLanguage.value === 'any' ? '' : lastDiscover.originalLanguage.value,
+        ["vote_average.gte"]: lastDiscover.voteAverageFrom.value === 'any' ? '' : lastDiscover.voteAverageFrom.value.toString(),
+        ["vote_count.gte"]: lastDiscover.voteCountFrom.toString(),
+    }
+    if(lastDiscover.mediaType.value === 'movie'){
+        if(isVoteAverageRange){
+            params["vote_average.lte"] = lastDiscover.voteAverageTo.value === 'any' ? '' :lastDiscover.voteAverageTo.value.toString();
+        }
+        if(isVoteCountRange){
+            params["vote_count.lte"] = lastDiscover.voteCountTo.toString();
+        }
+    }
+    if(!isYearRange){
+        params[currentNames.primary_release_year] = lastDiscover.yearFrom.value;
+    }else{
+        params[currentNames["primary_release_date.gte"]] = lastDiscover.yearFrom.value.length > 0 ? lastDiscover.yearFrom.value : '0';
+        params[currentNames["primary_release_date.lte"]] = lastDiscover.yearTo.value.length > 0 ? lastDiscover.yearTo.value : '3000';
+    }
+    axios.get(`${tmdb_main_url}/discover/${lastDiscover.mediaType.value}`, {params})
+    .then(res=>{
+        console.log(res.data)
+        setMedias(curr => resetMedias ? res.data.results : [...curr, ...res.data.results] );
+        setCurrentPage(res.data.page);
+        setTotalPages(res.data.total_pages);
+        setLoadingMedias(Date.now());
+        if(scrollTop){
+          scrollElementRef.current.scrollIntoView();
+        }
+    })
+    .catch(err=>{
+        console.error(err);
+        setLoadingMedias(Date.now());
+    });
+  }
+  useEffect(()=>{
+      if(lastDiscover){
+        loadPage(currentPage, lastDiscover);
+      }
+  },[lastDiscover, websiteLang]);
+
+  const [isVoteAverageRange, setIsVoteAverageRange] = useLocalStorage('isVoteAverageRange', false);
+  const [isVoteCountRange, setIsVoteCountRange] = useLocalStorage('isVoteCountRange', false);
 
   const scrollElementRef = useRef();
 
+  // const [scrollPerc, setScrollPerc] = useState(0);
+  const [scrollPerc, setScrollPerc] = useState(0)
+  // useEffect(()=>{
+    // console.log(scrollPerc.current)
+// console.log(Date.now() - scrollAllowed.current, Date.now() - scrollAllowed.current > 5000)
+//     console.log(scrolled > 90, !isLoading.current, scrollAllowed.current < 4)
+//     if(scrolled > 90 && !isLoading.current && scrollAllowed.current < 4){
+//       setLoadingMedias(true);
+//       // loadPage(currentPage+1, lastDiscover);
+//       console.log('loading next page')
+//       scrollAllowed.current ++;;
+//     }
+  // },[scrollPerc.current])
+
+  const handleScroll = () => {
+    const {scrollTop, scrollHeight, clientHeight} = document.documentElement;
+    const winScroll = document.body.scrollTop || scrollTop;
+    const height = scrollHeight - clientHeight;
+    const scrolled = Math.round(winScroll / height * 100);
+    console.log('event')
+    if(scrolled > scrollPerc + 4){
+      setScrollPerc(scrolled)
+    }
+  }
+
+  useEffect(()=>{
+    document.addEventListener("scroll", handleScroll)
+  },[])
+
   const [forcePageChange, setForcePageChange] = useState(null);
+
+  const fromValue = (value) => {
+    return value.length > 0 ? parseInt(value) : 0;
+  }
+  const toValue = (value) => {
+      return value.length > 0 ? parseInt(value) : 3000;
+  }
 
   return isMounted && (<>
     <Head>
@@ -200,7 +295,7 @@ export default function Discover() {
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <Header />
-    <div className="my-container">
+    <div className="my-container" onClick={handleScroll}>
       
       <h2 className="page-title">{translate("Discover")}</h2>
 
@@ -384,23 +479,26 @@ export default function Discover() {
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias === true} onClick={()=>{discoverMedias(formValues); setForcePageChange(1)}}>{translate("Discover")}</button>
-            <button className="red" onClick={()=>{setFormValues(firstFormValues); setDiscoveredMedias([])}}>{translate("Reset")}</button>
+            <button disabled={loadingMedias === true} onClick={()=>{discoverMedias(formValues)}}>{translate("Discover")}</button>
+            <button className="red" onClick={()=>{setFormValues(firstFormValues); setMedias([])}}>{translate("Reset")}</button>
           </div>
         </div>
         <div style={{height: "70px"}} ref={scrollElementRef}></div>
-        {discoveredMedias.length > 0 && <>
+        {medias.length > 0 && <>
           <Navigator
             forcePageChange={forcePageChange}
             setForcePageChange={setForcePageChange}
-            currentPage={currentDPage}
+            currentPage={currentPage}
             disabled={loadingMedias === true}
             pagesToShow={7}
-            numPages={totalDPages}
-            onChange={(pageNum)=>{setCurrentDPage(pageNum); scrollElementRef.current.scrollIntoView();}}
+            numPages={totalPages}
+            onChange={(pageNum)=>{
+              console.log(pageNum)
+              loadPage(pageNum, lastDiscover, true, true); 
+            }}
           />
           <div className="medias">
-            {discoveredMedias.map((media, i) => (
+            {medias.map((media, i) => (
               <MediaCover mediaType={lastDiscover.mediaType.value} showTitle data={media} key={`media${i}`} href={`/${lastDiscover.mediaType.value}/${media.id}`}/>
             ))}
           </div>

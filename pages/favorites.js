@@ -24,11 +24,7 @@ export default function Favorites() {
   },[]);
 
   const {
-    movieGenres, tvGenres, yearsContent, sortValues,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-    totalDPages, setCurrentDPage, 
-    translate, websiteLang, setWebsiteLang,
-    languagesOptions, favorites, setFavorites
+    translate, favorites
   } = useContext(Context);
 
   const MediaSelect = ({value, onChange}) => {

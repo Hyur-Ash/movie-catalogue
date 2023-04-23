@@ -1,3 +1,4 @@
+import STORE from '/lib/store.json';
 import Head from 'next/head';
 import {useState, useEffect, useContext, useRef} from 'react';
 import { Context } from '/lib/Context';
@@ -14,7 +15,9 @@ import Header from '/components/Header';
 import {FaStar} from 'react-icons/fa';
 import Link from 'next/link';
 
-export default function Discover() {
+export default function Search() {
+
+  const router = useRouter();
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(()=>{
@@ -22,15 +25,12 @@ export default function Discover() {
   },[]);
 
   const {
-    movieGenres, tvGenres, yearsContent, sortValues,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-    totalSPages, currentSPage, setCurrentSPage, 
-    translate, websiteLang, setWebsiteLang, 
-    languagesOptions, isYearRange, setIsYearRange, searchedMedias, searchMedias, fromValue, toValue,
-    lastSearch
+    tmdb_api_key, tmdb_main_url,
+    yearsContent,
+    loadingMedias, setLoadingMedias, properNames,
+    translate, websiteLang,
+    isYearRange
   } = useContext(Context);
-
-  const [genres, setGenres] = useState(movieGenres);
 
   const formOptions = {
     mediaType: [
@@ -62,6 +62,44 @@ export default function Discover() {
   const scrollElementRef = useRef();
 
   const [forcePageChange, setForcePageChange] = useState(null);
+
+  const [lastSearch, setLastSearch] = useLocalStorage('lastSearch', null);
+    const [currentSPage, setCurrentSPage] = useLocalStorage('currentSPage', 1);
+    const [totalSPages, setTotalSPages] = useState();
+    const [searchedMedias, setSearchedMedias] = useState([]);
+    const searchMedias = (formValues) => {
+        setLastSearch(null);
+        setLastSearch(JSON.parse(JSON.stringify(formValues)));
+    }
+    useEffect(()=>{
+        if(router.pathname !== '/' || !lastSearch){
+            return;
+        }
+        const currentNames = properNames[lastSearch.mediaType.value];
+        setLoadingMedias(Date.now());
+        const params = {
+            api_key: tmdb_api_key,
+            query: lastSearch.query.trim().length > 0 ? lastSearch.query : tmdb_api_key,
+            page: currentSPage,
+            language: websiteLang,
+            [currentNames.primary_release_year]: lastSearch.year.value
+        }
+
+        console.log(params)
+       
+        axios.get(`${tmdb_main_url}/search/${lastSearch.mediaType.value}`, {params})
+        .then(res=>{
+            console.log(res.data)
+            setSearchedMedias(res.data.results);
+            setCurrentSPage(res.data.page)
+            setTotalSPages(res.data.total_pages);
+            setLoadingMedias(Date.now());
+        })
+        .catch(err=>{
+            console.error(err);
+            setLoadingMedias(Date.now());
+        });
+    },[lastSearch, currentSPage, websiteLang, router]);
 
   return isMounted && (<>
     <Head>

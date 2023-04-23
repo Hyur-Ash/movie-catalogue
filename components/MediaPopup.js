@@ -24,10 +24,8 @@ export const MediaPopup = ({mediaType, id}) => {
 
     const {
         tmdb_main_url, tmdb_api_key,
-        movieGenres, tvGenres, yearsContent, sortValues,
-        discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-        totalDPages, setCurrentDPage,
-        translate, websiteLang, setWebsiteLang, languagesOptions, originLink, properNames
+        loadingMedias, setLoadingMedias, properNames, originLink,
+        translate, websiteLang, setWebsiteLang, languagesOptions
     } = useContext(Context);
 
     const currentNames = properNames[mediaType];
@@ -89,6 +87,49 @@ export const MediaPopup = ({mediaType, id}) => {
         loadSingleMedia(mediaType, id);
         loadMediaVideos(mediaType, id, websiteLang)
     },[websiteLang]);
+    
+
+    const [singleMedia, setSingleMedia] = useState(null);
+    const [lastSingleDiscover, setLastSingleDiscover] = useState(null);
+
+    const loadSingleMedia = (media, id) => {
+        setLastSingleDiscover({media, id});
+    }
+    useEffect(()=>{
+        if((router.pathname !== '/movie/[id]' && router.pathname !== '/tv/[id]') || lastSingleDiscover === null){
+            return;
+        }else{
+            setLoadingMedias(true);
+            const params = {
+                api_key: tmdb_api_key,
+                language: websiteLang,
+            }
+            const {media, id} = lastSingleDiscover;
+            setLastSingleDiscover(null);
+            axios.get(`${tmdb_main_url}/${media}/${id}`, {params})
+            .then(res=>{
+                const langVersion = res.data;
+                console.log(res.data)
+                params.language = 'en';
+                axios.get(`${tmdb_main_url}/${media}/${id}`, {params})
+                .then(res=>{
+                    setSingleMedia({
+                        [websiteLang]: langVersion,
+                        en: res.data
+                    });
+                    setLoadingMedias(Date.now());
+                })
+                .catch(err=>{
+                    console.error(err);
+                    setLoadingMedias(Date.now());
+                });
+            })
+            .catch(err=>{
+                console.error(err);
+                setLoadingMedias(Date.now());
+            });
+        }
+    },[lastSingleDiscover, websiteLang]);
 
     return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&

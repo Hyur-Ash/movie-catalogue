@@ -35,7 +35,7 @@ function MyApp({ Component, pageProps }) {
 
   return isMounted && version === appVersion && (<>
       <ContextProvider>
-        <Component {...pageProps} />
+        <Component {...pageProps}/>
       </ContextProvider>
         <ToastContainer
           position="top-right"

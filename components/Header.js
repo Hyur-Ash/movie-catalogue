@@ -24,11 +24,7 @@ export default function Header({data, showTitle, href, withDeleteIcon}){
     },[]);
 
     const {
-        movieGenres, tvGenres, yearsContent, sortValues,
-        discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-        totalDPages, currentDPage, setCurrentDPage, 
-        translate, websiteLang, setWebsiteLang, 
-        languagesOptions, isYearRange, setIsYearRange,
+        translate, websiteLang, setWebsiteLang, languagesOptions,
     } = useContext(Context);
 
     const menuVoices = [

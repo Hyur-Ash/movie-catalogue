@@ -68,7 +68,7 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
       const [mainPicLoaded, setMainPicLoaded] = useState(false);
       return (<>
         <div className="cover">
-          <div style={{opacity: mainPicLoaded ? 0 : 1}} id={`thumbnail_${data.id}`} className="thumbnail"><AiOutlineLoading className="loader"/></div>
+          {/* <div style={{opacity: mainPicLoaded ? 0 : 1}} id={`thumbnail_${data.id}`} className="thumbnail"><AiOutlineLoading className="loader"/></div> */}
           {thumbnailLoaded && loadingMedias !== true && <>
             <div className={`icon-container ${favoritesIncludes(data.id)? withDeleteIcon? 'hide' : '' : 'hide'}`}>
               {favoritesIncludes(data.id) ?
