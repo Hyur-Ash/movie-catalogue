@@ -73,11 +73,23 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
             <div className={`icon-container ${favoritesIncludes(data.id)? withDeleteIcon? 'hide' : '' : 'hide'}`}>
               {favoritesIncludes(data.id) ?
                 withDeleteIcon ? 
-                  <FaTrash className="is-favorites trash" onClick={()=>{removeFavorite(data.id)}}/>
+                  <FaTrash className="is-favorites trash" onClick={(e)=>{
+                    e.stopPropagation();
+                    e.preventDefault();
+                    removeFavorite(data.id);
+                  }}/>
                   :
-                  <FaStar className="is-favorites" onClick={()=>{removeFavorite(data.id)}}/>
+                  <FaStar className="is-favorites" onClick={(e)=>{
+                    e.stopPropagation();
+                    e.preventDefault();
+                    removeFavorite(data.id)
+                  }}/>
                 :
-                <FaRegStar className="add-favorites" onClick={()=>{addFavorite(data)}}/>
+                <FaRegStar className="add-favorites" onClick={(e)=>{
+                  e.stopPropagation();
+                  e.preventDefault();
+                  addFavorite(data);
+                }}/>
               }
             </div>
             {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
