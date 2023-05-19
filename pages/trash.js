@@ -29,7 +29,7 @@ export default function Favorites() {
     languagesOptions, setFavorites, currentUser
   } = useContext(Context);
 
-  const favorites = currentUser?.favorites ?? {movie: [], tv: []};
+  const trashed = currentUser?.trashed ?? {movie: [], tv: []};
 
   const router = useRouter();
   useEffect(()=>{
@@ -52,19 +52,19 @@ export default function Favorites() {
   return isMounted && currentUser && (<>
     <Header />
     <div className="my-container">
-        <h2 className="page-title">{translate("Favorites")}</h2>
+        <h2 className="page-title">{translate("Trash")}</h2>
         <main>
             <MediaSelect value={selectedMedia} onChange={(mediaType)=>{setSelectedMedia(mediaType)}}/>
 
             <div className="media-group">
-                {favorites[selectedMedia].length === 0 ?
+                {trashed[selectedMedia].length === 0 ?
                     <div className="message">
-                        <h3>{translate(`You have no favorite ${selectedMedia === 'movie' ? 'Movies' : 'TV Shows'}.`)}</h3>
+                        <h3>{translate(`You have no trashed ${selectedMedia === 'movie' ? 'Movies' : 'TV Shows'}.`)}</h3>
                         <Link className="c-button" href="/discover">{translate("Discover")}</Link>
                     </div>
                 :
                     <div className="medias">
-                        {favorites[selectedMedia].map((media, i) => (
+                        {trashed[selectedMedia].map((media, i) => (
                             <MediaCover 
                               mediaType={selectedMedia} 
                               showTitle 

@@ -1,4 +1,4 @@
-import {useState, useContext, useEffect} from 'react';
+import {useState, useContext, useEffect, useRef, Fragment} from 'react';
 import { Context } from '/lib/Context';
 import moment from 'moment';
 import Link from 'next/link';
@@ -7,20 +7,21 @@ import {AiOutlineLoading} from 'react-icons/ai';
 import {useRouter} from 'next/router';
 import noImage from '/public/img/not-found.jpg';
 
-export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, showStatus}) => {
+export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page}) => {
 
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(()=>{
-    setIsMounted(true);
-  },[]);
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(()=>{
+      setIsMounted(true);
+    },[]);
 
     const tmdb_main_url_img_low = "https://www.themoviedb.org/t/p/w220_and_h330_face";
 
     const router = useRouter();
 
     const {
-        translate, favorites, setFavorites, setOriginLink, properNames, loadingMedias
+        translate, setFavorites, setTrash, setOriginLink, properNames, loadingMedias, favorites, trashed
     } = useContext(Context);
+
 
     const currentNames = properNames[mediaType];
 
@@ -41,14 +42,12 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
     }
 
     const addFavorite = (data) => {
-      setFavorites(curr=>{
-        return {
-          ...curr,
-          [mediaType]: [
-            ...curr[mediaType],
-            data
-          ]
-        }
+      setFavorites({
+        ...favorites,
+        [mediaType]: [
+          ...favorites[mediaType],
+          data
+        ]
       })
     }
     
@@ -63,6 +62,40 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
       setFavorites(curr);
     }
 
+
+    const trashIncludes = (id) => {
+      let isIncluded = false;
+      if(trashed && trashed[mediaType]){
+        trashed[mediaType].forEach(media=>{
+          if(media.id === id){
+            isIncluded = true;
+          }
+        });
+      }
+      return isIncluded;
+    }
+
+    const addTrash = (data) => {
+      setTrash({
+        ...trashed,
+        [mediaType]: [
+          ...trashed[mediaType],
+          data
+        ]
+      });
+    }
+    
+    const removeTrash = (id) => {
+      const curr = {...trashed};
+      curr[mediaType].forEach((media, i)=>{
+        if(media.id===id){
+          curr[mediaType].splice(i, 1);
+          return;
+        }
+      });
+      setTrash(curr);
+    }
+
     const Content = () => {
       const [thumbnailLoaded, setThumbnailloaded] = useState(true);
       const [mainPicLoaded, setMainPicLoaded] = useState(false);
@@ -70,28 +103,40 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
         <div className="cover">
           <div style={{opacity: mainPicLoaded ? 0 : 1}} id={`thumbnail_${data.id}`} className="thumbnail"><AiOutlineLoading className="loader"/></div>
           {thumbnailLoaded && loadingMedias !== true && <>
-            <div className={`icon-container ${favoritesIncludes(data.id)? withDeleteIcon? 'hide' : '' : 'hide'}`}>
-              {favoritesIncludes(data.id) ?
-                withDeleteIcon ? 
-                  <FaTrash className="is-favorites trash" onClick={(e)=>{
-                    e.stopPropagation();
-                    e.preventDefault();
-                    removeFavorite(data.id);
-                  }}/>
-                  :
-                  <FaStar className="is-favorites" onClick={(e)=>{
-                    e.stopPropagation();
-                    e.preventDefault();
-                    removeFavorite(data.id)
-                  }}/>
+            {!trashIncludes(data.id) && <>
+              <div className={`icon-container ${favoritesIncludes(data.id) ? '' : 'hide'}`}>
+                {favoritesIncludes(data.id) ?
+                    <FaStar className="is-favorites" onClick={(e)=>{
+                      e.stopPropagation();
+                      e.preventDefault();
+                      removeFavorite(data.id)
+                    }}/>
                 :
-                <FaRegStar className="add-favorites" onClick={(e)=>{
-                  e.stopPropagation();
-                  e.preventDefault();
-                  addFavorite(data);
-                }}/>
-              }
-            </div>
+                    <FaRegStar className="add-favorites" onClick={(e)=>{
+                      e.stopPropagation();
+                      e.preventDefault();
+                      addFavorite(data);
+                    }}/>
+                }
+              </div>
+            </>}
+            {!favoritesIncludes(data.id) && <>
+              <div className={`icon-container trash ${trashIncludes(data.id) ? '' : 'hide'}`}>
+                {trashIncludes(data.id) ?
+                    <FaTrash className="is-favorites trash" onClick={(e)=>{
+                      e.stopPropagation();
+                      e.preventDefault();
+                      removeTrash(data.id)
+                    }}/>
+                :
+                    <FaTrash className="add-favorites" onClick={(e)=>{
+                      e.stopPropagation();
+                      e.preventDefault();
+                      addTrash(data);
+                    }}/>
+                }
+              </div>
+            </>}
             {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
               <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
               <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
@@ -120,20 +165,25 @@ export const MediaCover = ({data, showTitle, href, withDeleteIcon, mediaType, sh
       </>)
     }
 
-    return isMounted && mediaType && (<>
-    {href ? 
-      <Link href={href} className="media clickable" onClick={(e)=>{
-        if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
-          e.preventDefault();
-        }else{
-          setOriginLink(router.route);
-        }
-      }}>
-        <Content/>
-      </Link>
-    :
-      <div className="media">
-        <Content/>
-      </div>
-    }</>)
+    const contentRef = useRef();
+
+    return isMounted && mediaType && (
+    <div className={`media-container ${page ? `page${page}` : ""}`} ref={contentRef}>
+      {href ? 
+        <Link href={href} className="media clickable" onClick={(e)=>{
+          if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
+            e.preventDefault();
+          }else{
+            setOriginLink(router.route);
+          }
+        }}>
+          <Content/>
+        </Link>
+      :
+        <div className="media">
+          <Content/>
+        </div>
+      }
+    </div>
+    )
   }

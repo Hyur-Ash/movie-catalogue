@@ -10,7 +10,7 @@ import {useLocalStorage} from '/lib/useLocalStorage';
 import {useRouter} from 'next/router';
 import moment from 'moment';
 import {MediaCover} from '/components/MediaCover';
-import {FaStar, FaFilm, FaSearch} from 'react-icons/fa';
+import {FaStar, FaFilm, FaSearch, FaTrash} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 
@@ -32,9 +32,10 @@ export default function Header({data, showTitle, href, withDeleteIcon}){
     } = useContext(Context);
 
     const menuVoices = [
-        {name: translate("Search"), href: '/', icon: <FaSearch className="icon"/>},
+        {name: translate("Search"), href: '/search', icon: <FaSearch className="icon"/>},
         {name: translate("Discover"), href: '/discover', icon: <FaFilm className="icon"/>},
         {name: translate("Favorites"), href: '/favorites', icon: <FaStar className="icon"/>},
+        {name: translate("Trash"), href: '/trash', icon: <FaTrash className="icon"/>},
     ]
 
     return isMounted && (

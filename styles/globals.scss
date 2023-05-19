@@ -30,6 +30,7 @@ a {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scroll-behavior: instant !important;
 }
 
 .my-container{
@@ -376,6 +377,10 @@ header{
   padding: .3rem;
   border-radius: 50%;
   z-index: 2;
+  &.trash{
+    left: .5rem;
+    right: unset;
+  }
 }
 
 .add-favorites, .is-favorites{

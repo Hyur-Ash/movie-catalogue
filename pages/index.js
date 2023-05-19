@@ -27,41 +27,20 @@ export default function Discover() {
     totalSPages, currentSPage, setCurrentSPage, 
     translate, websiteLang, setWebsiteLang, 
     languagesOptions, isYearRange, setIsYearRange, searchedMedias, searchMedias, fromValue, toValue,
-    lastSearch
+    lastSearch,
+    users, setUsers, currentUser, setCurrentUser, currentUserIndex, setCurrentUserIndex
   } = useContext(Context);
 
-  const [genres, setGenres] = useState(movieGenres);
-
-  const formOptions = {
-    mediaType: [
-      {value: 'movie', label: translate('Movie')},
-      {value: 'tv', label: translate('TV Show')}
-    ],
-    query: '',
-    years: [{value: "", label: translate("Any")}, ...yearsContent.map(g=>({value: g.id, label: g.name}))],
-  };
-
-  const [formValues, setFormValues] = useLocalStorage('searchValues', {
-    mediaType: formOptions.mediaType[0],
-    query: '',
-    year: formOptions.years[0],
+  const [formValues, setFormValues] = useState({
+    userName: "",
+    password: ""
   });
-
-  useEffect(()=>{
-    setFormValues(curr=>({
-        ...curr,
-        mediaType: formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0],
-        year: formOptions.years.filter(m=>m.value===curr.year.value)[0],
-    }));
-  },[websiteLang]) 
 
   const changeFormValue = (key, value) => {
     setFormValues(curr=>({...curr, [key]: value}));
   }
 
-  const scrollElementRef = useRef();
-
-  const [forcePageChange, setForcePageChange] = useState(null);
+  const [subscribeMode, setSubscribeMode] = useLocalStorage("subscribeMode", false);
 
   return isMounted && (<>
     <Head>
@@ -69,68 +48,83 @@ export default function Discover() {
       <meta name="description" content="Created by Hyur" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Header />
+    {currentUser && <Header />}
     <div className="my-container">
       
-      <h2 className="page-title">{translate("Search")}</h2>
+        {currentUserIndex === null && <>
+            <h2 className="page-title">{subscribeMode ? translate("Subscribe") : translate("Log In")}</h2>
+            <button onClick={()=>{setSubscribeMode(!subscribeMode)}}>
+                {subscribeMode ? translate("Already subscribed") : translate("New here")}?
+            </button>
 
-      <main>
-        <div className="form">
-          <div className="form-group">
-            <label>{translate("Media type")}</label>
-            <Select
-              instanceId={"mediaType"} 
-              options={formOptions.mediaType}
-              value={formValues.mediaType}
-              onChange={(e)=>{changeFormValue('mediaType', e)}}
-              isSearchable={false}
-              />
-          </div>
-          <div className="form-group">
-            <label className="year-label">
-              {translate("Year")}
-            </label>
-              <Select
-                className={isYearRange? 'half' : ''}
-                instanceId={"year"} 
-                options={formOptions.years}
-                value={formValues.year}
-                onChange={(e)=>{changeFormValue('year', e)}}
-                placeholder={translate("Select...")}
-              />
-          </div>
-          <div className="form-group">
-            <label></label>
-            <Input
-              type="text"
-              value={formValues.query}
-              onChange={(e)=>{changeFormValue('query', e.target.value);}}
-            />
-          </div>
-          <div className="form-group submit">
-            <button disabled={loadingMedias === true} onClick={()=>{searchMedias(formValues); setForcePageChange(1)}}>{translate("Search")}</button>
-          </div>
-        </div>
-        <div ref={scrollElementRef}></div>
-        {searchedMedias.length > 0 ? <>
-          <Navigator
-            forcePageChange={forcePageChange}
-            setForcePageChange={setForcePageChange}
-            currentPage={currentSPage}
-            disabled={loadingMedias === true}
-            pagesToShow={7}
-            numPages={totalSPages}
-            onChange={(pageNum)=>{setCurrentSPage(pageNum); scrollElementRef.current.scrollIntoView();}}
-          />
-          <div className="medias">
-            {searchedMedias.map((media, i) => (
-              <MediaCover mediaType={lastSearch.mediaType.value} showTitle data={media} key={`media${i}`} href={`/${lastSearch.mediaType.value}/${media.id}`}/>
-            ))}
-          </div>
-        </>:
-          <div className="message"><h2>{translate("No results found.")}</h2></div>
-        }
-      </main>
+            <main>
+                <div className="form">
+                    <div className="form-group">
+                        <label>Username</label>
+                        <Input
+                            type="text"
+                            value={formValues.userName}
+                            onChange={(e)=>{changeFormValue('userName', e.target.value);}}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Password</label>
+                        <Input
+                            type="password"
+                            value={formValues.password}
+                            onChange={(e)=>{changeFormValue('password', e.target.value);}}
+                        />
+                    </div>
+                    <div className="form-group submit">
+                        <button 
+                            disabled={formValues.userName.trim().length === 0 || formValues.password.length === 0}
+                            onClick={()=>{
+                                if(subscribeMode){
+                                    let isAlreadyExisting = false;
+                                    // console.log(users);
+                                    // return;
+                                    users.forEach(user => {
+                                        if(user.userName === formValues.userName.trim()){
+                                            isAlreadyExisting = true;
+                                        }
+                                    });
+                                    if(isAlreadyExisting){
+                                        alert("User is already existing.");
+                                        return;
+                                    }
+                                    setUsers([...users, {
+                                        userName: formValues.userName.trim(),
+                                        password: formValues.password
+                                    }]);
+                                    setFormValues({userName: "", password: ""});
+                                    alert("User successfully created!");
+                                }else{
+                                    let userIndex = null;
+                                    users.forEach( (user, i) => {
+                                        if(user.userName === formValues.userName.trim() && user.password === formValues.password){
+                                            userIndex = i;
+                                        }
+                                    });
+                                    if(userIndex === null){
+                                        alert("User not found.");
+                                        return;
+                                    }
+                                    setCurrentUserIndex(userIndex);
+                                }
+                            }}
+                        >
+                            {subscribeMode ? translate("Subscribe") : translate("Log In")}
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </>}
+        {currentUser && <>
+            <h2 className="page-title">{translate("Welcome")} {currentUser.userName} !</h2>
+            <button onClick={()=>{setCurrentUserIndex(null)}}>
+                {translate("Log out")}
+            </button>
+        </>}
 
     </div>
   </>)
