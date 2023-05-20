@@ -437,7 +437,8 @@
         "ru": "Поиск"
     },
     "Hyur's Media Library":{
-        "it": "Mediateca di Hyur"
+        "it": "La tua Mediateca",
+        "en": "Your Media Library"
     },
     "upcoming":{
         "it": "in arrivo"
@@ -514,6 +515,12 @@
     "You have no favorite TV Shows.":{
         "it": "Non hai Serie TV preferite."
     },
+    "You have no trashed Movies.":{
+        "it": "Non hai Film cestinati."
+    },
+    "You have no trashed TV Shows.":{
+        "it": "Non hai Serie TV cestinate."
+    },
     "From":{
         "it": "Da"
     },
@@ -573,6 +580,31 @@
     },
     "Reset":{
         "it": "Azzera"
-    }                       
+    },
+    "Trash":{
+        "it": "Cestino"
+    },
+    "Are you sure?":{
+        "it": "Sei sicuro?"
+    },
+    "Cancel":{
+        "it": "Annulla"
+    },
+    "Empty movie trash":{
+        "it": "Svuota Film cestinati",
+        "en": "Empty Movie Trash"
+    }, 
+    "Empty tv trash":{
+        "it": "Svuota Serie TV cestinate",
+        "en": "Empty TV Show Trash"
+    }, 
+    "Empty movie favorites":{
+        "it": "Svuota Film preferiti",
+        "en": "Empty Movie Favorites"
+    }, 
+    "Empty tv favorites":{
+        "it": "Svuota Serie TV preferite",
+        "en": "Empty TV Show Favorites"
+    }                               
 }
 }

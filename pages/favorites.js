@@ -26,10 +26,8 @@ export default function Favorites() {
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalDPages, setCurrentDPage, 
     translate, websiteLang, setWebsiteLang,
-    languagesOptions, setFavorites, currentUser
+    languagesOptions, setFavorites, currentUser, favorites
   } = useContext(Context);
-
-  const favorites = currentUser?.favorites ?? {movie: [], tv: []};
 
   const router = useRouter();
   useEffect(()=>{
@@ -48,11 +46,31 @@ export default function Favorites() {
   }
 
   const [selectedMedia, setSelectedMedia] = useLocalStorage('selectedMedia', 'movie');
+  const [emptyFavoritesMode, setEmptyFavoritesMode] = useState(false);
 
   return isMounted && currentUser && (<>
     <Header />
     <div className="my-container">
         <h2 className="page-title">{translate("Favorites")}</h2>
+        <div style={{height: "100px"}}>
+          {favorites[selectedMedia].length > 0 && <>
+              {!emptyFavoritesMode &&
+                <button onClick={()=>{setEmptyFavoritesMode(true)}}>{translate(`Empty ${selectedMedia} favorites`)}</button>
+              }
+              {emptyFavoritesMode && <>
+                <h3 style={{color: "white", marginBottom: "1.5rem"}}>{translate("Are you sure?")}</h3>
+                <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
+                  <button onClick={()=>{setEmptyFavoritesMode(false)}}>{translate("Cancel")}</button>
+                  <button onClick={()=>{
+                    const newFavs = JSON.parse(JSON.stringify(favorites));
+                    newFavs[selectedMedia] = [];
+                    setFavorites(newFavs);
+                    setEmptyFavoritesMode(false);
+                  }}>{translate(`Empty ${selectedMedia} favorites`)}</button>
+                </div>
+              </>}
+            </>}
+        </div>
         <main>
             <MediaSelect value={selectedMedia} onChange={(mediaType)=>{setSelectedMedia(mediaType)}}/>
 

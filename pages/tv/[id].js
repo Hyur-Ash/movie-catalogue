@@ -1,4 +1,3 @@
-import {useState, useEffect} from 'react';
 import {useRouter} from 'next/router';
 import {MediaPopup} from '/components/MediaPopup';
 import {useState, useEffect, useContext} from 'react';

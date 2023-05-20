@@ -37,7 +37,7 @@ export default function Discover() {
 
   const [scrollerConfig, setScrollerConfig] = useState(null);
   const changeScrollerConfig = async (formValues) => {
-        
+
     const tmdb_api_key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
     const FV = JSON.parse(JSON.stringify(formValues));
@@ -67,6 +67,7 @@ export default function Discover() {
         params[currentNames["primary_release_date.lte"]] = FV.yearTo.value.length > 0 ? FV.yearTo.value : '3000';
     }
     setScrollerConfig({params, mediaType: FV.mediaType.value});
+
   }
 
   return isMounted && currentUser && (<>
@@ -83,7 +84,6 @@ export default function Discover() {
       <main>
         <DiscoverForm 
           onSubmit={formValues => {
-            setScrollerConfig(null);
             changeScrollerConfig(formValues);
           }}
         />

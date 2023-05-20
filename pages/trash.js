@@ -26,10 +26,8 @@ export default function Favorites() {
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalDPages, setCurrentDPage, 
     translate, websiteLang, setWebsiteLang,
-    languagesOptions, setFavorites, currentUser
+    languagesOptions, setFavorites, currentUser, setTrash, trashed,
   } = useContext(Context);
-
-  const trashed = currentUser?.trashed ?? {movie: [], tv: []};
 
   const router = useRouter();
   useEffect(()=>{
@@ -48,11 +46,31 @@ export default function Favorites() {
   }
 
   const [selectedMedia, setSelectedMedia] = useLocalStorage('selectedMedia', 'movie');
+  const [emptyTrashMode, setEmptyTrashMode] = useState(false);
 
   return isMounted && currentUser && (<>
     <Header />
     <div className="my-container">
         <h2 className="page-title">{translate("Trash")}</h2>
+        <div style={{height: "100px"}}>
+          {trashed[selectedMedia].length > 0 && <>
+              {!emptyTrashMode &&
+                <button onClick={()=>{setEmptyTrashMode(true)}}>{translate(`Empty ${selectedMedia} trash`)}</button>
+              }
+              {emptyTrashMode && <>
+                <h3 style={{color: "white", marginBottom: "1.5rem"}}>{translate("Are you sure?")}</h3>
+                <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
+                  <button onClick={()=>{setEmptyTrashMode(false)}}>{translate("Cancel")}</button>
+                  <button onClick={()=>{
+                    const newTrashed = JSON.parse(JSON.stringify(trashed));
+                    newTrashed[selectedMedia] = [];
+                    setTrash(newTrashed);
+                    setEmptyTrashMode(false);
+                  }}>{translate(`Empty ${selectedMedia} trash`)}</button>
+                </div>
+              </>}
+            </>}
+        </div>
         <main>
             <MediaSelect value={selectedMedia} onChange={(mediaType)=>{setSelectedMedia(mediaType)}}/>
 

@@ -13,36 +13,52 @@ import {MediaCover} from '/components/MediaCover';
 import {FaStar, FaFilm, FaSearch, FaTrash} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
+import {AiOutlineLoading} from 'react-icons/ai';
 
 export default function MovieScroller({config, hideTrash}){
 
     const router = useRouter();
+
+    const {
+        websiteLang
+    } = useContext(Context);
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
         setIsMounted(true);
     },[]);
 
-    const {
-        trashed
-    } = useContext(Context);
-
-    const trashIncludes = (id) => {
-        let isIncluded = false;
-        if(trashed && trashed[configRef.current.mediaType]){
-          trashed[configRef.current.mediaType].forEach(media=>{
-            if(media.id === id){
-              isIncluded = true;
-            }
-          });
+    const [configCopy, setConfigCopy] = useState(config);
+    const configRef = useRef(config);
+    useEffect(()=>{
+        setConfigCopy(config);
+    },[config]);
+    useEffect(()=>{
+        configRef.current = configCopy;
+        if(!isLoading && configRef.current){
+            setMediaPages([]);
+            loadPages(1, 5, []);
         }
-        return isIncluded;
-      }
+    },[configCopy]);
+
+    useEffect(()=>{
+        if(configCopy && websiteLang !== configCopy.language){
+            setConfigCopy({
+                ...configCopy,
+                params: {
+                    ...configCopy.params,
+                    language: websiteLang 
+                }
+            });
+        }
+    },[websiteLang])
 
     const [mediaPages, setMediaPages] = useState([]);
     const mediaPagesRef = useRef();
     mediaPagesRef.current = mediaPages;
-    const isLoading = useRef(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const isLoadingRef = useRef(false);
+    isLoadingRef.current = isLoading;
     const getPage = async (pageNum) => {
         const tmdb_main_url = "https://api.themoviedb.org/3";
         const params = {page: pageNum, ...configRef.current.params};
@@ -50,9 +66,6 @@ export default function MovieScroller({config, hideTrash}){
             const res = await axios.get(`${tmdb_main_url}/discover/${configRef.current.mediaType}`, {params});
             const results = [];
             res.data.results.forEach(result => {
-                if(hideTrash && trashIncludes(result.id)){
-                    return;
-                }
                 results.push({...result, page: pageNum});
             });
             return {...res.data, results};
@@ -61,30 +74,14 @@ export default function MovieScroller({config, hideTrash}){
         }
     }
     const loadPages = async (start, step, startPages) => {
+        setIsLoading(true)
         const pages = JSON.parse(JSON.stringify(startPages));
         for(let i=start; i<start+step; i++){
             pages.push(await getPage(i));
         }
         setMediaPages(pages);
+        setTimeout(()=>{setIsLoading(false)}, 1000);
     }
-
-    useEffect(()=>{
-        setMediaPages(curr => {
-            const pages = JSON.parse(JSON.stringify(curr));
-            pages.forEach(page => {
-                page.results = page.results.filter(media => !trashIncludes(media.id));
-            });
-            return pages;
-        })
-    },[trashed])
-
-    const configRef = useRef(config);
-    useEffect(()=>{
-        configRef.current = config;
-        if(!isLoading.current && configRef.current){
-            loadPages(1, 5, []);
-        }
-    },[config])
 
     useEffect(()=>{
         console.log(mediaPages)
@@ -94,20 +91,20 @@ export default function MovieScroller({config, hideTrash}){
     
     useEffect(()=>{
         window.addEventListener("scroll", async () => {
-            if(isLoading.current || !endScrollRef || !endScrollRef.current){return;}
+            const loading = isLoadingRef.current;
+            if(loading || !endScrollRef || !endScrollRef.current){return;}
             const endScrolLPos = endScrollRef.current.getBoundingClientRect();
             const isVisible = endScrolLPos.top < window.innerHeight && endScrolLPos.bottom > 0;
             const pages = JSON.parse(JSON.stringify(mediaPagesRef.current));
             if(!isVisible || !configRef.current){return;}
-            isLoading.current = true;
             const lastPage = pages[pages.length - 1];
             if(!lastPage || !lastPage.results || lastPage.results.length === 0){
                 return;
             }
             window.scrollBy({top: -50, behavior: 'instant'});
+            console.log("going to load pages by scroll")
             await loadPages(lastPage.page, 5, pages);
             window.scrollBy({top: 50, behavior: 'instant'});
-            setTimeout(()=>{isLoading.current = false;}, 1000);
         })
     },[])
 
@@ -130,23 +127,26 @@ export default function MovieScroller({config, hideTrash}){
               ))}
             </div>
           </>} */}
-          {mediaPages.length > 0 &&
+          {configRef.current && mediaPages.length > 0 &&
             <div className="medias">
                 {mediaPages.map((mediaPage, pageIndex) => mediaPage && (
                     <MediaPage 
                         key={`page${pageIndex}`} 
                         mediaPage={mediaPage} 
-                        mediaType={config.mediaType}
+                        mediaType={configRef.current.mediaType}
+                        hideTrash={hideTrash}
                     />
                 ))}
             </div>
           }
         </div>
-        <div className="end-scroll" ref={endScrollRef}></div>
+        <div className={`end-scroll ${isLoading ? "loading" : ""}`} ref={endScrollRef}>
+            <AiOutlineLoading className="loader"/>
+        </div>
     </>)
 }
 
-const MediaPage = ({mediaType, mediaPage}) => {
+const MediaPage = ({mediaType, mediaPage, hideTrash}) => {
     return (<>
         {mediaPage.results.map((media, i) => (
             <MediaCover
@@ -157,9 +157,7 @@ const MediaPage = ({mediaType, mediaPage}) => {
                 showTitle 
                 data={media} 
                 href={`/${mediaType}/${media.id}`}
-                onDelete={()=>{
-
-                }}
+                hideTrash={hideTrash}
             />
         ))}
     </>)
