@@ -386,6 +386,54 @@ header{
   }
 }
 
+.general-info{
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
+  .voice{
+    display: flex;
+    flex-direction: column;
+  }
+  @media screen and (max-width: 1000px){
+    font-size: .8em;
+  }
+  @media screen and (max-width: 400px){
+    font-size: 1em;
+  }
+}
+
+.credits-container{
+  display: flex;
+  gap: 2rem;
+  width: 800px;
+  max-width: 100%;
+  margin: auto;
+  @media screen and (max-width: 1000px){
+    flex-direction: column;
+    gap: 1rem;
+  }
+  margin-top: 1rem;
+  .credits{
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+    width: 50%;
+    @media screen and (max-width: 1000px){
+      width: 100%;
+      gap: 1rem;
+    }
+    .voice{
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.overview{
+  width: 800px;
+  max-width: 100%;
+  margin: auto;
+}
 
 .icon-container{
   position: absolute;
@@ -427,6 +475,23 @@ header{
   align-self: flex-start;
 }
 
+.socials{
+  display: flex;
+  gap: .75em;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 1.5rem;
+  img{
+    width: 22px;
+  }
+  @media screen and (max-width: 1000px){
+    font-size: 1.25rem;
+    img{
+      width: 22px;
+    }
+  }
+}
+
 .single-media{
   h3{
     font-size: 1.5em;
@@ -449,8 +514,20 @@ header{
       float: left;
       margin-right: 1rem;
       max-width: 250px;
-      @media screen and (max-width: 1000px){
-        max-width: 150px;
+    }
+    @media screen and (max-width: 400px){
+      display: flex;
+      flex-direction: column;
+      .media-container{
+        display: flex;
+        justify-content: center;
+        .media{
+          width: 100%;
+          float: unset;
+        }
+      }
+      .general-info{
+        margin-top: 1rem;
       }
     }
   }

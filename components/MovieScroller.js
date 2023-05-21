@@ -19,6 +19,26 @@ export default function MovieScroller({config, hideTrash}){
 
     const router = useRouter();
 
+    const scrollToId = async (id) => {
+        let tests = 0;
+        let mediaCover;
+        while(!mediaCover && tests < 100){
+            mediaCover = await new Promise(resolve => setTimeout(() => {
+                resolve(document.querySelector(`.media-id-${id}`));
+            }, 50));
+            tests++;
+        }
+        if(mediaCover){
+            mediaCover.scrollIntoView({ behavior: 'smooth', block: 'center'});
+            router.replace(router.pathname, undefined, { shallow: true });
+        }
+    }
+    
+
+    if(router.query.scrollTo){
+        scrollToId(router.query.scrollTo);
+    }
+
     const {
         websiteLang
     } = useContext(Context);
@@ -28,14 +48,16 @@ export default function MovieScroller({config, hideTrash}){
         setIsMounted(true);
     },[]);
 
-    const [configCopy, setConfigCopy] = useState(config);
-    const configRef = useRef(config);
+    const [configCopy, setConfigCopy] = useLocalStorage("configCopy", config);
+    const configRef = useRef(configCopy);
     useEffect(()=>{
-        setConfigCopy(config);
+        if(config){
+            setConfigCopy(config);
+        }
     },[config]);
     useEffect(()=>{
-        configRef.current = configCopy;
-        if(!isLoading && configRef.current){
+        if(!isLoading && config){
+            configRef.current = configCopy;
             setMediaPages([]);
             loadPages(1, 5, []);
         }
@@ -53,15 +75,22 @@ export default function MovieScroller({config, hideTrash}){
         }
     },[websiteLang])
 
-    const [mediaPages, setMediaPages] = useState([]);
+    const [mediaPages, setMediaPages] = useLocalStorage("mediaPages", []);
+    const [mediaType, setMediaType] = useLocalStorage("mediaType", "movie");
+    useEffect(()=>{
+        if(config){
+            setMediaType(config.mediaType);
+        }
+    },[config])
     const mediaPagesRef = useRef();
     mediaPagesRef.current = mediaPages;
     const [isLoading, setIsLoading] = useState(false);
     const isLoadingRef = useRef(false);
     isLoadingRef.current = isLoading;
     const getPage = async (pageNum) => {
+        console.log("get", pageNum)
         const tmdb_main_url = "https://api.themoviedb.org/3";
-        const params = {page: pageNum, ...configRef.current.params};
+        const params = {...configRef.current.params, page: pageNum};
         try{
             const res = await axios.get(`${tmdb_main_url}/discover/${configRef.current.mediaType}`, {params});
             const results = [];
@@ -74,6 +103,7 @@ export default function MovieScroller({config, hideTrash}){
         }
     }
     const loadPages = async (start, step, startPages) => {
+        console.log(start, step, startPages)
         setIsLoading(true)
         const pages = JSON.parse(JSON.stringify(startPages));
         for(let i=start; i<start+step; i++){
@@ -98,7 +128,7 @@ export default function MovieScroller({config, hideTrash}){
                 return;
             }
             window.scrollBy({top: -50, behavior: 'instant'});
-            await loadPages(lastPage.page, 5, pages);
+            await loadPages(lastPage.page + 1, 5, pages);
             window.scrollBy({top: 50, behavior: 'instant'});
         })
     },[])
@@ -122,13 +152,13 @@ export default function MovieScroller({config, hideTrash}){
               ))}
             </div>
           </>} */}
-          {configRef.current && mediaPages.length > 0 &&
+          {mediaPages.length > 0 &&
             <div className="medias">
                 {mediaPages.map((mediaPage, pageIndex) => mediaPage && (
                     <MediaPage 
                         key={`page${pageIndex}`} 
                         mediaPage={mediaPage} 
-                        mediaType={configRef.current.mediaType}
+                        mediaType={mediaType}
                         hideTrash={hideTrash}
                     />
                 ))}

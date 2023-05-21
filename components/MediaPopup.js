@@ -9,6 +9,9 @@ import moment from 'moment';
 import {MediaCover} from '/components/MediaCover';
 import {FaPlayCircle} from 'react-icons/fa';
 import Link from 'next/link';
+import {SiWikidata} from 'react-icons/si';
+import {FaImdb} from 'react-icons/fa';
+import {BsInstagram, BsFacebook, BsTwitter} from 'react-icons/bs';
 
 export const MediaPopup = ({mediaType, id}) => {
 
@@ -25,7 +28,7 @@ export const MediaPopup = ({mediaType, id}) => {
     const {
         tmdb_main_url, tmdb_api_key,
         movieGenres, tvGenres, yearsContent, sortValues,
-        discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
+        discoveredMedias, discoverMedias, loadingMedias, lastDiscover,
         totalDPages, setCurrentDPage,
         translate, websiteLang, setWebsiteLang, languagesOptions, originLink, properNames
     } = useContext(Context);
@@ -41,7 +44,7 @@ export const MediaPopup = ({mediaType, id}) => {
 
     const closeMediaModal = () => {
         setSingleMedia(null);
-        router.push(originLink || '/');
+        router.push(`${originLink}?scrollTo=${id}` || '/');
     }
 
     const getYouTubeSearchLink = (media) => {
@@ -83,10 +86,52 @@ export const MediaPopup = ({mediaType, id}) => {
         }
     },[mediaVideos])
 
+    const [loadingMedia, setLoadingMedia] = useState(false);
+    const [singleMedia, setSingleMedia] = useState({});
+
+    const getMedia = async (mediaType, id, lang) => {
+        const params = {
+            api_key: tmdb_api_key,
+        }
+        try{
+            const langMediaInfo = await axios.get(`${tmdb_main_url}/${mediaType}/${id}`, {params:{...params, language: lang,}});
+            const engMediaInfo = lang === "en" ? langMediaInfo : await axios.get(`${tmdb_main_url}/${mediaType}/${id}`, {params:{...params, language: "en",}});
+            const socialInfo = await axios.get(`${tmdb_main_url}/${mediaType}/${id}/external_ids`, {params});
+            const creditsInfo = await axios.get(`${tmdb_main_url}/${mediaType}/${id}/credits`, {params});
+            return {
+                [lang] : langMediaInfo.data,
+                ["en"] : engMediaInfo.data,
+                socials: socialInfo.data,
+                credits: creditsInfo.data
+            };
+        }catch(error){
+            console.error(error);
+        }
+    }
+
+    const loadSingleMedia = async (mediaType, id) => {
+        setLoadingMedia(true);
+        try{
+            const mediaInfo = await getMedia(mediaType, id, websiteLang)
+            setSingleMedia(mediaInfo);
+            // console.log(mediaInfo)
+        }catch(error){
+            console.error(error);
+        }finally{
+            setLoadingMedia(false);
+        }
+    }
+
     useEffect(()=>{
         loadSingleMedia(mediaType, id);
         loadMediaVideos(mediaType, id, websiteLang)
     },[websiteLang]);
+
+    const directors = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Director");
+    const producers = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Producer");
+    const storyWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Story");
+    const screenplayWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Screenplay");
+    const cast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast.filter(m=>m.popularity > 20).sort((a,b)=>a.popularity<b.popularity?1:-1);
 
     return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&
@@ -112,18 +157,39 @@ export const MediaPopup = ({mediaType, id}) => {
             </ModalHeader>
             <ModalBody>
                 <div className="media-info">
-                <MediaCover showStatus mediaType={mediaType} data={singleMedia[websiteLang]}/>
-                <div className="general-info">
-                    <div><strong>{translate("Original title")}:</strong> {singleMedia[websiteLang][currentNames.original_title]}</div>
-                    <div><strong>{translate("Release date")}:</strong> {moment(singleMedia[websiteLang][currentNames.release_date], "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
-                    {mediaType === 'tv' && <>
-                        <div><strong>{translate("Number of Seasons")}:</strong> {singleMedia[websiteLang].number_of_seasons}</div>
-                        <div><strong>{translate("Number of Episodes")}:</strong> {singleMedia[websiteLang].number_of_episodes}</div>
-                    </>}
-                    <div><strong>{translate("Runtime")}:</strong> {getRuntime(singleMedia[websiteLang][currentNames.runtime])}</div>
-                    <div><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}:</strong> {singleMedia[websiteLang].genres.map((g,i)=>i<singleMedia[websiteLang].genres.length-1?g.name+", ":g.name)}</div>
-                    <div><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}:</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
-                    <div><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}:</strong> {singleMedia[websiteLang].spoken_languages.map((g,i)=>i<singleMedia[websiteLang].spoken_languages.length-1?g.name+", ":g.name)}</div>
+                    <MediaCover showStatus mediaType={mediaType} data={singleMedia[websiteLang]}/>
+                    <div className="general-info">
+                        <div className="socials">
+                            <a href={`https://www.themoviedb.org/movie/${singleMedia.socials.id}`} target="_blank" rel="noreferrer"><img src="/img/tmdb.png"/></a>
+                            <a href={`https://www.imdb.com/title/${singleMedia.socials.imdb_id}`} target="_blank" rel="noreferrer"><FaImdb/></a>
+                            <a href={`https://www.facebook.com/${singleMedia.socials.facebook_id}`} target="_blank" rel="noreferrer"><BsFacebook/></a>
+                            <a href={`https://www.instagram.com/${singleMedia.socials.instagram_id}`} target="_blank" rel="noreferrer"><BsInstagram/></a>
+                            <a href={`https://twitter.com/${singleMedia.socials.twitter_id}`} target="_blank" rel="noreferrer"><BsTwitter/></a>
+                            <a href={`https://www.wikidata.org/wiki/${singleMedia.socials.wikidata_id}`} target="_blank" rel="noreferrer"><SiWikidata/></a>
+                            <a href={`stremio://detail/${mediaType === "movie" ? "movie" : "series"}/${singleMedia.socials.imdb_id}`} target="_blank" rel="noreferrer"><img src="/img/stremio.png"/></a>
+                        </div>
+                        <div className="voice"><strong>{translate("Original title")}</strong> {singleMedia[websiteLang][currentNames.original_title]}</div>
+                        <div className="voice"><strong>{translate("Release date")}</strong> {moment(singleMedia[websiteLang][currentNames.release_date], "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
+                        {mediaType === 'tv' && <>
+                            <div><strong>{translate("Number of Seasons")}</strong> {singleMedia[websiteLang].number_of_seasons}</div>
+                            <div><strong>{translate("Number of Episodes")}</strong> {singleMedia[websiteLang].number_of_episodes}</div>
+                        </>}
+                        <div className="voice"><strong>{translate("Runtime")}</strong> {getRuntime(singleMedia[websiteLang][currentNames.runtime])}</div>
+                        <div className="voice"><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}</strong> {singleMedia[websiteLang].genres.map((g,i)=>i<singleMedia[websiteLang].genres.length-1?g.name+", ":g.name)}</div>
+                        <div className="voice"><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}</strong> {singleMedia[websiteLang].spoken_languages.map((g,i)=>i<singleMedia[websiteLang].spoken_languages.length-1?g.name+", ":g.name)}</div>
+                    </div>
+                </div>
+                <div className="credits-container">
+                    <div className="credits">
+                        <div className="voice"><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
+                        <div className="voice"><strong>{translate(directors.length > 1 ? "Directors" : "Director")}</strong> {directors.map(d=>d.original_name).join(", ")}</div>
+                        <div className="voice"><strong>{translate(producers.length > 1 ? "Producers" : "Producer")}</strong> {producers.map(d=>d.original_name).join(", ")}</div>
+                    </div>
+                    <div className="credits">
+                        <div className="voice"><strong>{translate("Story")}</strong> {storyWriters.map(d=>d.original_name).join(", ")}</div>
+                        <div className="voice"><strong>{translate("Screenplay")}</strong> {screenplayWriters.map(d=>d.original_name).join(", ")}</div>
+                        <div className="voice"><strong>{translate("Cast")}</strong> {cast.map(d=>d.original_name).join(", ")}</div>
+                    </div>
                 </div>
                 {singleMedia.en.overview.length > 0 &&
                     <div className="overview">
@@ -131,7 +197,6 @@ export const MediaPopup = ({mediaType, id}) => {
                         {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
                     </div>
                 }
-                </div>
                 <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
                 <div className="media-categories">
                     {mediaCategories.map( (mc, i) => (

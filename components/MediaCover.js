@@ -50,7 +50,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
     const isTrash = trashIncludes(data.id);
 
     return isMounted && mediaType && (
-      <div className={`media-container ${isTrash && hideTrash ? "no-display" : ""} ${page ? `page${page}` : ""}`} ref={contentRef}>
+      <div className={`media-container media-id-${data.id} ${isTrash && hideTrash ? "no-display" : ""} ${page ? `page${page}` : ""}`} ref={contentRef}>
         {href ? 
           <Link href={href} className="media clickable" onClick={(e)=>{
             if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
