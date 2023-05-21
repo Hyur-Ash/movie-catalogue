@@ -83,10 +83,6 @@ export default function MovieScroller({config, hideTrash}){
         setTimeout(()=>{setIsLoading(false)}, 1000);
     }
 
-    useEffect(()=>{
-        console.log(mediaPages)
-    },[mediaPages]);
-
     const endScrollRef = useRef();
     
     useEffect(()=>{
@@ -102,7 +98,6 @@ export default function MovieScroller({config, hideTrash}){
                 return;
             }
             window.scrollBy({top: -50, behavior: 'instant'});
-            console.log("going to load pages by scroll")
             await loadPages(lastPage.page, 5, pages);
             window.scrollBy({top: 50, behavior: 'instant'});
         })

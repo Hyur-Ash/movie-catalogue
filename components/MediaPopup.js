@@ -45,7 +45,6 @@ export const MediaPopup = ({mediaType, id}) => {
     }
 
     const getYouTubeSearchLink = (media) => {
-        console.log(media[currentNames.primary_release_date])
         const date = media[currentNames.primary_release_date]? media[currentNames.primary_release_date].substring(0, 4) : media[currentNames.release_date]? media[currentNames.release_date].substring(0, 4) : '';
         const query = `${media[currentNames.title]} ${date} trailer ${websiteLang}`;
         return `https://www.youtube.com/results?search_query=${query}`;
@@ -61,7 +60,6 @@ export const MediaPopup = ({mediaType, id}) => {
         }
         axios.get(`${tmdb_main_url}/${mediaType}/${id}/videos`, {params})
         .then(res=>{
-            console.log(res.data.results)
             if(res.data.results && res.data.results.length > 0){
                 setMediaVideos(res.data.results.reverse());
             }else{
