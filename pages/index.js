@@ -42,13 +42,19 @@ export default function Discover() {
 
   const [subscribeMode, setSubscribeMode] = useLocalStorage("subscribeMode", false);
 
-  return isMounted && (<>
+  const messages = {
+    already: translate("User is already existing."),
+    created: translate("User successfully created!"),
+    notFound: translate("User not found.")
+  }
+
+  return isMounted && users && (<>
     <Head>
       <title>{translate("Hyur's Media Library")}</title>
       <meta name="description" content="Created by Hyur" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    {currentUser && <Header />}
+    <Header langOnly={!currentUser}/>
     <div className="my-container">
       
         {currentUserIndex === null && <>
@@ -60,7 +66,7 @@ export default function Discover() {
             <main>
                 <div className="form">
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>{translate("Username")}</label>
                         <Input
                             type="text"
                             value={formValues.userName}
@@ -81,15 +87,13 @@ export default function Discover() {
                             onClick={()=>{
                                 if(subscribeMode){
                                     let isAlreadyExisting = false;
-                                    // console.log(users);
-                                    // return;
                                     users.forEach(user => {
                                         if(user.userName === formValues.userName.trim()){
                                             isAlreadyExisting = true;
                                         }
                                     });
                                     if(isAlreadyExisting){
-                                        alert("User is already existing.");
+                                        alert(messages.already);
                                         return;
                                     }
                                     setUsers([...users, {
@@ -97,7 +101,7 @@ export default function Discover() {
                                         password: formValues.password
                                     }]);
                                     setFormValues({userName: "", password: ""});
-                                    alert("User successfully created!");
+                                    alert(messages.created);
                                 }else{
                                     let userIndex = null;
                                     users.forEach( (user, i) => {
@@ -106,7 +110,7 @@ export default function Discover() {
                                         }
                                     });
                                     if(userIndex === null){
-                                        alert("User not found.");
+                                        alert(messages.notFound);
                                         return;
                                     }
                                     setCurrentUserIndex(userIndex);

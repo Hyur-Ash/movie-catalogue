@@ -14,7 +14,7 @@ import {FaStar, FaFilm, FaSearch, FaTrash} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 
-export default function Header({data, showTitle, href, withDeleteIcon}){
+export default function Header({langOnly}){
     
     const router = useRouter();
 
@@ -39,15 +39,17 @@ export default function Header({data, showTitle, href, withDeleteIcon}){
     ]
 
     return isMounted && (
-        <header>
+        <header style={langOnly ? {justifyContent:"space-between"} : {}}>
             <div className="logo-container">
                 <Link className="logo" href="/"><h1><LogoIcon className="logo-icon"/><span>{translate("Hyur's Media Library")}</span></h1></Link>
             </div>
-            <nav>
-                {menuVoices.map((voice, i) => router.pathname !== voice.href && (
-                    <Link key={`menu-voice-${i}`} className="menu-voice" href={voice.href}><div className="content">{voice.icon}<span>{voice.name}</span></div></Link>
-                ))}
-            </nav>
+            {!langOnly &&
+                <nav>
+                    {menuVoices.map((voice, i) => router.pathname !== voice.href && (
+                        <Link key={`menu-voice-${i}`} className="menu-voice" href={voice.href}><div className="content">{voice.icon}<span>{voice.name}</span></div></Link>
+                    ))}
+                </nav>
+            }
             <div className="language-selector">
                 <Select
                     instanceId={"language"} 

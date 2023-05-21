@@ -605,6 +605,30 @@
     "Empty tv favorites":{
         "it": "Svuota Serie TV preferite",
         "en": "Empty TV Show Favorites"
-    }                               
+    },
+    "Subscribe":{
+        "it": "Registrati"
+    }, 
+    "Log In":{
+        "it": "Accedi"
+    },
+    "New here":{
+        "it": "Sei nuovo"
+    },                              
+    "Already subscribed":{
+        "it": "Sei già registrato"
+    },
+    "Username":{
+        "it": "Nome utente"
+    },
+    "User is already existing.":{
+        "it": "Utente già esistente."
+    },
+    "User successfully created!":{
+        "it": "Utente creato correttamente!"
+    },
+    "User not found.":{
+        "it": "Utente non trovato."
+    }
 }
 }
