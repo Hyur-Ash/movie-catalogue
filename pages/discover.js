@@ -18,25 +18,49 @@ import DiscoverForm from '/components/DiscoverForm';
 
 export default function Discover() {
 
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(()=>{
-    setIsMounted(true);
-  },[]);
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(()=>{
+      setIsMounted(true);
+    },[]);
 
-  const {
-    translate, currentUser, websiteLang, properNames,
-    isVoteAverageRange, isVoteCountRange, isYearRange,
-  } = useContext(Context);
+    const {
+      translate, currentUser, websiteLang, properNames,
+      isVoteAverageRange, isVoteCountRange, isYearRange,
+    } = useContext(Context);
 
-  const router = useRouter();
-  useEffect(()=>{
-    if(!currentUser){
-      router.push("/");
-    }
-  },[currentUser]);
+    const router = useRouter();
+    useEffect(()=>{
+      if(!currentUser){
+        router.push("/");
+      }
+    },[currentUser]);
 
-  const [scrollerConfig, setScrollerConfig] = useState(null);
-  const changeScrollerConfig = async (formValues) => {
+    const [config, setConfig] = useLocalStorage("config-discover", {});
+    const configRef = useRef(config);
+    configRef.current = config;
+
+    const [forceReload, setForceReload] = useState(false);
+    useEffect(()=>{
+        if(!isLoading && (forceReload || !forceReload && JSON.stringify(config) !== JSON.stringify(configRef.current)) ){
+            setForceReload(false);
+            setMediaPages([]);
+            loadPages(1, 5, []);
+        }
+    },[config, forceReload]);
+
+    useEffect(()=>{
+      if(config && websiteLang !== config.language){
+        setConfig({
+              ...config,
+              params: {
+                  ...config.params,
+                  language: websiteLang 
+              }
+          });
+      }
+  },[websiteLang]);
+
+  const changeConfig = async (formValues) => {
 
     const tmdb_api_key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -66,8 +90,44 @@ export default function Discover() {
         params[currentNames["primary_release_date.gte"]] = FV.yearFrom.value.length > 0 ? FV.yearFrom.value : '0';
         params[currentNames["primary_release_date.lte"]] = FV.yearTo.value.length > 0 ? FV.yearTo.value : '3000';
     }
-    setScrollerConfig({params, mediaType: FV.mediaType.value});
+    setConfig({params, mediaType: FV.mediaType.value});
 
+  }
+
+  const [mediaPages, setMediaPages] = useLocalStorage("mediaPages-discover", []);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadingRef = useRef();
+  loadingRef.current = isLoading;
+
+  const mediaPagesRef = useRef();
+  mediaPagesRef.current = mediaPages;
+
+  const getPage = async (pageNum) => {
+      console.log("get", pageNum)
+      const tmdb_main_url = "https://api.themoviedb.org/3";
+      const params = {...configRef.current.params, page: pageNum};
+      try{
+          const res = await axios.get(`${tmdb_main_url}/discover/${configRef.current.mediaType}`, {params});
+          const results = [];
+          res.data.results.forEach(result => {
+              results.push({...result, page: pageNum});
+          });
+          return {...res.data, results};
+      }catch(error){
+          console.error(error);
+      }
+  }
+
+  const loadPages = async (start, step, startPages) => {
+      console.log(start, step, startPages)
+      setIsLoading(true);
+      const pages = JSON.parse(JSON.stringify(startPages));
+      for(let i=start; i<start+step; i++){
+          pages.push(await getPage(i));
+      }
+      setMediaPages(pages);
+      setTimeout(()=>{setIsLoading(false)}, 1000);
   }
 
   return isMounted && currentUser && (<>
@@ -84,12 +144,27 @@ export default function Discover() {
       <main>
         <DiscoverForm 
           onSubmit={formValues => {
-            changeScrollerConfig(formValues);
+            setForceReload(true);
+            changeConfig(formValues);
           }}
         />
         <MovieScroller 
           hideTrash
-          config={scrollerConfig}
+          mediaPages={mediaPages}
+          isLoading={isLoading}
+          mediaType={config?.mediaType}
+          onScrollEnd={()=>{
+            const loading = loadingRef.current;
+            if(loading){
+              return;
+            }
+            const lastPage = mediaPagesRef.current[mediaPagesRef.current.length - 1];
+            if(!lastPage || !lastPage.results || lastPage.results.length === 0){
+                return;
+            }
+            window.scrollBy({top: -50, behavior: 'instant'});
+            loadPages(lastPage.page + 1, 5, mediaPagesRef.current);
+          }}
         />
       </main>
 

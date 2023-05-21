@@ -1,4 +1,4 @@
-import {useState, useEffect, useContext} from 'react';
+import {useState, useEffect, useContext, Fragment} from 'react';
 import { Context } from '/lib/Context';
 import Select from 'react-select';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
@@ -30,7 +30,8 @@ export const MediaPopup = ({mediaType, id}) => {
         movieGenres, tvGenres, yearsContent, sortValues,
         discoveredMedias, discoverMedias, loadingMedias, lastDiscover,
         totalDPages, setCurrentDPage,
-        translate, websiteLang, setWebsiteLang, languagesOptions, originLink, properNames
+        translate, websiteLang, setWebsiteLang, languagesOptions, originLink, properNames, getMedia,
+        scrollId, setScrollId
     } = useContext(Context);
 
     const currentNames = properNames[mediaType];
@@ -44,7 +45,9 @@ export const MediaPopup = ({mediaType, id}) => {
 
     const closeMediaModal = () => {
         setSingleMedia(null);
-        router.push(`${originLink}?scrollTo=${id}` || '/');
+        setScrollId(id);
+        console.log({originLink})
+        router.push(originLink);
     }
 
     const getYouTubeSearchLink = (media) => {
@@ -89,26 +92,6 @@ export const MediaPopup = ({mediaType, id}) => {
     const [loadingMedia, setLoadingMedia] = useState(false);
     const [singleMedia, setSingleMedia] = useState({});
 
-    const getMedia = async (mediaType, id, lang) => {
-        const params = {
-            api_key: tmdb_api_key,
-        }
-        try{
-            const langMediaInfo = await axios.get(`${tmdb_main_url}/${mediaType}/${id}`, {params:{...params, language: lang,}});
-            const engMediaInfo = lang === "en" ? langMediaInfo : await axios.get(`${tmdb_main_url}/${mediaType}/${id}`, {params:{...params, language: "en",}});
-            const socialInfo = await axios.get(`${tmdb_main_url}/${mediaType}/${id}/external_ids`, {params});
-            const creditsInfo = await axios.get(`${tmdb_main_url}/${mediaType}/${id}/credits`, {params});
-            return {
-                [lang] : langMediaInfo.data,
-                ["en"] : engMediaInfo.data,
-                socials: socialInfo.data,
-                credits: creditsInfo.data
-            };
-        }catch(error){
-            console.error(error);
-        }
-    }
-
     const loadSingleMedia = async (mediaType, id) => {
         setLoadingMedia(true);
         try{
@@ -131,8 +114,7 @@ export const MediaPopup = ({mediaType, id}) => {
     const producers = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Producer");
     const storyWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Story");
     const screenplayWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Screenplay");
-    const cast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast.filter(m=>m.popularity > 20).sort((a,b)=>a.popularity<b.popularity?1:-1);
-
+    const cast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast.sort((a,b)=>a.popularity<b.popularity?1:-1).slice(0, 10);
     return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&
             <div className="overlay-backdrop">
@@ -175,21 +157,50 @@ export const MediaPopup = ({mediaType, id}) => {
                             <div><strong>{translate("Number of Episodes")}</strong> {singleMedia[websiteLang].number_of_episodes}</div>
                         </>}
                         <div className="voice"><strong>{translate("Runtime")}</strong> {getRuntime(singleMedia[websiteLang][currentNames.runtime])}</div>
-                        <div className="voice"><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}</strong> {singleMedia[websiteLang].genres.map((g,i)=>i<singleMedia[websiteLang].genres.length-1?g.name+", ":g.name)}</div>
-                        <div className="voice"><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}</strong> {singleMedia[websiteLang].spoken_languages.map((g,i)=>i<singleMedia[websiteLang].spoken_languages.length-1?g.name+", ":g.name)}</div>
+                        <div className="voice"><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}</strong> {singleMedia[websiteLang].genres.map(g=>g.name).join(", ")}</div>
+                        <div className="voice"><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}</strong> {singleMedia[websiteLang].spoken_languages.map(g=>g.name).join(", ")}</div>
                     </div>
                 </div>
+                {singleMedia.duringcreditsstinger && !singleMedia.aftercreditsstinger &&
+                    <div className="announcement">DURING CREDITS STINGER!</div>
+                }
+                {singleMedia.aftercreditsstinger && !singleMedia.duringcreditsstinger &&
+                    <div className="announcement">AFTER CREDITS STINGER!</div>
+                }
+                {singleMedia.aftercreditsstinger && singleMedia.duringcreditsstinger &&
+                    <div className="announcement">DURING & AFTER CREDITS STINGER!</div>
+                }
                 <div className="credits-container">
                     <div className="credits">
-                        <div className="voice"><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}</strong> {singleMedia[websiteLang].production_countries.map((g,i)=>i<singleMedia[websiteLang].production_countries.length-1?g.name+", ":g.name)}</div>
-                        <div className="voice"><strong>{translate(directors.length > 1 ? "Directors" : "Director")}</strong> {directors.map(d=>d.original_name).join(", ")}</div>
-                        <div className="voice"><strong>{translate(producers.length > 1 ? "Producers" : "Producer")}</strong> {producers.map(d=>d.original_name).join(", ")}</div>
+                        <div className="voice"><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}</strong> {singleMedia[websiteLang].production_countries.map(g=>g.name).join(", ")}</div>
+                        {directors.length > 0 &&
+                            <div className="voice"><strong>{translate(directors.length > 1 ? "Directors" : "Director")}</strong> {directors.map(d=>d.original_name).join(", ")}</div>
+                        }
+                        {producers.length > 0 &&
+                            <div className="voice"><strong>{translate(producers.length > 1 ? "Producers" : "Producer")}</strong> {producers.map(d=>d.original_name).join(", ")}</div>
+                        }
                     </div>
                     <div className="credits">
-                        <div className="voice"><strong>{translate("Story")}</strong> {storyWriters.map(d=>d.original_name).join(", ")}</div>
-                        <div className="voice"><strong>{translate("Screenplay")}</strong> {screenplayWriters.map(d=>d.original_name).join(", ")}</div>
-                        <div className="voice"><strong>{translate("Cast")}</strong> {cast.map(d=>d.original_name).join(", ")}</div>
+                        {storyWriters.length > 0 &&
+                            <div className="voice"><strong>{translate("Story")}</strong> {storyWriters.map(d=>d.original_name).join(", ")}</div>
+                        }
+                        {screenplayWriters.length > 0 &&
+                            <div className="voice"><strong>{translate("Screenplay")}</strong> {screenplayWriters.map(d=>d.original_name).join(", ")}</div>
+                        }
+                        <div className="voice"><strong>{translate("Cast")}</strong> <span>{cast.map( (c, i) => (
+                            <Fragment key={`cast${i}`}>
+                                {i > 0 && ", "}
+                                {c.popularity > 20 ?
+                                    <span>{c.original_name}</span>
+                                :
+                                    <span style={{fontWeight: "300"}}>{c.original_name}</span>
+                                }
+                            </Fragment>
+                        ))}</span></div>
                     </div>
+                </div>
+                <div className="extra" style={{marginTop: "1rem"}}>
+                    <div className="voice"><strong>{translate("Keywords")}</strong>{singleMedia.keywords.map(k=>k.name).join(", ")}</div>
                 </div>
                 {singleMedia.en.overview.length > 0 &&
                     <div className="overview">
@@ -212,8 +223,8 @@ export const MediaPopup = ({mediaType, id}) => {
                     ))}
                 </div>
                 <div className="media-videos">
-                    {mediaVideos && mediaVideos.map(mv => mv.site === 'YouTube' && mv.type === mediaCategories[selectedCategory] && (
-                        <Link href={`https://www.youtube.com/watch?v=${mv.key}`} target="_blank" className={`media-video`}>
+                    {mediaVideos && mediaVideos.map((mv, i) => mv.site === 'YouTube' && mv.type === mediaCategories[selectedCategory] && (
+                        <Link key={`mv${i}`} href={`https://www.youtube.com/watch?v=${mv.key}`} target="_blank" className={`media-video`}>
                             <img src={`https://img.youtube.com/vi/${mv.key}/0.jpg`} />
                             <div className="overlay">
                                 <FaPlayCircle className="play-circle"/>

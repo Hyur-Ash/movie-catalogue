@@ -3,7 +3,10 @@ import { Context } from '/lib/Context';
 import moment from 'moment';
 import Link from 'next/link';
 import {FaStar, FaRegStar, FaTrash} from 'react-icons/fa';
+import {SlOptions} from 'react-icons/sl';
+import {BiCopy} from 'react-icons/bi';
 import {AiOutlineLoading} from 'react-icons/ai';
+import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
 import noImage from '/public/img/not-found.jpg';
 
@@ -56,7 +59,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
             if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
               e.preventDefault();
             }else{
-              setOriginLink(router.route);
+              setOriginLink(router);
             }
           }}>
             <Content
@@ -87,6 +90,8 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
   }
 
   const Content = ({data, mediaType, showStatus, showTitle, isFavorite, isTrash}) => {
+
+    const router = useRouter();
 
     const {
         translate, properNames, setFavorites, setTrash, favorites, trashed
@@ -144,6 +149,8 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
       setTrash(curr);
     }
 
+    const [optionsMode, setOptionsMode] = useState(false);
+
     return (<>
       <div className="cover">
         <div 
@@ -185,6 +192,40 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
                   addTrash(data);
                 }}/>
             }
+          </div>
+        </>}
+        {!optionsMode &&
+          <div className={`icon-container options hide`}>
+            <SlOptions className="is-favorites trash" onClick={(e)=>{
+                e.stopPropagation();
+                e.preventDefault();
+                setOptionsMode(!optionsMode);
+              }}/>
+          </div>
+        }
+        {optionsMode && <>
+          <div className={`icon-container options2`}>
+            <MdCancel className="is-favorites trash" onClick={(e)=>{
+                e.stopPropagation();
+                e.preventDefault();
+                setOptionsMode(!optionsMode);
+              }}/>
+          </div>
+          <div className={`icon-container option1`}>
+            <MdRecommend className="is-favorites trash" onClick={(e)=>{
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(`/recommendations/${mediaType}/${data.id}`)
+                setOptionsMode(!optionsMode);
+              }}/>
+          </div>
+          <div className={`icon-container option2`}>
+            <BiCopy className="is-favorites trash" onClick={(e)=>{
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(`/similar/${mediaType}/${data.id}`)
+                setOptionsMode(!optionsMode);
+              }}/>
           </div>
         </>}
         {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>

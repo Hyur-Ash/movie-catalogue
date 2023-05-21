@@ -16,7 +16,7 @@ import Link from 'next/link';
 import MovieScroller from '/components/MovieScroller';
 import SearchForm from '/components/SearchForm';
 
-export default function Discover() {
+export default function Similar({mediaType, mediaId}) {
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(()=>{
@@ -24,8 +24,10 @@ export default function Discover() {
   },[]);
 
   const {
+    tmdb_api_key,
     translate, currentUser, websiteLang, properNames,
     isVoteAverageRange, isVoteCountRange, isYearRange,
+    getMedia
   } = useContext(Context);
 
   const router = useRouter();
@@ -35,48 +37,25 @@ export default function Discover() {
     }
   },[currentUser]);
 
-  const [config, setConfig] = useLocalStorage("config-search", {});
-  const configRef = useRef(config);
-  configRef.current = config;
-
-  const [forceReload, setForceReload] = useState(false);
   useEffect(()=>{
-      if(!isLoading && (forceReload || !forceReload && JSON.stringify(config) !== JSON.stringify(configRef.current)) ){
-          setForceReload(false);
-          setMediaPages([]);
-          loadPages(1, 5, []);
+    if(mediaId){
+      loadMedia();
+      if(lastMedia !== `${mediaType}-${mediaId}`){
+        setMediaPages([]);
+        loadPages(1, 5, []);
       }
-  },[config, forceReload]);
-
-  useEffect(()=>{
-    if(config && websiteLang !== config.language){
-      setConfig({
-            ...config,
-            params: {
-                ...config.params,
-                language: websiteLang 
-            }
-        });
+      setLastMedia(`${mediaType}-${mediaId}`);
     }
-},[websiteLang])
+  },[websiteLang, mediaId]);
 
-  const changeConfig = async (formValues) => {
-
-    const tmdb_api_key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
-    const FV = JSON.parse(JSON.stringify(formValues));
-    const currentNames = properNames[FV.mediaType.value];
-    const params = {
-        api_key: tmdb_api_key,
-        query: FV.query.trim().length > 0 ? FV.query.trim() : "",
-        language: websiteLang,
-        [currentNames.primary_release_year]: FV.year.value
-    }
-    setConfig({params, mediaType: FV.mediaType.value});
-
+  const loadMedia = async () => {
+    const media = await getMedia(mediaType, mediaId, websiteLang);
+    setMedia(media);
   }
 
-  const [mediaPages, setMediaPages] = useLocalStorage("mediaPages-search", []);
+  const [media, setMedia] = useState(null);
+  const [mediaPages, setMediaPages] = useLocalStorage(`mediaPages-${mediaType}-similar`, []);
+  const [lastMedia, setLastMedia] = useLocalStorage(`lastMedia-${mediaType}-similar`, false);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadingRef = useRef();
@@ -88,9 +67,9 @@ export default function Discover() {
   const getPage = async (pageNum) => {
       console.log("get", pageNum)
       const tmdb_main_url = "https://api.themoviedb.org/3";
-      const params = {...configRef.current.params, page: pageNum};
+      const params = {api_key: tmdb_api_key, page: pageNum};
       try{
-          const res = await axios.get(`${tmdb_main_url}/search/${configRef.current.mediaType}`, {params});
+          const res = await axios.get(`${tmdb_main_url}/${mediaType}/${mediaId}/similar`, {params});
           const results = [];
           res.data.results.forEach(result => {
               results.push({...result, page: pageNum});
@@ -121,33 +100,40 @@ export default function Discover() {
     <Header />
     <div className="my-container">
       
-      <h2 className="page-title">{translate("Search")}</h2>
+      <h2 className="page-title">{translate("Similar")}</h2>
+
+      <div>
+        {media &&
+          <MediaCover 
+            showStatus 
+            mediaType={mediaType} 
+            data={media[websiteLang]}
+            href={`/${mediaType}/${media[websiteLang].id}`}
+          />
+        }
+      </div>
 
       <main>
-        <SearchForm 
-          onSubmit={formValues => {
-            setForceReload(true);
-            changeConfig(formValues);
-          }}
-        />
-        <MovieScroller 
-          hideTrash
-          mediaPages={mediaPages}
-          isLoading={isLoading}
-          mediaType={config?.mediaType}
-          onScrollEnd={()=>{
-            const loading = loadingRef.current;
-            if(loading){
-              return;
-            }
-            const lastPage = mediaPagesRef.current[mediaPagesRef.current.length - 1];
-            if(!lastPage || !lastPage.results || lastPage.results.length === 0){
+        {mediaPages &&
+          <MovieScroller 
+            hideTrash
+            mediaPages={mediaPages}
+            isLoading={isLoading}
+            mediaType={mediaType}
+            onScrollEnd={()=>{
+              const loading = loadingRef.current;
+              if(loading){
                 return;
-            }
-            window.scrollBy({top: -50, behavior: 'instant'});
-            loadPages(lastPage.page + 1, 5, mediaPagesRef.current);
-          }}
-        />
+              }
+              const lastPage = mediaPagesRef.current[mediaPagesRef.current.length - 1];
+              if(!lastPage || !lastPage.results || lastPage.results.length === 0){
+                  return;
+              }
+              window.scrollBy({top: -50, behavior: 'instant'});
+              loadPages(lastPage.page + 1, 5, mediaPagesRef.current);
+            }}
+          />
+        }
       </main>
 
     </div>

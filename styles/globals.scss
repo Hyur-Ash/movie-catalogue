@@ -402,6 +402,17 @@ header{
   }
 }
 
+.announcement{
+  margin-top: 1rem;
+  text-align: center;
+  width: 100%;
+  background-color: red;
+  padding: .5rem;
+  border: 2px solid white;
+  font-weight: bold;
+  color: white;
+}
+
 .credits-container{
   display: flex;
   gap: 2rem;
@@ -429,10 +440,16 @@ header{
   }
 }
 
-.overview{
+.overview, .extra{
   width: 800px;
   max-width: 100%;
   margin: auto;
+}
+
+.extra .voice{
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
 }
 
 .icon-container{
@@ -444,8 +461,21 @@ header{
   border-radius: 50%;
   z-index: 2;
   &.trash{
-    left: .5rem;
-    right: unset;
+    bottom: unset;
+    top: 4rem;
+    right: 0.33rem;
+  }
+  &.options, &.options2, &.option1, &.option2{
+    bottom: 4rem;
+  }
+  &.options2, &.option1, &.option2{
+    background-color: rgba(0,0,0,.75);
+  }
+  &.option1{
+    right: 4rem;
+  }
+  &.option2{
+    right: 7.5rem;
   }
 }
 

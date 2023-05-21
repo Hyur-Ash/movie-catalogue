@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import {useState, useEffect, useContext, useRef} from 'react';
+import {useState, useEffect, useContext, useRef, Fragment} from 'react';
 import { Context } from '/lib/Context';
 import {Form, FormGroup, Label, Input} from 'reactstrap';
 import Select from 'react-select'; 
@@ -15,9 +15,13 @@ import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 import {AiOutlineLoading} from 'react-icons/ai';
 
-export default function MovieScroller({config, hideTrash}){
+export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoading, onScrollEnd}){
 
     const router = useRouter();
+
+    const {
+        translate, scrollId, setScrollId,
+    } = useContext(Context);
 
     const scrollToId = async (id) => {
         let tests = 0;
@@ -30,160 +34,67 @@ export default function MovieScroller({config, hideTrash}){
         }
         if(mediaCover){
             mediaCover.scrollIntoView({ behavior: 'smooth', block: 'center'});
-            router.replace(router.pathname, undefined, { shallow: true });
+            router.replace(router, undefined, { shallow: true });
         }
     }
-    
 
-    if(router.query.scrollTo){
-        scrollToId(router.query.scrollTo);
-    }
-
-    const {
-        websiteLang
-    } = useContext(Context);
+    useEffect(()=>{
+        if(scrollId !== false){
+            scrollToId(scrollId);
+            setScrollId(false);
+        }
+    },[scrollId])
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
         setIsMounted(true);
     },[]);
 
-    const [configCopy, setConfigCopy] = useLocalStorage("configCopy", config);
-    const configRef = useRef(configCopy);
-    useEffect(()=>{
-        if(config){
-            setConfigCopy(config);
-        }
-    },[config]);
-    useEffect(()=>{
-        if(!isLoading && config){
-            configRef.current = configCopy;
-            setMediaPages([]);
-            loadPages(1, 5, []);
-        }
-    },[configCopy]);
-
-    useEffect(()=>{
-        if(configCopy && websiteLang !== configCopy.language){
-            setConfigCopy({
-                ...configCopy,
-                params: {
-                    ...configCopy.params,
-                    language: websiteLang 
-                }
-            });
-        }
-    },[websiteLang])
-
-    const [mediaPages, setMediaPages] = useLocalStorage("mediaPages", []);
-    const [mediaType, setMediaType] = useLocalStorage("mediaType", "movie");
-    useEffect(()=>{
-        if(config){
-            setMediaType(config.mediaType);
-        }
-    },[config])
-    const mediaPagesRef = useRef();
-    mediaPagesRef.current = mediaPages;
-    const [isLoading, setIsLoading] = useState(false);
-    const isLoadingRef = useRef(false);
-    isLoadingRef.current = isLoading;
-    const getPage = async (pageNum) => {
-        console.log("get", pageNum)
-        const tmdb_main_url = "https://api.themoviedb.org/3";
-        const params = {...configRef.current.params, page: pageNum};
-        try{
-            const res = await axios.get(`${tmdb_main_url}/discover/${configRef.current.mediaType}`, {params});
-            const results = [];
-            res.data.results.forEach(result => {
-                results.push({...result, page: pageNum});
-            });
-            return {...res.data, results};
-        }catch(error){
-            console.error(error);
-        }
-    }
-    const loadPages = async (start, step, startPages) => {
-        console.log(start, step, startPages)
-        setIsLoading(true)
-        const pages = JSON.parse(JSON.stringify(startPages));
-        for(let i=start; i<start+step; i++){
-            pages.push(await getPage(i));
-        }
-        setMediaPages(pages);
-        setTimeout(()=>{setIsLoading(false)}, 1000);
-    }
-
     const endScrollRef = useRef();
     
     useEffect(()=>{
         window.addEventListener("scroll", async () => {
-            const loading = isLoadingRef.current;
-            if(loading || !endScrollRef || !endScrollRef.current){return;}
+            if(!endScrollRef || !endScrollRef.current){return;}
             const endScrolLPos = endScrollRef.current.getBoundingClientRect();
             const isVisible = endScrolLPos.top < window.innerHeight && endScrolLPos.bottom > 0;
-            const pages = JSON.parse(JSON.stringify(mediaPagesRef.current));
-            if(!isVisible || !configRef.current){return;}
-            const lastPage = pages[pages.length - 1];
-            if(!lastPage || !lastPage.results || lastPage.results.length === 0){
-                return;
+            if(isVisible){
+                onScrollEnd();
             }
-            window.scrollBy({top: -50, behavior: 'instant'});
-            await loadPages(lastPage.page + 1, 5, pages);
-            window.scrollBy({top: 50, behavior: 'instant'});
         })
-    },[])
+    },[]);
+
+    const [currentMediaType, setCurrentMediaType] = useLocalStorage("currentMediaType", "movie");
+    useEffect(()=>{
+        if(mediaType){
+            setCurrentMediaType(mediaType);
+        }
+    },[mediaType])
 
     return isMounted && (<>
         <div className="movie-scroller">
-          {/* <div style={{height: "70px"}} ref={scrollElementRef}></div> */}
-          {/* {discoveredMedias.length > 0 && <>
-            <Navigator
-              forcePageChange={forcePageChange}
-              setForcePageChange={setForcePageChange}
-              currentPage={currentDPage}
-              disabled={loadingMedias === true}
-              pagesToShow={7}
-              numPages={totalDPages}
-              onChange={(pageNum)=>{setCurrentDPage(pageNum); scrollElementRef.current.scrollIntoView();}}
-            />
-            <div className="medias">
-              {discoveredMedias.map((media, i) => (
-                <MediaCover hideTrash mediaType={lastDiscover.mediaType.value} showTitle data={media} key={`media${i}`} href={`/${lastDiscover.mediaType.value}/${media.id}`}/>
-              ))}
-            </div>
-          </>} */}
           {mediaPages.length > 0 &&
             <div className="medias">
-                {mediaPages.map((mediaPage, pageIndex) => mediaPage && (
-                    <MediaPage 
-                        key={`page${pageIndex}`} 
-                        mediaPage={mediaPage} 
-                        mediaType={mediaType}
-                        hideTrash={hideTrash}
-                    />
-                ))}
+                {mediaPages.map( (mediaPage, mp) => (<Fragment key={`media-page${mp}`}>
+                    {mediaPage.results.map((media, m) => (
+                        <MediaCover
+                            page={mediaPage.page}
+                            key={`media${m}`} 
+                            mediaType={mediaType} 
+                            showTitle 
+                            data={media} 
+                            href={`/${mediaType}/${media.id}`}
+                            hideTrash={hideTrash}
+                        />
+                    ))}
+                </Fragment>))}
             </div>
           }
         </div>
         <div className={`end-scroll ${isLoading ? "loading" : ""}`} ref={endScrollRef}>
             <AiOutlineLoading className="loader"/>
         </div>
-    </>)
-}
-
-const MediaPage = ({mediaType, mediaPage, hideTrash}) => {
-    return (<>
-        {mediaPage.results.map((media, i) => (
-            <MediaCover
-                page={mediaPage.page}
-                index={i}
-                key={`media${i}`} 
-                mediaType={mediaType} 
-                showTitle 
-                data={media} 
-                href={`/${mediaType}/${media.id}`}
-                hideTrash={hideTrash}
-            />
-        ))}
+        {mediaPages.length > 0 && mediaPages[mediaPages.length - 1].results.length === 0 &&
+            <h3 style={{color:"white", marginBottom:"2rem"}}>{translate("END OF RESULTS")}</h3>
+        }
     </>)
 }
