@@ -46,7 +46,16 @@ export default function Similar({mediaType, mediaId}) {
       }
       setLastMedia(`${mediaType}-${mediaId}`);
     }
-  },[websiteLang, mediaId]);
+  },[mediaId]);
+
+  useEffect(()=>{
+    if(mediaId){
+      loadMedia();
+      setMediaPages([]);
+      loadPages(1, 5, []);
+      setLastMedia(`${mediaType}-${mediaId}`);
+    }
+  },[websiteLang]);
 
   const loadMedia = async () => {
     const media = await getMedia(mediaType, mediaId, websiteLang);
@@ -67,7 +76,7 @@ export default function Similar({mediaType, mediaId}) {
   const getPage = async (pageNum) => {
       console.log("get", pageNum)
       const tmdb_main_url = "https://api.themoviedb.org/3";
-      const params = {api_key: tmdb_api_key, page: pageNum};
+      const params = {api_key: tmdb_api_key, page: pageNum, language: websiteLang};
       try{
           const res = await axios.get(`${tmdb_main_url}/${mediaType}/${mediaId}/similar`, {params});
           const results = [];
@@ -103,7 +112,7 @@ export default function Similar({mediaType, mediaId}) {
       <h2 className="page-title">{translate("Similar")}</h2>
 
       <div>
-        {media &&
+        {media && media[websiteLang] &&
           <MediaCover 
             showStatus 
             mediaType={mediaType} 

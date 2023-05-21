@@ -629,6 +629,33 @@
     },
     "User not found.":{
         "it": "Utente non trovato."
+    },
+    "Director":{
+        "it": "Regista"
+    },
+    "Directors":{
+        "it": "Registi"
+    },
+    "Producer":{
+        "it": "Produttore"
+    },
+    "Producers":{
+        "it": "Produttori"
+    },
+    "Screenplay":{
+        "it": "Sceneggiatura"
+    },
+    "Keywords":{
+        "it": "Parole chiave"
+    },
+    "Similar":{
+        "it": "Simili"
+    },
+    "Recommendations":{
+        "it": "Raccomandati"
+    },
+    "Log out":{
+        "it": "Scollegati"
     }
 }
 }

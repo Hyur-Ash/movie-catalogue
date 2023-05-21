@@ -41,6 +41,7 @@ export default function Discover() {
 
   const [forceReload, setForceReload] = useState(false);
   useEffect(()=>{
+    console.log(JSON.stringify(config) !== JSON.stringify(configRef.current))
       if(!isLoading && (forceReload || !forceReload && JSON.stringify(config) !== JSON.stringify(configRef.current)) ){
           setForceReload(false);
           setMediaPages([]);
@@ -49,7 +50,8 @@ export default function Discover() {
   },[config, forceReload]);
 
   useEffect(()=>{
-    if(config && websiteLang !== config.language){
+    if(config && websiteLang !== config.params.language){
+      setForceReload(true);
       setConfig({
             ...config,
             params: {
