@@ -48,7 +48,7 @@ export const MediaPopup = ({mediaType, id}) => {
     const closeMediaModal = () => {
         setSingleMedia(null);
         setScrollId(id);
-        router.push(originLink && originLink.length > 0 ? originLink : "/search");
+        router.push(originLink && originLink !== "" ? originLink : "/search");
     }
 
     const getYouTubeSearchLink = (media) => {

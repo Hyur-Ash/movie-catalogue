@@ -38,7 +38,7 @@ export const PersonPopup = ({id}) => {
     const closeModal = () => {
         setPerson(null);
         setScrollId(id);
-        router.push(originLink && originLink.length > 0 ? originLink : "/search");
+        router.push(originLink && originLink !== "" ? originLink : "/search");
     }
 
     const [loadingPerson, setLoadingPerson] = useState(false);
