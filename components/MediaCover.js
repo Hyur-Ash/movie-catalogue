@@ -10,7 +10,7 @@ import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
 import noImage from '/public/img/not-found.jpg';
 
-export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, hideTrash}) => {
+export const MediaCover = ({data, character, showTitle, href, mediaType, showStatus, page, hideTrash}) => {
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -66,6 +66,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
               data={data} 
               mediaType={mediaType}
               showStatus={showStatus}
+              character={character}
               showTitle={showTitle}
               isFavorite={favoritesIncludes(data.id)} 
               isTrash={isTrash}
@@ -78,6 +79,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
                 data={data} 
                 mediaType={mediaType}
                 showStatus={showStatus}
+                character={character}
                 showTitle={showTitle}
                 isFavorite={favoritesIncludes(data.id)} 
                 isTrash={isTrash}
@@ -89,7 +91,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
     )
   }
 
-  const Content = ({data, mediaType, showStatus, showTitle, isFavorite, isTrash}) => {
+  const Content = ({data, mediaType, character, showStatus, showTitle, isFavorite, isTrash}) => {
 
     const router = useRouter();
 
@@ -107,14 +109,14 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
         return vote > 3 ? vote > 4.5 ? vote > 6 ? vote > 7.5 ? vote > 9? "lightblue" : "green" : "lightgreen" : "yellow" : "orange" : "red";
     }
 
+    const popColor = (vote) => {
+        return vote > 10 ? vote > 19 ? vote > 29 ? vote > 49 ? vote > 89? "lightblue" : "green" : "lightgreen" : "yellow" : "orange" : "red";
+    }
+
     const addFavorite = (data) => {
-      setFavorites({
-        ...favorites,
-        [mediaType]: [
-          ...favorites[mediaType],
-          data
-        ]
-      })
+      const newFavs = {...favorites};
+      newFavs[mediaType] = favorites[mediaType] ? [...favorites[mediaType], data] : [data];
+      setFavorites(newFavs);
     }
     
     const removeFavorite = (id) => {
@@ -129,13 +131,9 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
     }
 
     const addTrash = (data) => {
-      setTrash({
-        ...trashed,
-        [mediaType]: [
-          ...trashed[mediaType],
-          data
-        ]
-      });
+      const newTrash = {...trashed};
+      newTrash[mediaType] = trashed[mediaType] ? [...trashed[mediaType], data] : [data];
+      setTrash(newTrash);
     }
     
     const removeTrash = (id) => {
@@ -194,7 +192,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
             }
           </div>
         </>}
-        {!optionsMode &&
+        {mediaType !== "person" && !optionsMode &&
           <div className={`icon-container options hide`}>
             <SlOptions className="is-favorites trash" onClick={(e)=>{
                 e.stopPropagation();
@@ -203,7 +201,7 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
               }}/>
           </div>
         }
-        {optionsMode && <>
+        {mediaType !== "person" && optionsMode && <>
           <div className={`icon-container options2`}>
             <MdCancel className="is-favorites trash" onClick={(e)=>{
                 e.stopPropagation();
@@ -228,11 +226,18 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
               }}/>
           </div>
         </>}
-        {data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
+        {mediaType !== "person" && data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
           <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
           <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
         </>}
-        {moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) ? 
+        {mediaType === "person" && <>
+          <div className={`vote-average ${popColor(data.popularity)}`}>{Math.round(data.popularity)}</div>
+          {data.known_for_department &&
+            <div className={`${data.known_for_department.replaceAll(" ","").split("&")[0].toLowerCase()} person-alert`}>{translate(data.known_for_department.split("&")[0])}</div>
+          }
+          <div className={`vote-count ${popColor(data.popularity)}`}>{data.gender === 1 ? "F" : data.gender === 2 ? "M" : "NB"}</div>
+        </>}
+        {showStatus && mediaType !== "person" && moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) ? 
           <div className="upcoming-alert">{translate("upcoming")}</div>
         : <>
           {showStatus && mediaType === 'tv' && <>
@@ -245,12 +250,29 @@ export const MediaCover = ({data, showTitle, href, mediaType, showStatus, page, 
             }
           </>}
         </>}
-        <div className="flag-container">
-          <img className="flag" alt={data.original_language} src={`/img/flags/${data.original_language}.svg`}/>
-        </div>
-        <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : noImage.src} 
-        onLoad={()=>{setMainPicLoaded(true)}}/>
+        {mediaType !== "person" && 
+          <div className="flag-container">
+            <img className="flag" alt={data.original_language} src={`/img/flags/${data.original_language}.svg`}/>
+          </div>
+        }
+        {mediaType !== "person" && 
+          <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : noImage.src} 
+          onLoad={()=>{setMainPicLoaded(true)}}/>
+        }
+        {mediaType === "person" && 
+          <img className="main-image" alt={data.original_name} src={data.profile_path? `${tmdb_main_url_img_low}/${data.profile_path}` : noImage.src} 
+          onLoad={()=>{setMainPicLoaded(true)}}/>
+        }
+        {character &&
+          <div className={`cover-title ontop`}>
+            {character}
+          </div>
+        }
       </div>
-      {showTitle && <div className="cover-title">{data[currentNames.title]}</div>}
+      {showTitle &&
+        <div className={`cover-title`}>
+          {mediaType === "person" ? data.original_name : data[currentNames.title]}
+        </div>
+      }
     </>)
   }

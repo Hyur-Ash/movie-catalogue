@@ -31,7 +31,8 @@ export default function SearchForm({onSubmit}){
     const formOptions = {
       mediaType: [
         {value: 'movie', label: translate('Movie')},
-        {value: 'tv', label: translate('TV Show')}
+        {value: 'tv', label: translate('TV Show')},
+        {value: 'person', label: translate('Person')},
       ],
       query: '',
       years: [{value: "", label: translate("Any")}, ...yearsContent.map(g=>({value: g.id, label: g.name}))],
@@ -45,11 +46,17 @@ export default function SearchForm({onSubmit}){
 
     const [formValues, setFormValues] = useLocalStorage('searchValues', firstFormValues);
     useEffect(()=>{
-      setFormValues(curr=>({
+      setFormValues(curr=>{
+        const mediaType = formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0];
+        const newFormValues = {
           ...curr,
           mediaType: formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0],
-          year: formOptions.years.filter(m=>m.value===curr.year.value)[0],
-      }));
+        }
+        if(newFormValues.mediaType !== "person"){
+          newFormValues.year = formOptions.years.filter(m=>m.value===curr.year.value)[0];
+        }
+        return newFormValues;
+      });
     },[websiteLang]);
 
     const changeFormValue = (key, value) => {
@@ -59,7 +66,7 @@ export default function SearchForm({onSubmit}){
     return isMounted && (
       <div className="form">
           <div className="form-group">
-            <label>{translate("Media type")}</label>
+            <label>{translate("Search type")}</label>
             <Select
               instanceId={"mediaType"} 
               options={formOptions.mediaType}
@@ -68,19 +75,21 @@ export default function SearchForm({onSubmit}){
               isSearchable={false}
               />
           </div>
-          <div className="form-group">
-            <label className="year-label">
-              {translate("Year")}
-            </label>
-              <Select
-                className={isYearRange? 'half' : ''}
-                instanceId={"year"} 
-                options={formOptions.years}
-                value={formValues.year}
-                onChange={(e)=>{changeFormValue('year', e)}}
-                placeholder={translate("Select...")}
-              />
-          </div>
+          {formValues.mediaType.value !== "person" &&
+            <div className="form-group">
+              <label className="year-label">
+                {translate("Year")}
+              </label>
+                <Select
+                  className={isYearRange? 'half' : ''}
+                  instanceId={"year"} 
+                  options={formOptions.years}
+                  value={formValues.year}
+                  onChange={(e)=>{changeFormValue('year', e)}}
+                  placeholder={translate("Select...")}
+                />
+            </div>
+          }
           <div className="form-group">
             <label></label>
             <Input

@@ -72,7 +72,7 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
 
     return isMounted && (<>
         <div className="movie-scroller">
-          {mediaPages.length > 0 &&
+          {mediaPages.length > 0 && mediaPages[0].results.length > 0 &&
             <div className="medias">
                 {mediaPages.map( (mediaPage, mp) => (<Fragment key={`media-page${mp}`}>
                     {mediaPage.results.map((media, m) => (

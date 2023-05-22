@@ -49,7 +49,7 @@ export default function Discover() {
     },[config, forceReload]);
 
     useEffect(()=>{
-      if(config && websiteLang !== config.params.language){
+      if(config && config.params && config.params.language !== websiteLang){
         setForceReload(true);
         setConfig({
               ...config,

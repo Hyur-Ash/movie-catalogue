@@ -50,7 +50,7 @@ export default function Discover() {
   },[config, forceReload]);
 
   useEffect(()=>{
-    if(config && websiteLang !== config.params.language){
+    if(config && config.params && config.params.language !== websiteLang){
       setForceReload(true);
       setConfig({
             ...config,
@@ -68,13 +68,16 @@ export default function Discover() {
 
     const FV = JSON.parse(JSON.stringify(formValues));
     const currentNames = properNames[FV.mediaType.value];
+    const mediaType = FV.mediaType.value;
     const params = {
         api_key: tmdb_api_key,
         query: FV.query.trim().length > 0 ? FV.query.trim() : "",
         language: websiteLang,
-        [currentNames.primary_release_year]: FV.year.value
     }
-    setConfig({params, mediaType: FV.mediaType.value});
+    if(mediaType !== "person"){
+      params[currentNames.primary_release_year] = FV.year.value;
+    }
+    setConfig({params, mediaType});
 
   }
 
@@ -113,6 +116,10 @@ export default function Discover() {
       setMediaPages(pages);
       setTimeout(()=>{setIsLoading(false)}, 1000);
   }
+
+  useEffect(()=>{
+    console.log(mediaPages)
+  },[mediaPages])
 
   return isMounted && currentUser && (<>
     <Head>

@@ -41,6 +41,7 @@ export default function Favorites() {
         <div className="media-select">
             <div className={`media-option ${value === 'movie' ? 'active' : ''}`} onClick={()=>{onChange('movie')}}>{translate("Movies")}</div>
             <div className={`media-option ${value === 'tv' ? 'active' : ''}`} onClick={()=>{onChange('tv')}}>{translate("TV Shows")}</div>
+            <div className={`media-option ${value === 'person' ? 'active' : ''}`} onClick={()=>{onChange('person')}}>{translate("People")}</div>
         </div>
     )
   }
@@ -77,7 +78,7 @@ export default function Favorites() {
             <div className="media-group">
                 {favorites[selectedMedia].length === 0 ?
                     <div className="message">
-                        <h3>{translate(`You have no favorite ${selectedMedia === 'movie' ? 'Movies' : 'TV Shows'}.`)}</h3>
+                        <h3>{translate(`You have no favorite ${selectedMedia === 'movie' ? 'Movies' : selectedMedia === 'tv' ? 'TV Shows' : 'People'}.`)}</h3>
                         <Link className="c-button" href="/discover">{translate("Discover")}</Link>
                     </div>
                 :

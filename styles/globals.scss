@@ -184,8 +184,23 @@ button, .c-button{
   }
   .cover-title{
     margin-top: .5rem;
-    height: 50px;
     overflow: hidden;
+    font-size: .9em;
+    &.ontop{
+      margin: 0;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      color: white !important;
+      background-color: rgba(0, 0, 0, .5);
+      font-weight: 600;
+      width: 100%;
+      padding: .5em;
+      display: flex;
+      height: auto;
+      align-items: flex-end;
+      font-size: .8em;
+    }
   }
   .flag-container{
     position: absolute;
@@ -231,6 +246,45 @@ button, .c-button{
     color: white;
     font-weight: 500;
     padding: .5rem;
+  }
+  .person-alert{
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2.5rem;
+    background-color: black;
+    color: white;
+    font-weight: 500;
+    padding: .5rem;
+    font-size: .8em;
+    &.acting{
+      background-color: palevioletred;
+    }
+    &.production{
+      background-color: green;
+    }
+    &.writing, &.creator{
+      background-color: orange;
+    }
+    &.directing{
+      background-color: blue;
+    }
+    &.sound{
+      background-color: brown;
+    }
+    &.camera{
+      background-color: rgb(42, 165, 132);
+    }
+    &.costume{
+      background-color: rgb(108, 42, 165);
+    }
+    &.visualeffects, &.editing{
+      background-color: rgb(114, 114, 114);
+    }
+    &.art{
+      background-color: yellowgreen;
+    }
   }
   .ended-alert{
     text-transform: uppercase;
@@ -406,11 +460,16 @@ header{
   margin-top: 1rem;
   text-align: center;
   width: 100%;
-  background-color: red;
   padding: .5rem;
   border: 2px solid white;
   font-weight: bold;
   color: white;
+  &.red{
+    background-color: red;
+  }
+  &.green{
+    background-color: green;
+  }
 }
 
 .credits-container{
@@ -424,6 +483,9 @@ header{
     gap: 1rem;
   }
   margin-top: 1rem;
+  strong{
+    font-weight: 600;
+  }
   .credits{
     display: flex;
     flex-direction: column;
@@ -440,10 +502,77 @@ header{
   }
 }
 
-.overview, .extra{
+.overview, .extra, .cast{
   width: 800px;
   max-width: 100%;
   margin: auto;
+}
+
+.cast-members{
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  .cast-member{
+    width: 100px;
+    img{
+      max-width: 100%;
+    }
+    .name{
+      text-align: center;
+      font-size: .75em;
+      &.orig{
+        font-weight: 600;
+      }
+      &.char{
+        font-style: italic;
+      }
+    }
+  }
+}
+
+.person-credits{
+  h4{
+    font-size: 1.5em !important;
+    margin-bottom: .75em !important;
+  }
+}
+
+.person-media{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .5rem;
+  @media screen and (max-width: 1200px){
+    grid-template-columns: repeat(4, 1fr);
+  }
+  @media screen and (max-width: 1000px){
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media screen and (max-width: 515px){
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .media-container{
+    max-width: 220px;
+    img{
+      width: 100%;
+    }
+    .cover-title{
+      color: black;
+    }
+  }
+}
+
+.cast{
+  margin-top: 1rem;
+  .other-cast{
+    line-height: 1.75em;
+    strong{
+      font-weight: 600;
+    }
+    font-size: .75em;
+    h4{
+      font-size: 1.25rem;
+    }
+  }
 }
 
 .extra .voice{
@@ -674,6 +803,16 @@ header{
   display: flex;
   justify-content: center;
   margin-bottom: 1.5rem;
+  &.left{
+    justify-content: flex-start;
+  }
+  &.margined{
+    margin: 1rem 0;
+  }
+  &.wrapped{
+    flex-wrap: wrap;
+    gap: .25em;
+  }
   .media-option{
     font-size: 2em;
     background-color: $blue;
@@ -683,6 +822,12 @@ header{
     cursor: pointer;
     &:not(.active){
       opacity: .5;
+    }
+    &.small{
+      font-size: 1em;
+      @media screen and (max-width: 1000px){
+        font-size: .8em;
+      }
     }
   }
 }

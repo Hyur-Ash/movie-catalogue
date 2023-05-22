@@ -643,7 +643,7 @@
         "it": "Produttori"
     },
     "Screenplay":{
-        "it": "Sceneggiatura"
+        "it": "Sceneggiatore"
     },
     "Keywords":{
         "it": "Parole chiave"
@@ -656,6 +656,197 @@
     },
     "Log out":{
         "it": "Scollegati"
+    },
+    "Name":{
+        "it": "Nome completo",
+        "en": "Full name"
+    },
+    "Date of birth":{
+        "it": "Data di nascita"
+    },
+    "Place of birth":{
+        "it": "Luogo di nascita"
+    },
+    "Known for":{
+        "it": "Conosciuto principalmente come",
+        "en": "Mostly known as"
+    },
+    "Acting":{
+        "it": "Attore",
+        "en": "Actor"
+    },
+    "Directing":{
+        "it": "Regista",
+        "en": "Director"
+    },
+    "Writing":{
+        "it": "Scrittore",
+        "en": "Writer"
+    },
+    "Production":{
+        "it": "Produttore",
+        "en": "Producer"
+    },
+    "Costume":{
+        "it": "Costumista",
+        "en": "Costumer"
+    },
+    "Visual Effects":{
+        "it": "Artista VFX",
+        "en": "VFX Artist"
+    },
+    "Art":{
+        "it": "Direttore Artistico",
+        "en": "Art Director"
+    },
+    "Editing":{
+        "it": "Montatore",
+        "en": "Editor"
+    },
+    "Creator":{
+        "it": "Ideatore"
+    },
+    "Sound":{
+        "it": "Suono/Compositore",
+        "en": "Sound/Soundtrack"
+    },
+    "Role":{
+        "it": "Ruolo"
+    },
+    "Actor":{
+        "it": "Attore"
+    },
+    "Sort by":{
+        "it": "Ordina per"
+    },
+    "Order by":{
+        "it": "Ordine"
+    },
+    "release_date":{
+        "it": "Data di rilascio",
+        "en": "Release date"
+    },
+    "popularity":{
+        "it": "Popolarità",
+        "en": "Popularity"
+    },
+    "title":{
+        "it": "Titolo",
+        "en": "Title"
+    },
+    "vote_average":{
+        "it": "Votazione media",
+        "en": "Vote average"
+    },
+    "vote_count":{
+        "it": "Numero votazioni",
+        "en": "Vote count"
+    },
+    "Biography":{
+        "it": "Biografia"
+    },
+    "years old":{
+        "it": "anni"
+    },
+    "Death day":{
+        "it": "Data di morte"
+    },
+    "Writer":{
+        "it": "Scrittore"
+    },
+    "Executive Producer":{
+        "it": "Produttore Esecutivo"
+    },
+    "Associate Producer":{
+        "it": "Produttore Associato"
+    },
+    "Second Assistant Art Director":{
+        "it": "Secondo Assistente Direttore Artistico"
+    },
+    "Director of Photography":{
+        "it": "Direttore della Fotografia"
+    },
+    "Production Office Assistant":{
+        "it": "Assistente di Ufficio di Produzione"
+    },
+    "Presenter":{
+        "it": "Presentatore"
+    },
+    "Executive Music Producer":{
+        "it": "Produttore Musicale Esecutivo"
+    },
+    "Special Guest Director":{
+        "it": "Regista Ospite Speciale"
+    },
+    "Co-Director":{
+        "it": "Co-Regista"
+    },
+    "Story":{
+        "it": "Storia"
+    },
+    "Author":{
+        "it": "Autore"
+    },
+    "Characters":{
+        "it": "Personaggi"
+    },
+    "Comic Book":{
+        "it": "Fumettista",
+        "en": "Comic Artist"
+    },
+    "Original Story":{
+        "it": "Storia Originale"
+    },
+    "Script Consultant":{
+        "it": "Consulente di Sceneggiatura"
+    },
+    "Theatre Play":{
+        "it": "Opera Teatrale"
+    },
+    "Camera Operator":{
+        "it": "Operatore di Camera"
+    },
+    "Additional Photography":{
+        "it": "Fotografia Addizionale"
+    },
+    "Treatment":{
+        "it": "Trattamento"
+    },
+    "Original Music Composer":{
+        "it": "Compositore di Musica Originale"
+    },
+    "Additional Music":{
+        "it": "Musiche Addizionali"
+    },
+    "Conductor":{
+        "it": "Conduttore"
+    },
+    "Orchestrator":{
+        "it": "Orchestratore"
+    },
+    "Main Title Theme Composer":{
+        "it": "Compositore del Tema del Titolo Principale"
+    },
+    "Musician":{
+        "it": "Musicista"
+    },
+    "Music Producer":{
+        "it": "Produttore Musicale"
+    },
+    "Music Consultant":{
+        "it": "Consulente Musicale"
+    },
+    "Music Supervisor":{
+        "it": "Supervisore Musicale"
+    },
+    "WITH DURING CREDITS STINGER!":{
+        "it": "CON SCENA AGGIUNTIVA DURANTE I TITOLI DI CODA!"
+    },
+    "WITH AFTER CREDITS STINGER!":{
+        "it": "CON SCENA AGGIUNTIVA DOPO I TITOLI DI CODA!"
+    },
+    "WITH DURING & AFTER CREDITS STINGERS!":{
+        "it": "CON SCENE AGGIUNTIVE DURANTE E DOPO I TITOLI DI CODA!"
     }
 }
 }

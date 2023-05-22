@@ -11,7 +11,9 @@ import {FaPlayCircle} from 'react-icons/fa';
 import Link from 'next/link';
 import {SiWikidata} from 'react-icons/si';
 import {FaImdb} from 'react-icons/fa';
+import {AiFillHome} from 'react-icons/ai';
 import {BsInstagram, BsFacebook, BsTwitter} from 'react-icons/bs';
+import CastMember from '/components/CastMember';
 
 export const MediaPopup = ({mediaType, id}) => {
 
@@ -46,8 +48,7 @@ export const MediaPopup = ({mediaType, id}) => {
     const closeMediaModal = () => {
         setSingleMedia(null);
         setScrollId(id);
-        console.log({originLink})
-        router.push(originLink);
+        router.push(originLink && originLink.length > 0 ? originLink : "/search");
     }
 
     const getYouTubeSearchLink = (media) => {
@@ -114,7 +115,17 @@ export const MediaPopup = ({mediaType, id}) => {
     const producers = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Producer");
     const storyWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Story");
     const screenplayWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Screenplay");
-    const cast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast.sort((a,b)=>a.popularity<b.popularity?1:-1).slice(0, 10);
+    const allCast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast.sort((a,b)=>a.popularity<b.popularity?1:-1);
+    let popularCast = [], otherCast = [];
+    allCast.forEach(c=>{
+        if(c.popularity >= 15 || popularCast.length < 7){
+            popularCast.push(c);
+        }else{
+            otherCast.push(c);
+        }
+    })
+    
+
     return isMounted && id && currentNames && (<>
         {singleMedia && singleMedia[websiteLang] &&
             <div className="overlay-backdrop">
@@ -142,6 +153,9 @@ export const MediaPopup = ({mediaType, id}) => {
                     <MediaCover showStatus mediaType={mediaType} data={singleMedia[websiteLang]}/>
                     <div className="general-info">
                         <div className="socials">
+                            {(singleMedia[websiteLang].homepage || singleMedia.en.homepage) &&
+                                <a href={singleMedia[websiteLang].homepage || singleMedia.en.homepage} target="_blank" rel="noreferrer"><AiFillHome/></a>
+                            }
                             {singleMedia.socials.id &&
                                 <a href={`https://www.themoviedb.org/movie/${singleMedia.socials.id}`} target="_blank" rel="noreferrer"><img src="/img/tmdb.png"/></a>
                             }
@@ -176,50 +190,87 @@ export const MediaPopup = ({mediaType, id}) => {
                     </div>
                 </div>
                 {singleMedia.duringcreditsstinger && !singleMedia.aftercreditsstinger &&
-                    <div className="announcement">DURING CREDITS STINGER!</div>
+                    <div className="announcement green">{translate("WITH DURING CREDITS STINGER!")}</div>
                 }
                 {singleMedia.aftercreditsstinger && !singleMedia.duringcreditsstinger &&
-                    <div className="announcement">AFTER CREDITS STINGER!</div>
+                    <div className="announcement green">{translate("WITH AFTER CREDITS STINGER!")}</div>
                 }
                 {singleMedia.aftercreditsstinger && singleMedia.duringcreditsstinger &&
-                    <div className="announcement">DURING & AFTER CREDITS STINGER!</div>
+                    <div className="announcement green">{translate("WITH DURING & AFTER CREDITS STINGERS!")}</div>
+                }
+                {singleMedia[websiteLang].budget > 0 && (singleMedia[websiteLang].revenue || singleMedia[websiteLang].revenue === 0) && singleMedia[websiteLang].revenue < singleMedia[websiteLang].budget &&
+                    <div className="announcement red">FLOP!</div>
                 }
                 <div className="credits-container">
                     <div className="credits">
-                        <div className="voice"><strong>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}</strong> {singleMedia[websiteLang].production_countries.map(g=>g.name).join(", ")}</div>
-                        {directors.length > 0 &&
-                            <div className="voice"><strong>{translate(directors.length > 1 ? "Directors" : "Director")}</strong> {directors.map(d=>d.original_name).join(", ")}</div>
+                        {singleMedia[websiteLang].budget > 0 &&
+                            <div className="voice"><h4>{translate("Budget")}</h4> {singleMedia[websiteLang].budget.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
                         }
-                        {producers.length > 0 &&
-                            <div className="voice"><strong>{translate(producers.length > 1 ? "Producers" : "Producer")}</strong> {producers.map(d=>d.original_name).join(", ")}</div>
+                        {singleMedia[websiteLang].production_countries.length > 0 &&
+                            <div className="voice"><h4>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}</h4> {singleMedia[websiteLang].production_countries.map(g=>g.name).join(", ")}</div>
+                        }
+                        {directors.length > 0 &&
+                            <div className="voice">
+                                <h4>{translate(directors.length > 1 ? "Directors" : "Director")}</h4> 
+                                <div className="cast-members">
+                                    {directors.map((data, c) => (
+                                        <CastMember key={`cast${c}`} data={data}/>
+                                    ))}
+                                </div>
+                            </div>
                         }
                     </div>
                     <div className="credits">
+                        {(singleMedia[websiteLang].revenue || singleMedia[websiteLang].revenue === 0) &&
+                            <div className="voice"><h4>{translate("Revenue")}</h4> {singleMedia[websiteLang].revenue.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                        }
+                        {producers.length > 0 &&
+                            <div className="voice"><h4>{translate(producers.length > 1 ? "Producers" : "Producer")}</h4> {producers.map(d=>d.original_name).join(", ")}</div>
+                        }
                         {storyWriters.length > 0 &&
-                            <div className="voice"><strong>{translate("Story")}</strong> {storyWriters.map(d=>d.original_name).join(", ")}</div>
+                            <div className="voice"><h4>{translate("Story")}</h4> {storyWriters.map(d=>d.original_name).join(", ")}</div>
                         }
                         {screenplayWriters.length > 0 &&
-                            <div className="voice"><strong>{translate("Screenplay")}</strong> {screenplayWriters.map(d=>d.original_name).join(", ")}</div>
+                            <div className="voice"><h4>{translate("Screenplay")}</h4> {screenplayWriters.map(d=>d.original_name).join(", ")}</div>
                         }
-                        <div className="voice"><strong>{translate("Cast")}</strong> <span>{cast.map( (c, i) => (
-                            <Fragment key={`cast${i}`}>
-                                {i > 0 && ", "}
-                                {c.popularity > 20 ?
-                                    <span>{c.original_name}</span>
-                                :
-                                    <span style={{fontWeight: "300"}}>{c.original_name}</span>
-                                }
-                            </Fragment>
-                        ))}</span></div>
                     </div>
                 </div>
-                <div className="extra" style={{marginTop: "1rem"}}>
-                    <div className="voice"><strong>{translate("Keywords")}</strong>{singleMedia.keywords.map(k=>k.name).join(", ")}</div>
-                </div>
+                {allCast.length > 0 &&
+                    <div className="cast">
+                        <h4>{translate("Popular Cast")}</h4> 
+                        {popularCast.length > 0 &&
+                            <div className="cast-members">
+                                {popularCast.map((data, c) => (
+                                    <CastMember key={`cast${c}`} data={data}/>
+                                ))}
+                            </div>
+                        }
+                        {otherCast.length > 0 &&
+                            <div className="other-cast">
+                                <h4>Other Cast</h4> {otherCast.slice(0,10).map((data, c)=>{
+                                    return(
+                                        <span key={`other${c}`}>
+                                            {c > 0 && ", "}
+                                            <strong><Link href="">{data.original_name}</Link></strong>
+                                            {data.character && " as "}
+                                            {data.character && <span style={{fontStyle:"italic"}}>{data.character}</span>}
+                                        </span>
+                                    )
+                                })}
+                            </div>
+                        }
+                    </div>
+                }
                 {singleMedia.en.overview.length > 0 &&
                     <div className="overview">
                         <h4>{translate("Overview")}</h4>
                         {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
+                    </div>
+                }
+                {singleMedia.keywords.length > 0 &&
+                    <div className="extra">
+                        <h4>{translate("Keywords")}</h4>
+                        {singleMedia.keywords.map(k=>k.name).join(", ")}
                     </div>
                 }
                 <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
