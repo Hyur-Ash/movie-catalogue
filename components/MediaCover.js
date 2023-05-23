@@ -10,7 +10,7 @@ import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
 import noImage from '/public/img/not-found.jpg';
 
-export const MediaCover = ({data, character, showTitle, href, mediaType, showStatus, page, hideTrash}) => {
+export const MediaCover = ({data, character, showTitle, href, onClick, mediaType, showStatus, page, hideTrash}) => {
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -20,7 +20,7 @@ export const MediaCover = ({data, character, showTitle, href, mediaType, showSta
     const router = useRouter();
 
     const {
-        translate, setOriginLink, favorites, trashed
+        translate, favorites, trashed
     } = useContext(Context);
 
 
@@ -58,8 +58,6 @@ export const MediaCover = ({data, character, showTitle, href, mediaType, showSta
           <Link href={href} className="media clickable" onClick={(e)=>{
             if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
               e.preventDefault();
-            }else{
-              setOriginLink(router);
             }
           }}>
             <Content
@@ -73,7 +71,7 @@ export const MediaCover = ({data, character, showTitle, href, mediaType, showSta
               />
           </Link>
         :
-        <div className="media">
+        <div className={`media ${onClick ? "clickable" : ""}`} onClick={()=>{onClick && onClick()}}>
             {data && data.id &&
               <Content 
                 data={data} 
@@ -110,7 +108,16 @@ export const MediaCover = ({data, character, showTitle, href, mediaType, showSta
     }
 
     const popColor = (vote) => {
-        return vote > 10 ? vote > 19 ? vote > 29 ? vote > 49 ? vote > 89? "lightblue" : "green" : "lightgreen" : "yellow" : "orange" : "red";
+        return vote < 10 ? "black" :
+        vote < 20 ? "grey" :
+        vote < 30 ? "lightgreen" :
+        vote < 40 ? "green" :
+        vote < 50 ? "darkgreen" :
+        vote < 60 ? "yellow" :
+        vote < 70 ? "gold" :
+        vote < 80 ? "orange" :
+        vote < 90 ? "red" :
+        vote < 100 ? "lightblue" : "blue";
     }
 
     const addFavorite = (data) => {
@@ -231,7 +238,7 @@ export const MediaCover = ({data, character, showTitle, href, mediaType, showSta
           <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
         </>}
         {mediaType === "person" && <>
-          <div className={`vote-average ${popColor(data.popularity)}`}>{Math.round(data.popularity)}</div>
+          <div className={`vote-average ${popColor(data.popularity)}`}>{Math.floor(data.popularity)}</div>
           {data.known_for_department &&
             <div className={`${data.known_for_department.replaceAll(" ","").split("&")[0].toLowerCase()} person-alert`}>{translate(data.known_for_department.split("&")[0])}</div>
           }

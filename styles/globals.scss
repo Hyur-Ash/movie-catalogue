@@ -52,6 +52,14 @@ h1,h2,h3{
   text-align: center;
 }
 
+.select-with-button{
+  display: flex;
+  gap: .5rem;
+  >div{
+    width: 100%;
+  }
+}
+
 .form{
   display: flex;
   flex-direction: column;
@@ -65,6 +73,12 @@ h1,h2,h3{
     display: grid;
     gap: 1rem;
     grid-template-columns: 200px 400px;
+    &.genres button{
+      padding: 0;
+      height: 36px;
+      width: 45px;
+      font-size: 1rem;
+    }
     align-items: center;
     @media screen and (max-width: 700px){
       grid-template-columns: 1fr;
@@ -120,6 +134,11 @@ button, .c-button{
   &.no-display{
     display: none;
   }
+}
+
+.media-popup{
+  position: relative;
+  z-index: 150;
 }
 
 .medias{
@@ -309,14 +328,19 @@ button, .c-button{
     display: flex;
     justify-content: center;
     padding-top: .2rem;
-    &.red{background-color: red; color: white;}
-    &.orange{background-color: orange;}
-    &.yellow{background-color: yellow;}
-    &.lightgreen{background-color: lightgreen;}
-    &.green{background-color: green; color:white;}
-    &.lightblue{background-color: lightblue;}
     font-weight: 500;
     box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
+    &.black{background-color: black;}
+    &.grey{background-color: grey;}
+    &.lightgreen{background-color: lightgreen;}
+    &.green{background-color: green;}
+    &.darkgreen{background-color: darkgreen;}
+    &.yellow{background-color: yellow;}
+    &.gold{background-color: gold;}
+    &.orange{background-color: orange;}
+    &.red{background-color: red;}
+    &.lightblue{background-color: lightblue;}
+    &.blue{background-color: blue;}
   }
   .vote-count{
     background-color: transparent;
@@ -327,8 +351,31 @@ button, .c-button{
     color: black;
     width: 2.75rem;
     text-align: center;
-    &.red, &.green{
+  }
+  .vote-average, .vote-count{
+    &.black, &.grey, &.green, &.darkgreen, &.red, &.blue{
       color: white;
+    }
+  }
+}
+
+img{
+  max-width: 100%;
+}
+
+.production-companies{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+  .production-company{
+    width: 80px;
+    display: flex;
+    flex-wrap: wrap;
+    .image{
+      display: flex;
+      align-items: center;
     }
   }
 }
@@ -467,8 +514,14 @@ header{
   &.red{
     background-color: red;
   }
+  &.grey{
+    background-color: grey;
+  }
   &.green{
     background-color: green;
+  }
+  &.blue{
+    background-color: blue;
   }
 }
 
@@ -508,11 +561,36 @@ header{
   margin: auto;
 }
 
+.profit{
+  padding: .25em;
+  &.red{
+    font-weight: 600;
+    background-color: red;
+    color: white;
+  }
+  &.grey{
+    font-weight: 600;
+    background-color: grey;
+    color: white;
+  }
+  &.green{
+    font-weight: 600;
+    background-color: green;
+    color: white;
+  }
+  &.blue{
+    font-weight: 600;
+    background-color: blue;
+    color: white;
+  }
+}
+
 .cast-members{
     display: flex;
     gap: .5rem;
     flex-wrap: wrap;
   .cast-member{
+    cursor: pointer;
     width: 100px;
     img{
       max-width: 100%;

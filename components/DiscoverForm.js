@@ -24,10 +24,11 @@ export default function DiscoverForm({onSubmit}){
     },[]);
 
     const {
-        movieGenres, tvGenres, yearsContent, sortValues,
+        tmdbConfig,
+        yearsContent,
         discoveredMedias, singleMedia, setSingleMedia, properNames, loadingMedias, loadSingleMedia, lastDiscover,
         totalDPages, currentDPage, setCurrentDPage, 
-        translate, websiteLang, setWebsiteLang, languageCodes,
+        translate, websiteLang, setWebsiteLang,
         languagesOptions, fromValue, toValue,
         isYearRange, setIsYearRange,
         isVoteAverageRange, setIsVoteAverageRange,
@@ -35,13 +36,13 @@ export default function DiscoverForm({onSubmit}){
         currentUser
     } = useContext(Context);
 
-    const [genres, setGenres] = useState(movieGenres);
-
-    const allGenres = genres.map(g=>({value: g.id, label: translate(g.name)}));
+    const [allGenres, setAllGenres] = useState([]);
     const [availableGenres, setAvailableGenres] = useState(JSON.parse(JSON.stringify(allGenres)));
 
     const allVotes = Array.from({ length: 11 }).map((el, i)=>({value: i, label: i}));
     const [availableVotes, setAvailableVotes] = useState(JSON.parse(JSON.stringify(allVotes)));
+
+    const languages = tmdbConfig?.languages ?? [];
 
     const formOptions = {
       mediaType: [
@@ -50,18 +51,19 @@ export default function DiscoverForm({onSubmit}){
       ],
       genres: availableGenres,
       years: [{value: "", label: translate("Any")}, ...yearsContent.map(g=>({value: g.id, label: g.name}))],
-      sortValues: sortValues.map(g=>({value: g.id, label: translate(g.name)})),
+      sortValues: tmdbConfig?.sort_values ? tmdbConfig.sort_values.map(g=>({value: g.id, label: translate(g.name)})) : [],
       orderValues: [
         {value: 'desc', label: translate('Descending')},
         {value: 'asc', label: translate('Ascending')},
       ],
-      originalLanguages: [{value: "", label: translate("Any")}, ...languageCodes.map(lc=>({value: lc.code, label: translate(lc.name)}))],
+      originalLanguages: [{value: "", label: translate("Any")}, ...languages.map(lc=>({value: lc.iso_639_1, label: translate(lc.english_name)}))],
       votes: allVotes,
     };
 
     const firstFormValues = {
       mediaType: formOptions.mediaType[0],
       withGenres: [],
+      withGenresLogic: ",",
       withoutGenres: [],
       sortBy: formOptions.sortValues[0],
       orderBy: formOptions.orderValues[0],
@@ -76,9 +78,12 @@ export default function DiscoverForm({onSubmit}){
 
     const [formValues, setFormValues] = useLocalStorage('discoverValues', firstFormValues);
     useEffect(()=>{
-      if(formValues){
-        const genres = formValues.mediaType.value === 'movie' ? movieGenres : tvGenres;
-        setGenres(genres);
+      console.log(formValues)
+    },[formValues])
+    useEffect(()=>{
+      if(tmdbConfig?.genres && formValues?.mediaType){
+        const genres = tmdbConfig.genres[formValues.mediaType.value];
+        setAllGenres(genres.map(g=>({value: g.id, label: translate(g.name)})));
         setFormValues(curr=>{
           if(!curr){return curr}
           const newWithGenres = [], newWithoutGenres = [];
@@ -95,15 +100,18 @@ export default function DiscoverForm({onSubmit}){
           return {...curr, withGenres: newWithGenres, withoutGenres: newWithoutGenres,}
         });
       }
-    },[formValues?.mediaType]);
+    },[tmdbConfig, formValues?.mediaType]);
 
     useEffect(()=>{
       if(formValues){
         const newAvailableGenres = [];
         allGenres.forEach(g=>{
-          if( formValues.withGenres.filter(w=>w.value===g.value).length > 0 || 
-              formValues.withoutGenres.filter(w=>w.value===g.value).length > 0
-          ){return;}
+          if(
+            formValues.withGenres.filter(w=>w.value===g.value).length > 0 || 
+            formValues.withoutGenres.filter(w=>w.value===g.value).length > 0
+          ){
+            return;
+          }
           newAvailableGenres.push(g);
         });
         setAvailableGenres(newAvailableGenres);
@@ -145,10 +153,12 @@ export default function DiscoverForm({onSubmit}){
       
     }
     useEffect(()=>{
+      if(!tmdbConfig || !tmdbConfig.sort_values || !formValues.sortValues){return;}
       setFormValues(curr=>({
           ...curr,
           mediaType: formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0],
           withGenres: allGenres.map(m=>curr.withGenres.map(w=>w.value).includes(m.value) && m),
+          withGenresLogic: curr.withGenresLogic,
           withoutGenres: allGenres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
           sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
           orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
@@ -158,7 +168,7 @@ export default function DiscoverForm({onSubmit}){
           voteAverageFrom: formOptions.votes.filter(m=>m.value===curr.voteAverageFrom.value)[0],
           voteAverageTo: getAverageTo(curr),
       }));
-    },[websiteLang]) 
+    },[tmdbConfig, websiteLang]) 
 
     const changeFormValue = (key, value) => {
       setFormValues(curr=>({...curr, [key]: value}));
@@ -201,17 +211,22 @@ export default function DiscoverForm({onSubmit}){
             isSearchable={false}
           />
         </div>
-        <div className="form-group">
-          <label>{translate("With genres")}</label>
-          <Select
-            instanceId={"withGenres"} 
-            options={formOptions.genres}
-            value={formValues.withGenres}
-            isMulti
-            onChange={(e)=>{changeFormValue('withGenres', e)}}
-            placeholder={translate("Select...")}
-          />
-        </div>
+        <div className={`form-group genres three`}>
+            <label>{translate("With genres")}</label>
+            <div className="select-with-button">
+              <Select
+                instanceId={`withGenres`} 
+                options={formOptions.genres}
+                value={formValues.withGenres}
+                isMulti
+                onChange={(e)=>{changeFormValue('withGenres', e)}}
+                placeholder={translate("Select...")}
+              />
+              <button onClick={()=>{
+                changeFormValue('withGenresLogic', formValues.withGenresLogic === "," ? "|" : ",");
+              }}>{formValues.withGenresLogic === "," ? translate("AND") : translate("OR")}</button>
+            </div>
+          </div>
         <div className="form-group">
           <label>{translate("Without genres")}</label>
           <Select

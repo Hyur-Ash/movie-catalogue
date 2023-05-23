@@ -15,35 +15,11 @@ import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 import {AiOutlineLoading} from 'react-icons/ai';
 
-export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoading, onScrollEnd}){
-
-    const router = useRouter();
+export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoading, onScrollEnd, setPopupId}){
 
     const {
-        translate, scrollId, setScrollId,
+        translate,
     } = useContext(Context);
-
-    const scrollToId = async (id) => {
-        let tests = 0;
-        let mediaCover;
-        while(!mediaCover && tests < 100){
-            mediaCover = await new Promise(resolve => setTimeout(() => {
-                resolve(document.querySelector(`.media-id-${id}`));
-            }, 50));
-            tests++;
-        }
-        if(mediaCover){
-            mediaCover.scrollIntoView({ behavior: 'smooth', block: 'center'});
-            router.replace(router, undefined, { shallow: true });
-        }
-    }
-
-    useEffect(()=>{
-        if(scrollId !== false){
-            scrollToId(scrollId);
-            setScrollId(false);
-        }
-    },[scrollId])
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -63,13 +39,6 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
         })
     },[]);
 
-    const [currentMediaType, setCurrentMediaType] = useLocalStorage("currentMediaType", "movie");
-    useEffect(()=>{
-        if(mediaType){
-            setCurrentMediaType(mediaType);
-        }
-    },[mediaType])
-
     return isMounted && (<>
         <div className="movie-scroller">
           {mediaPages.length > 0 && mediaPages[0].results.length > 0 &&
@@ -82,7 +51,11 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
                             mediaType={mediaType} 
                             showTitle 
                             data={media} 
-                            href={`/${mediaType}/${media.id}`}
+                            // href={`/${mediaType}/${media.id}`}
+                            onClick={()=>{
+                                setPopupId(media.id);
+                                window.history.pushState({}, "", `/${mediaType}/${media.id}`);
+                            }}
                             hideTrash={hideTrash}
                         />
                     ))}

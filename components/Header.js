@@ -24,7 +24,7 @@ export default function Header({langOnly}){
     },[]);
 
     const {
-        movieGenres, tvGenres, yearsContent, sortValues,
+        yearsContent,
         discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
         totalDPages, currentDPage, setCurrentDPage, 
         translate, websiteLang, setWebsiteLang, 

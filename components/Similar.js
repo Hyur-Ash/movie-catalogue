@@ -24,7 +24,7 @@ export default function Similar({mediaType, mediaId}) {
   },[]);
 
   const {
-    tmdb_api_key,
+    tmdbConfig,
     translate, currentUser, websiteLang, properNames,
     isVoteAverageRange, isVoteCountRange, isYearRange,
     getMedia
@@ -76,7 +76,7 @@ export default function Similar({mediaType, mediaId}) {
   const getPage = async (pageNum) => {
       console.log("get", pageNum)
       const tmdb_main_url = "https://api.themoviedb.org/3";
-      const params = {api_key: tmdb_api_key, page: pageNum, language: websiteLang};
+      const params = {api_key: tmdbConfig?.api_key, page: pageNum, language: websiteLang};
       try{
           const res = await axios.get(`${tmdb_main_url}/${mediaType}/${mediaId}/similar`, {params});
           const results = [];

@@ -13,6 +13,8 @@ import {MediaCover} from '/components/MediaCover';
 import {FaFilm} from 'react-icons/fa';
 import Link from 'next/link';
 import Header from '/components/Header';
+import { MediaPopup } from '/components/MediaPopup';
+import { PersonPopup } from '/components/PersonPopup';
 
 export default function Favorites() {
 
@@ -22,7 +24,7 @@ export default function Favorites() {
   },[]);
 
   const {
-    movieGenres, tvGenres, yearsContent, sortValues,
+    yearsContent,
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalDPages, setCurrentDPage, 
     translate, websiteLang, setWebsiteLang,
@@ -48,6 +50,8 @@ export default function Favorites() {
 
   const [selectedMedia, setSelectedMedia] = useLocalStorage('selectedMedia', 'movie');
   const [emptyFavoritesMode, setEmptyFavoritesMode] = useState(false);
+
+  const [popupConfig, setPopupConfig] = useState(null);
 
   return isMounted && currentUser && (<>
     <Header />
@@ -89,7 +93,14 @@ export default function Favorites() {
                               showTitle 
                               data={media} 
                               key={`media${i}`} 
-                              href={`/${selectedMedia}/${media.id}`}
+                              // href={`/${selectedMedia}/${media.id}`}
+                              onClick={()=>{
+                                setPopupConfig({
+                                  mediaType: selectedMedia,
+                                  id: media.id
+                                });
+                                window.history.pushState({}, "", `/${selectedMedia}/${media.id}`);
+                              }}
                             />
                         ))}
                     </div>
@@ -97,5 +108,17 @@ export default function Favorites() {
             </div>
         </main>
     </div>
+    {popupConfig !== null && popupConfig.mediaType !== "person" && 
+      <MediaPopup mediaType={popupConfig.mediaType} id={popupConfig.id} onClose={()=>{
+        setPopupConfig(null);
+        window.history.pushState({}, "", `/favorites`);
+      }} />
+    }
+    {popupConfig !== null && popupConfig.mediaType === "person" && 
+      <PersonPopup id={popupConfig.id} onClose={()=>{
+        setPopupConfig(null);
+        window.history.pushState({}, "", `/favorites`);
+      }} />
+    }
   </>)
 }

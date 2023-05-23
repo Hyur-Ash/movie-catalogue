@@ -15,6 +15,7 @@ import {FaStar} from 'react-icons/fa';
 import Link from 'next/link';
 import MovieScroller from '/components/MovieScroller';
 import DiscoverForm from '/components/DiscoverForm';
+import { MediaPopup } from '/components/MediaPopup';
 
 export default function Discover() {
 
@@ -24,6 +25,7 @@ export default function Discover() {
     },[]);
 
     const {
+      tmdbConfig,
       translate, currentUser, websiteLang, properNames,
       isVoteAverageRange, isVoteCountRange, isYearRange,
     } = useContext(Context);
@@ -63,15 +65,13 @@ export default function Discover() {
 
   const changeConfig = async (formValues) => {
 
-    const tmdb_api_key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
     const FV = JSON.parse(JSON.stringify(formValues));
     const currentNames = properNames[FV.mediaType.value];
     const params = {
-        api_key: tmdb_api_key,
+        api_key: tmdbConfig?.api_key,
         sort_by: `${FV.sortBy.value}.${FV.orderBy.value}`,
-        with_genres: `${FV.withGenres.map(e=>e.value).toString()}`,
-        without_genres: `${FV.withoutGenres.map(e=>e.value).toString()}`,
+        with_genres: FV.withGenres.map(e=>e.value).join(FV.withGenresLogic),
+        without_genres: FV.withoutGenres.map(e=>e.value).join(","),
         language: websiteLang,
         with_original_language: FV.originalLanguage.value === 'any' ? '' : FV.originalLanguage.value,
         ["vote_average.gte"]: FV.voteAverageFrom.value === 'any' ? '' : FV.voteAverageFrom.value.toString(),
@@ -131,6 +131,8 @@ export default function Discover() {
       setTimeout(()=>{setIsLoading(false)}, 1000);
   }
 
+  const [popupId, setPopupId] = useState(null);
+
   return isMounted && currentUser && (<>
     <Head>
       <title>{translate("Hyur's Media Library")}</title>
@@ -154,6 +156,7 @@ export default function Discover() {
           mediaPages={mediaPages}
           isLoading={isLoading}
           mediaType={config?.mediaType}
+          setPopupId={setPopupId}
           onScrollEnd={()=>{
             const loading = loadingRef.current;
             if(loading){
@@ -167,6 +170,12 @@ export default function Discover() {
             loadPages(lastPage.page + 1, 5, mediaPagesRef.current);
           }}
         />
+        {config?.mediaType && popupId !== null && 
+          <MediaPopup mediaType={config.mediaType} id={popupId} onClose={()=>{
+            setPopupId(null);
+            window.history.pushState({}, "", `/discover`);
+          }} />
+        }
       </main>
 
     </div>

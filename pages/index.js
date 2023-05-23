@@ -22,7 +22,7 @@ export default function Discover() {
   },[]);
 
   const {
-    movieGenres, tvGenres, yearsContent, sortValues,
+    yearsContent,
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalSPages, currentSPage, setCurrentSPage, 
     translate, websiteLang, setWebsiteLang, 
@@ -47,6 +47,9 @@ export default function Discover() {
     created: translate("User successfully created!"),
     notFound: translate("User not found.")
   }
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   return isMounted && users && (<>
     <Head>
@@ -128,6 +131,28 @@ export default function Discover() {
             <button onClick={()=>{setCurrentUserIndex(null)}}>
                 {translate("Log out")}
             </button>
+            <div style={{color:"white"}}>
+                <h3>{translate("Change password")}</h3>
+                <div style={{margin:"1rem 0"}}>
+                    <p>{translate("Old password")}</p>
+                    <input style={{padding:".25em .75em"}} type="password" value={oldPassword} onChange={(e)=>{setOldPassword(e.target.value)}}/>
+                </div>
+                <div style={{margin:"1rem 0"}}>
+                    <p>{translate("New password")}</p>
+                    <input style={{padding:".25em .75em"}} type="password" value={newPassword} onChange={(e)=>{setNewPassword(e.target.value)}}/>
+                </div>
+                <button disabled={oldPassword !== currentUser.password && newPassword.length === 0} onClick={()=>{
+                    if(oldPassword !== currentUser.password && newPassword.length === 0){return;}
+                    const index = users.indexOf(currentUser);
+                    const newUsers = JSON.parse(JSON.stringify(users));
+                    newUsers[index].password = newPassword;
+                    setUsers(newUsers);
+                    setOldPassword("");
+                    setNewPassword("");
+                }}>
+                    {translate("Change")}
+                </button>
+            </div>
         </>}
 
     </div>

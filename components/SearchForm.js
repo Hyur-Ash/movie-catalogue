@@ -96,6 +96,11 @@ export default function SearchForm({onSubmit}){
               type="text"
               value={formValues.query}
               onChange={(e)=>{changeFormValue('query', e.target.value);}}
+              onKeyDown={(e)=>{
+                if(e.key === 'Enter') {
+                  onSubmit(formValues);
+                }
+              }}
             />
           </div>
           <div className="form-group submit">

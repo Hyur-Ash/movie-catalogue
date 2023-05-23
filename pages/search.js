@@ -15,6 +15,8 @@ import {FaStar} from 'react-icons/fa';
 import Link from 'next/link';
 import MovieScroller from '/components/MovieScroller';
 import SearchForm from '/components/SearchForm';
+import { MediaPopup } from '/components/MediaPopup';
+import { PersonPopup } from '/components/PersonPopup';
 
 export default function Discover() {
 
@@ -24,6 +26,7 @@ export default function Discover() {
   },[]);
 
   const {
+    tmdbConfig,
     translate, currentUser, websiteLang, properNames,
     isVoteAverageRange, isVoteCountRange, isYearRange,
   } = useContext(Context);
@@ -64,13 +67,11 @@ export default function Discover() {
 
   const changeConfig = async (formValues) => {
 
-    const tmdb_api_key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
     const FV = JSON.parse(JSON.stringify(formValues));
     const currentNames = properNames[FV.mediaType.value];
     const mediaType = FV.mediaType.value;
     const params = {
-        api_key: tmdb_api_key,
+        api_key: tmdbConfig?.api_key,
         query: FV.query.trim().length > 0 ? FV.query.trim() : "",
         language: websiteLang,
     }
@@ -119,7 +120,9 @@ export default function Discover() {
 
   useEffect(()=>{
     console.log(mediaPages)
-  },[mediaPages])
+  },[mediaPages]);
+
+  const [popupId, setPopupId] = useState(null);
 
   return isMounted && currentUser && (<>
     <Head>
@@ -144,6 +147,7 @@ export default function Discover() {
           mediaPages={mediaPages}
           isLoading={isLoading}
           mediaType={config?.mediaType}
+          setPopupId={setPopupId}
           onScrollEnd={()=>{
             const loading = loadingRef.current;
             if(loading){
@@ -157,6 +161,18 @@ export default function Discover() {
             loadPages(lastPage.page + 1, 5, mediaPagesRef.current);
           }}
         />
+        {config?.mediaType && config.mediaType !== "person" && popupId !== null && 
+          <MediaPopup mediaType={config.mediaType} id={popupId} onClose={()=>{
+            setPopupId(null);
+            window.history.pushState({}, "", `/search`);
+          }} />
+        }
+        {config?.mediaType && config.mediaType === "person" && popupId !== null && 
+          <PersonPopup id={popupId} onClose={()=>{
+            setPopupId(null);
+            window.history.pushState({}, "", `/search`);
+          }} />
+        }
       </main>
 
     </div>

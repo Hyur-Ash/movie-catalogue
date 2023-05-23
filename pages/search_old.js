@@ -22,7 +22,7 @@ export default function Discover() {
   },[]);
 
   const {
-    movieGenres, tvGenres, yearsContent, sortValues,
+    yearsContent,
     discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
     totalSPages, currentSPage, setCurrentSPage, 
     translate, websiteLang, setWebsiteLang, 
