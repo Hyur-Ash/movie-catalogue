@@ -233,7 +233,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
               }}/>
           </div>
         </>}
-        {mediaType !== "person" && data.vote_count > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
+        {mediaType !== "person" && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
           <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
           <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
         </>}
