@@ -253,12 +253,29 @@ button, .c-button{
     text-transform: uppercase;
     position: absolute;
     bottom: 0;
-    right: 0;
-    height: 2.5rem;
+    left: 0;
     background-color: $red;
     color: white;
     font-weight: 500;
     padding: .5rem;
+    font-size: .9em;
+    display: flex;
+    align-items: center;
+    &.rumored{
+      background-color: black;
+    }
+    &.canceled{
+      background-color: black;
+    }
+    &.in-production{
+      background-color: red;
+    }
+    &.post-production{
+      background-color: blue;
+    }
+    &.released{
+      background-color: green;
+    }
   }
   .ongoing-alert{
     text-transform: uppercase;

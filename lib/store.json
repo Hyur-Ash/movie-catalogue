@@ -587,6 +587,22 @@
         },
         "Include Documentaries":{
             "it": "Includi Documentari"
+        },
+        "Post Production":{
+            "en": "In Post Produzione",
+            "it": "In Post Produzione"
+        },
+        "In Production":{
+            "it": "In Produzione"
+        },
+        "Rumored":{
+            "it": "Vociferato"
+        },
+        "Released":{
+            "it": "Rilasciato"
+        },
+        "Canceled":{
+            "it": "Annullato"
         }
     }
 }

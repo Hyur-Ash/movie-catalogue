@@ -244,8 +244,15 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
           }
           <div className={`vote-count ${popColor(data.popularity)}`}>{data.gender === 1 ? "F" : data.gender === 2 ? "M" : "NB"}</div>
         </>}
-        {showStatus && mediaType !== "person" && moment(data[currentNames.release_date],"YYYY-MM-DD") > moment(Date.now()) ? 
-          <div className="upcoming-alert">{translate("upcoming")}</div>
+        {data.status &&
+          <div 
+            className={`upcoming-alert ${data.status ? data.status.toLowerCase().replaceAll(" ", "-") : ""}`}
+          >{translate(data.status ?? "upcoming")}</div>
+        }
+        {showStatus && mediaType !== "person" && !data.status && moment(data[currentNames.release_date],"YYYY-MM-DD").valueOf() > moment().valueOf() ? 
+          <div 
+            className={`upcoming-alert`}
+          >{translate("upcoming")}</div>
         : <>
           {showStatus && mediaType === 'tv' && <>
             {data.status === 'Canceled' ? 
