@@ -25,9 +25,8 @@ export default function Discover() {
     },[]);
 
     const {
-      tmdbConfig,
+      api_key,
       translate, currentUser, websiteLang, properNames,
-      isVoteAverageRange, isVoteCountRange, isYearRange,
     } = useContext(Context);
 
     const router = useRouter();
@@ -63,12 +62,17 @@ export default function Discover() {
       }
   },[websiteLang]);
 
+  const [isYearRange, setIsYearRange] = useLocalStorage('isYearRange-discover', false);
+  const [isVoteAverageRange, setIsVoteAverageRange] = useLocalStorage('isVoteAverageRange-discover', false);
+  const [isVoteCountRange, setIsVoteCountRange] = useLocalStorage('isVoteCountRange-discover', false);
+  const [isRuntimeRange, setIsRuntimeRange] = useLocalStorage('isRuntimeRange-discover', false);
+
   const changeConfig = async (formValues) => {
 
     const FV = JSON.parse(JSON.stringify(formValues));
     const currentNames = properNames[FV.mediaType.value];
     const params = {
-        api_key: tmdbConfig?.api_key,
+        api_key,
         sort_by: `${FV.sortBy.value}.${FV.orderBy.value}`,
         with_genres: FV.withGenres.map(e=>e.value).join(FV.withGenresLogic),
         without_genres: FV.withoutGenres.map(e=>e.value).join(","),
@@ -76,6 +80,7 @@ export default function Discover() {
         with_original_language: FV.originalLanguage.value === 'any' ? '' : FV.originalLanguage.value,
         ["vote_average.gte"]: FV.voteAverageFrom.value === 'any' ? '' : FV.voteAverageFrom.value.toString(),
         ["vote_count.gte"]: FV.voteCountFrom.toString(),
+        ["with_runtime.gte"]: FV.runtimeFrom.value || 1,
     }
     if(FV.mediaType.value === 'movie'){
         if(isVoteAverageRange){
@@ -121,12 +126,12 @@ export default function Discover() {
   }
 
   const loadPages = async (start, step, startPages) => {
-      console.log(start, step, startPages)
       setIsLoading(true);
       const pages = JSON.parse(JSON.stringify(startPages));
       for(let i=start; i<start+step; i++){
           pages.push(await getPage(i));
       }
+      console.log(pages);
       setMediaPages(pages);
       setTimeout(()=>{setIsLoading(false)}, 1000);
   }
@@ -146,6 +151,14 @@ export default function Discover() {
 
       <main>
         <DiscoverForm 
+          isYearRange={isYearRange}
+          setIsYearRange={setIsYearRange}
+          isVoteAverageRange={isVoteAverageRange}
+          setIsVoteAverageRange={setIsVoteAverageRange}
+          isVoteCountRange={isVoteCountRange}
+          setIsVoteCountRange={setIsVoteCountRange}
+          isRuntimeRange={isRuntimeRange}
+          setIsRuntimeRange={setIsRuntimeRange}
           onSubmit={formValues => {
             setForceReload(true);
             changeConfig(formValues);

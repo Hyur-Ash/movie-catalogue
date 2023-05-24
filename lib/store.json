@@ -569,6 +569,24 @@
         },
         "OR":{
             "it": "O"
+        },
+        "Show Favorites":{
+            "it": "Mostra Preferiti"
+        },
+        "Show Trashed":{
+            "it": "Mostra Cestinati"
+        },
+        "hour":{
+            "it": "ora"
+        },
+        "Search type":{
+            "it": "Tipo di ricerca"
+        },
+        "Person":{
+            "it": "Persona"
+        },
+        "Include Documentaries":{
+            "it": "Includi Documentari"
         }
     }
 }

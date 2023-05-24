@@ -7,8 +7,9 @@ export default function Company({data, onClick}){
     return(
         <div className="production-company" onClick={()=>{onClick && onClick()}}>
             <div className="image">
-                <img src={data.logo_path ? `${tmdb_main_url_img_low}${data.logo_path}` : "/img/not-found.jpg"}/>
+                <img src={data.logo_path ? `${tmdb_main_url_img_low}${data.logo_path}` : "/img/company-not-found.jpg"}/>
             </div>
+            <span className="title">{data.name}</span>
         </div>
     )
 }

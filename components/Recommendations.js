@@ -15,6 +15,7 @@ import {FaStar} from 'react-icons/fa';
 import Link from 'next/link';
 import MovieScroller from '/components/MovieScroller';
 import SearchForm from '/components/SearchForm';
+import { MediaPopup } from '/components/MediaPopup';
 
 export default function Recommendations({mediaType, mediaId}) {
 
@@ -24,9 +25,9 @@ export default function Recommendations({mediaType, mediaId}) {
   },[]);
 
   const {
+    api_key,
     tmdbConfig,
-    translate, currentUser, websiteLang, properNames,
-    isVoteAverageRange, isVoteCountRange, isYearRange,
+    translate, currentUser, websiteLang,
     getMedia
   } = useContext(Context);
 
@@ -76,7 +77,7 @@ export default function Recommendations({mediaType, mediaId}) {
   const getPage = async (pageNum) => {
       console.log("get", pageNum)
       const tmdb_main_url = "https://api.themoviedb.org/3";
-      const params = {api_key: tmdbConfig?.api_key, page: pageNum, language: websiteLang};
+      const params = {api_key, page: pageNum, language: websiteLang};
       try{
           const res = await axios.get(`${tmdb_main_url}/${mediaType}/${mediaId}/recommendations`, {params});
           const results = [];
@@ -99,6 +100,8 @@ export default function Recommendations({mediaType, mediaId}) {
       setMediaPages(pages);
       setTimeout(()=>{setIsLoading(false)}, 1000);
   }
+
+  const [popupId, setPopupId] = useState(null);
 
   return isMounted && currentUser && (<>
     <Head>
@@ -129,6 +132,7 @@ export default function Recommendations({mediaType, mediaId}) {
             mediaPages={mediaPages}
             isLoading={isLoading}
             mediaType={mediaType}
+            setPopupId={setPopupId}
             onScrollEnd={()=>{
               const loading = loadingRef.current;
               if(loading){
@@ -146,5 +150,11 @@ export default function Recommendations({mediaType, mediaId}) {
       </main>
 
     </div>
+    {popupId !== null && 
+      <MediaPopup mediaType={mediaType} id={popupId} onClose={()=>{
+        setPopupId(null);
+        window.history.pushState({}, "", `/recommendations/${mediaType}/${mediaId}`);
+      }}/>
+    }
   </>)
 }

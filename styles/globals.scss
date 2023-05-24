@@ -60,6 +60,22 @@ h1,h2,h3{
   }
 }
 
+.scroller-filters{
+  color: white;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+  label{
+    display: flex;
+    gap: .5rem;
+    input{
+      zoom: 150%;
+    }
+  }
+}
+
 .form{
   display: flex;
   flex-direction: column;
@@ -371,11 +387,15 @@ img{
   margin-top: 1rem;
   .production-company{
     width: 80px;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: .25em;
     .image{
       display: flex;
       align-items: center;
+    }
+    .title{
+      font-size: .75em;
     }
   }
 }

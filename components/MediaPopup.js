@@ -30,6 +30,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
     },[]);
 
     const {
+        api_key,
         tmdbConfig,
         tmdb_main_url,
         yearsContent,
@@ -67,7 +68,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
     const [selectedCategory, setSelectedCategory] = useState(0);
     const loadMediaVideos = (mediaType, id) => {
         const params = {
-            api_key: tmdbConfig?.api_key,
+            api_key,
             language: websiteLang,
         }
         axios.get(`${tmdb_main_url}/${mediaType}/${id}/videos`, {params})

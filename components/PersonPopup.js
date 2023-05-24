@@ -1,7 +1,7 @@
 import {useState, useEffect, useContext, Fragment} from 'react';
 import { Context } from '/lib/Context';
 import Select from 'react-select';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Button, Modal, ModalHeader, ModalBody, FormGroup, Label, Input } from 'reactstrap';
 import axios from 'axios';
 import {useLocalStorage} from '/lib/useLocalStorage';
 import {useRouter} from 'next/router';
@@ -28,7 +28,7 @@ export const PersonPopup = ({id, onClose}) => {
     },[]);
 
     const {
-        tmdb_main_url,
+        tmdbConfig,
         yearsContent,
         discoveredMedias, discoverMedias, loadingMedias, lastDiscover,
         totalDPages, setCurrentDPage,
@@ -161,6 +161,14 @@ export const PersonPopup = ({id, onClose}) => {
     }
 
     const [mediaConfig, setMediaConfig] = useState(null);
+
+    const [filtersConfig, setFiltersConfig] = useLocalStorage("personPopupFiltersConfig", {
+        includeDocumentaries: false,
+        includeShortFilms: false
+    });
+    const changeFiltersConfig = (key, value) => {
+        setFiltersConfig(curr => ({...curr, [key]: value}));
+    }
 
     return isMounted && id && (<>
         <div className="media-popup">
@@ -322,11 +330,20 @@ export const PersonPopup = ({id, onClose}) => {
                             onClick={()=>{setOrderBy(-1)}}
                         >{translate("Ascending")}</div>
                     </div>
+                    <FormGroup switch>
+                        <Input
+                            type="switch"
+                            role="switch"
+                            checked={filtersConfig.includeDocumentaries || false}
+                            onChange={(e)=>{changeFiltersConfig("includeDocumentaries", e.target.checked)}}
+                        />
+                        <Label>{translate("Include Documentaries")}</Label>
+                    </FormGroup>
                     {currentCredits &&
                         <div className="person-credits">
                             {currentCredits.length > 0 &&
                                 <div className="person-media">
-                                    {currentCredits.map((data, d) => (
+                                    {currentCredits.map((data, d) => (<>
                                         <MediaCover 
                                             key={`data${d}`}
                                             // href={`/${data.mediaType}/${data.id}`} 
@@ -341,8 +358,9 @@ export const PersonPopup = ({id, onClose}) => {
                                             data={data} 
                                             showTitle 
                                             mediaType={data.mediaType}
+                                            hide={!filtersConfig.includeDocumentaries && data.genre_ids.includes(99)}
                                         />
-                                    ))}
+                                    </>))}
                                 </div>
                             }
                             {currentCredits.length === 0 &&

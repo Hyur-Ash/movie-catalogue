@@ -14,7 +14,13 @@ import {FaStar, FaFilm, FaSearch, FaTrash} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
 
-export default function DiscoverForm({onSubmit}){
+export default function DiscoverForm({
+  onSubmit, 
+  isYearRange, setIsYearRange, 
+  isVoteAverageRange, setIsVoteAverageRange, 
+  isVoteCountRange, setIsVoteCountRange,
+  isRuntimeRange, setIsRuntimeRange
+}){
     
     const router = useRouter();
 
@@ -26,14 +32,9 @@ export default function DiscoverForm({onSubmit}){
     const {
         tmdbConfig,
         yearsContent,
-        discoveredMedias, singleMedia, setSingleMedia, properNames, loadingMedias, loadSingleMedia, lastDiscover,
-        totalDPages, currentDPage, setCurrentDPage, 
-        translate, websiteLang, setWebsiteLang,
-        languagesOptions, fromValue, toValue,
-        isYearRange, setIsYearRange,
-        isVoteAverageRange, setIsVoteAverageRange,
-        isVoteCountRange, setIsVoteCountRange, setDiscoveredMedias,
-        currentUser
+        loadingMedias,
+        translate, websiteLang,
+        fromValue, toValue,
     } = useContext(Context);
 
     const [allGenres, setAllGenres] = useState([]);
@@ -41,10 +42,21 @@ export default function DiscoverForm({onSubmit}){
 
     const allVotes = Array.from({ length: 11 }).map((el, i)=>({value: i, label: i}));
     const [availableVotes, setAvailableVotes] = useState(JSON.parse(JSON.stringify(allVotes)));
+    
+    const getTimeLabel = (minutes) => {
+      let hours = minutes / 60;
+      if(hours >= 1){
+        minutes = Math.round((hours - Math.floor(hours)) * 60);
+        hours = Math.floor(hours);
+        return `${hours} ${hours > 1 ? translate("hours") : translate("hour")}${minutes > 0 ? ` ${minutes} ${translate("minutes")}` : ""}`;
+      }
+      return `${minutes} ${translate("minutes")}`;
+    }
+    const allRuntimes = Array.from({ length: 36 }).map((el, i)=>({value: (i+1)*10, label: getTimeLabel((i+1)*10)}));
 
     const languages = tmdbConfig?.languages ?? [];
 
-    const formOptions = {
+    const getFormOptions = () => ({
       mediaType: [
         {value: 'movie', label: translate('Movie')},
         {value: 'tv', label: translate('TV Show')}
@@ -58,7 +70,28 @@ export default function DiscoverForm({onSubmit}){
       ],
       originalLanguages: [{value: "", label: translate("Any")}, ...languages.map(lc=>({value: lc.iso_639_1, label: translate(lc.english_name)}))],
       votes: allVotes,
-    };
+      runtimes: [{value:"1", label: translate("Any")}, ...allRuntimes],
+    });
+    const [formOptions, setFormOptions] = useState(getFormOptions());
+    useEffect(()=>{
+      const newFormOptions = getFormOptions();
+      const allOptions = [];
+      Object.values(newFormOptions).forEach(options => {
+        options.forEach(option => {
+          allOptions.push(option);
+        })
+      })
+      setFormOptions(newFormOptions);
+      const newFormValues = {};
+      Object.entries(formValues).forEach(([key, option]) => {
+        if(option.label){
+          newFormValues[key] = allOptions.filter(o=>o.value === option.value)[0];
+        }else{
+          newFormValues[key] = option;
+        }
+      });
+      setFormValues(newFormValues);
+    },[websiteLang]);
 
     const firstFormValues = {
       mediaType: formOptions.mediaType[0],
@@ -72,6 +105,7 @@ export default function DiscoverForm({onSubmit}){
       originalLanguage: formOptions.originalLanguages[0],
       voteAverageFrom: formOptions.votes[0],
       voteAverageTo: formOptions.votes[formOptions.votes.length-1],
+      runtimeFrom: formOptions.runtimes[0],
       voteCountFrom: '',
       voteCountTo: '',
     }
@@ -130,7 +164,7 @@ export default function DiscoverForm({onSubmit}){
           changeFormValue('voteAverageTo', formValues.voteAverageFrom);
         }
       }
-    },[formValues?.voteAverageFrom])
+    },[formValues?.voteAverageFrom]);
 
     useEffect(()=>{
       if(formValues){
@@ -362,6 +396,22 @@ export default function DiscoverForm({onSubmit}){
                 />
               }
             </>}
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="year-label">
+            {translate("Runtime")}
+          </label>
+          <div className="year-group">
+            <span>{translate("From")}</span>
+            <Select
+              className={isRuntimeRange && 'half'}
+              instanceId={"runtimeFrom"} 
+              options={formOptions.runtimes}
+              value={formValues.runtimeFrom}
+              onChange={(e)=>{changeFormValue('runtimeFrom', e)}}
+              placeholder={translate("Select...")}
+            />
           </div>
         </div>
         <div className="form-group">

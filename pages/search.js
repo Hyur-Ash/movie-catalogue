@@ -26,9 +26,8 @@ export default function Discover() {
   },[]);
 
   const {
-    tmdbConfig,
+    api_key,
     translate, currentUser, websiteLang, properNames,
-    isVoteAverageRange, isVoteCountRange, isYearRange,
   } = useContext(Context);
 
   const router = useRouter();
@@ -71,7 +70,7 @@ export default function Discover() {
     const currentNames = properNames[FV.mediaType.value];
     const mediaType = FV.mediaType.value;
     const params = {
-        api_key: tmdbConfig?.api_key,
+        api_key,
         query: FV.query.trim().length > 0 ? FV.query.trim() : "",
         language: websiteLang,
     }

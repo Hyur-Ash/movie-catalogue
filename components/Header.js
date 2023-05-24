@@ -28,7 +28,7 @@ export default function Header({langOnly}){
         discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
         totalDPages, currentDPage, setCurrentDPage, 
         translate, websiteLang, setWebsiteLang, 
-        languagesOptions, isYearRange, setIsYearRange, currentUser
+        languagesOptions, currentUser
     } = useContext(Context);
 
     const menuVoices = [

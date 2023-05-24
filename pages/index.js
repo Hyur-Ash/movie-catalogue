@@ -22,13 +22,8 @@ export default function Discover() {
   },[]);
 
   const {
-    yearsContent,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-    totalSPages, currentSPage, setCurrentSPage, 
-    translate, websiteLang, setWebsiteLang, 
-    languagesOptions, isYearRange, setIsYearRange, searchedMedias, searchMedias, fromValue, toValue,
-    lastSearch,
-    users, setUsers, currentUser, setCurrentUser, currentUserIndex, setCurrentUserIndex
+    translate, 
+    users, setUsers, currentUser,currentUserIndex, setCurrentUserIndex
   } = useContext(Context);
 
   const [formValues, setFormValues] = useState({

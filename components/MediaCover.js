@@ -8,9 +8,8 @@ import {BiCopy} from 'react-icons/bi';
 import {AiOutlineLoading} from 'react-icons/ai';
 import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
-import noImage from '/public/img/not-found.jpg';
 
-export const MediaCover = ({data, character, showTitle, href, onClick, mediaType, showStatus, page, hideTrash}) => {
+export const MediaCover = ({data, character, showTitle, href, onClick, mediaType, showStatus, page, hideTrash, hideFavorites, hide}) => {
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -51,9 +50,10 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
     const contentRef = useRef();
 
     const isTrash = trashIncludes(data.id);
+    const isFavorite = favoritesIncludes(data.id);
 
     return isMounted && mediaType && (
-      <div className={`media-container media-id-${data.id} ${isTrash && hideTrash ? "no-display" : ""} ${page ? `page${page}` : ""}`} ref={contentRef}>
+      <div className={`media-container media-id-${data.id} ${(hide || (isTrash && hideTrash) || (isFavorite && hideFavorites)) ? "no-display" : ""} ${page ? `page${page}` : ""}`} ref={contentRef}>
         {href ? 
           <Link href={href} className="media clickable" onClick={(e)=>{
             if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
@@ -66,7 +66,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
               showStatus={showStatus}
               character={character}
               showTitle={showTitle}
-              isFavorite={favoritesIncludes(data.id)} 
+              isFavorite={isFavorite} 
               isTrash={isTrash}
               />
           </Link>
@@ -79,7 +79,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
                 showStatus={showStatus}
                 character={character}
                 showTitle={showTitle}
-                isFavorite={favoritesIncludes(data.id)} 
+                isFavorite={isFavorite} 
                 isTrash={isTrash}
               />
             }
@@ -263,11 +263,11 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
           </div>
         }
         {mediaType !== "person" && 
-          <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : noImage.src} 
+          <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `/img/not-found.jpg`} 
           onLoad={()=>{setMainPicLoaded(true)}}/>
         }
         {mediaType === "person" && 
-          <img className="main-image" alt={data.original_name} src={data.profile_path? `${tmdb_main_url_img_low}/${data.profile_path}` : noImage.src} 
+          <img className="main-image" alt={data.original_name} src={data.profile_path? `${tmdb_main_url_img_low}/${data.profile_path}` : '/img/person-not-found.jpg'} 
           onLoad={()=>{setMainPicLoaded(true)}}/>
         }
         {character &&
@@ -278,7 +278,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
       </div>
       {showTitle &&
         <div className={`cover-title`}>
-          {mediaType === "person" ? data.original_name : data[currentNames.title]}
+          {mediaType === "person" ? data.original_name || data.name : data[currentNames.title]}
         </div>
       }
     </>)

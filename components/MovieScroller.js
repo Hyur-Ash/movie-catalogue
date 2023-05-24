@@ -39,7 +39,35 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
         })
     },[]);
 
+    const [filtersConfig, setFiltersConfig] = useLocalStorage("movieScrollerFiltersConfig", {
+        showTrashed: false,
+        showFavorites: true
+    });
+    const changeFiltersConfig = (key, value) => {
+        setFiltersConfig(curr => ({...curr, [key]: value}));
+    }
+
     return isMounted && (<>
+        <div className="scroller-filters">
+            <FormGroup switch>
+                <Input
+                    type="switch"
+                    role="switch"
+                    checked={filtersConfig.showFavorites || false}
+                    onChange={(e)=>{changeFiltersConfig("showFavorites", e.target.checked)}}
+                />
+                <Label>{translate("Show Favorites")}</Label>
+            </FormGroup>
+            <FormGroup switch>
+                <Input
+                    type="switch"
+                    role="switch"
+                    checked={filtersConfig.showTrashed || false}
+                    onChange={(e)=>{changeFiltersConfig("showTrashed", e.target.checked)}}
+                />
+                <Label>{translate("Show Trashed")}</Label>
+            </FormGroup>
+        </div>
         <div className="movie-scroller">
           {mediaPages.length > 0 && mediaPages[0].results.length > 0 &&
             <div className="medias">
@@ -56,7 +84,8 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
                                 setPopupId(media.id);
                                 window.history.pushState({}, "", `/${mediaType}/${media.id}`);
                             }}
-                            hideTrash={hideTrash}
+                            hideTrash={!filtersConfig.showTrashed}
+                            hideFavorites={!filtersConfig.showFavorites}
                         />
                     ))}
                 </Fragment>))}
