@@ -19,11 +19,8 @@ export default function DiscoverForm({
   isYearRange, setIsYearRange, 
   isVoteAverageRange, setIsVoteAverageRange, 
   isVoteCountRange, setIsVoteCountRange,
-  isRuntimeRange, setIsRuntimeRange
 }){
     
-    const router = useRouter();
-
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
         setIsMounted(true);
@@ -37,109 +34,81 @@ export default function DiscoverForm({
         fromValue, toValue,
     } = useContext(Context);
 
-    const [allGenres, setAllGenres] = useState([]);
-    const [availableGenres, setAvailableGenres] = useState(JSON.parse(JSON.stringify(allGenres)));
-
-    const allVotes = Array.from({ length: 11 }).map((el, i)=>({value: i, label: i}));
-    const [availableVotes, setAvailableVotes] = useState(JSON.parse(JSON.stringify(allVotes)));
+    const [availableGenres, setAvailableGenres] = useState([]);
+    const [availableVotes, setAvailableVotes] = useState([]);
+    const [selectedMediaType, setSelectedMediaType] = useLocalStorage("selectedMediaType-discover", "movie");
     
-    const getTimeLabel = (minutes) => {
-      let hours = minutes / 60;
-      if(hours >= 1){
-        minutes = Math.round((hours - Math.floor(hours)) * 60);
-        hours = Math.floor(hours);
-        return `${hours} ${hours > 1 ? translate("hours") : translate("hour")}${minutes > 0 ? ` ${minutes} ${translate("minutes")}` : ""}`;
-      }
-      return `${minutes} ${translate("minutes")}`;
-    }
-    const allRuntimes = Array.from({ length: 36 }).map((el, i)=>({value: (i+1)*10, label: getTimeLabel((i+1)*10)}));
-
-    const languages = tmdbConfig?.languages ?? [];
-
-    const getFormOptions = () => ({
-      mediaType: [
-        {value: 'movie', label: translate('Movie')},
-        {value: 'tv', label: translate('TV Show')}
-      ],
-      genres: availableGenres,
-      years: [{value: "", label: translate("Any")}, ...yearsContent.map(g=>({value: g.id, label: g.name}))],
-      sortValues: tmdbConfig?.sort_values ? tmdbConfig.sort_values.map(g=>({value: g.id, label: translate(g.name)})) : [],
-      orderValues: [
-        {value: 'desc', label: translate('Descending')},
-        {value: 'asc', label: translate('Ascending')},
-      ],
-      originalLanguages: [{value: "", label: translate("Any")}, ...languages.map(lc=>({value: lc.iso_639_1, label: translate(lc.english_name)}))],
-      votes: allVotes,
-      runtimes: [{value:"1", label: translate("Any")}, ...allRuntimes],
-    });
-    const [formOptions, setFormOptions] = useState(getFormOptions());
-    useEffect(()=>{
-      const newFormOptions = getFormOptions();
-      const allOptions = [];
-      Object.values(newFormOptions).forEach(options => {
-        options.forEach(option => {
-          allOptions.push(option);
-        })
-      })
-      setFormOptions(newFormOptions);
-      const newFormValues = {};
-      Object.entries(formValues).forEach(([key, option]) => {
-        if(option.label){
-          newFormValues[key] = allOptions.filter(o=>o.value === option.value)[0];
-        }else{
-          newFormValues[key] = option;
+    const getFormOptions = () => {
+      if(!tmdbConfig){return;}
+      const getTimeLabel = (minutes) => {
+        let hours = minutes / 60;
+        if(hours >= 1){
+          minutes = Math.round((hours - Math.floor(hours)) * 60);
+          hours = Math.floor(hours);
+          return `${hours} ${hours > 1 ? translate("hours") : translate("hour")}${minutes > 0 ? ` ${minutes} ${translate("minutes")}` : ""}`;
         }
-      });
-      setFormValues(newFormValues);
-    },[websiteLang]);
-
-    const firstFormValues = {
-      mediaType: formOptions.mediaType[0],
-      withGenres: [],
-      withGenresLogic: ",",
-      withoutGenres: [],
-      sortBy: formOptions.sortValues[0],
-      orderBy: formOptions.orderValues[0],
-      yearFrom: formOptions.years[0],
-      yearTo: formOptions.years[0],
-      originalLanguage: formOptions.originalLanguages[0],
-      voteAverageFrom: formOptions.votes[0],
-      voteAverageTo: formOptions.votes[formOptions.votes.length-1],
-      runtimeFrom: formOptions.runtimes[0],
-      voteCountFrom: '',
-      voteCountTo: '',
-    }
-
-    const [formValues, setFormValues] = useLocalStorage('discoverValues', firstFormValues);
+        return `${minutes} ${translate("minutes")}`;
+      }
+      const languages = tmdbConfig?.languages ?? [];
+      const allRuntimes = Array.from({ length: 36 }).map((el, i)=>({value: (i+1)*10, label: getTimeLabel((i+1)*10)}));
+      const allVotes = Array.from({ length: 11 }).map((el, i)=>({value: i, label: i}));
+      const allGenres = tmdbConfig?.genres ? tmdbConfig.genres[selectedMediaType].map(g=>({value: g.id, label: translate(g.name)})) : [];
+      return {
+        mediaType: [
+          {value: 'movie', label: translate('Movie')},
+          {value: 'tv', label: translate('TV Show')}
+        ],
+        genres: allGenres,
+        years: [{value: "", label: translate("Any")}, ...yearsContent.map(g=>({value: g.id, label: g.name}))],
+        sortValues: tmdbConfig?.sort_values ? tmdbConfig.sort_values.map(g=>({value: g.id, label: translate(g.name)})) : [],
+        orderValues: [
+          {value: 'desc', label: translate('Descending')},
+          {value: 'asc', label: translate('Ascending')},
+        ],
+        originalLanguages: [{value: "", label: translate("Any")}, ...languages.map(lc=>({value: lc.iso_639_1, label: translate(lc.english_name)}))],
+        votes: allVotes,
+        runtimes: [{value:"1", label: translate("Any")}, ...allRuntimes],
+      }
+    };
+    const [formOptions, setFormOptions] = useState(null);
     useEffect(()=>{
-      console.log(formValues)
-    },[formValues])
+      setFormOptions(getFormOptions());
+    },[tmdbConfig, websiteLang, selectedMediaType]);
+
+    const [formValues, setFormValues] = useLocalStorage('discoverValues', null);
     useEffect(()=>{
-      if(tmdbConfig?.genres && formValues?.mediaType){
-        const genres = tmdbConfig.genres[formValues.mediaType.value];
-        setAllGenres(genres.map(g=>({value: g.id, label: translate(g.name)})));
+      console.log({formValues})
+    },[formValues]);
+    useEffect(()=>{
+      if(formValues?.mediaType && tmdbConfig?.genres){
+        setSelectedMediaType(formValues.mediaType.value);
         setFormValues(curr=>{
           if(!curr){return curr}
-          const newWithGenres = [], newWithoutGenres = [];
-          curr.withGenres.forEach((g)=>{
-            if(genres.map(g=>g.id).includes(g.value)){
-              newWithGenres.push(g);
+          const allGenresValues = tmdbConfig.genres[formValues.mediaType.value].map(g=>g.id);
+          const withGenres = [], withoutGenres = [];
+          curr.withGenres.forEach(g => {
+            if(allGenresValues.includes(g.value)){
+              withGenres.push(g);
             }
           });
-          curr.withoutGenres.forEach((g)=>{
-            if(genres.map(g=>g.id).includes(g.value)){
-              newWithoutGenres.push(g);
+          curr.withoutGenres.forEach(g => {
+            if(allGenresValues.includes(g.value)){
+              withoutGenres.push(g);
             }
           });
-          return {...curr, withGenres: newWithGenres, withoutGenres: newWithoutGenres,}
+          return {
+            ...curr, 
+            withGenres, 
+            withoutGenres,
+          }
         });
       }
-    },[tmdbConfig, formValues?.mediaType]);
+    },[formValues?.mediaType]);
 
     useEffect(()=>{
-      if(formValues){
+      if(formValues && formOptions?.genres){
         const newAvailableGenres = [];
-        allGenres.forEach(g=>{
+        formOptions.genres.forEach(g=>{
           if(
             formValues.withGenres.filter(w=>w.value===g.value).length > 0 || 
             formValues.withoutGenres.filter(w=>w.value===g.value).length > 0
@@ -150,24 +119,24 @@ export default function DiscoverForm({
         });
         setAvailableGenres(newAvailableGenres);
       }
-    },[formValues?.withGenres, formValues?.withoutGenres])
+    },[formOptions?.genres, formValues?.withGenres, formValues?.withoutGenres]);
 
     useEffect(()=>{
-      if(formValues){
+      if(formOptions?.votes && formValues?.voteAverageFrom && formOptions?.votes){
         const newAvailableVotes = [];
-        allVotes.forEach(g=>{
-          if(g.value < formValues.voteAverageFrom.value){return;}
+        formOptions.votes.forEach(g=>{
+          if(g.value < formValues.voteAverageFrom.value + 1){return;}
           newAvailableVotes.push(g);
         });
         setAvailableVotes(newAvailableVotes);
-        if(formValues.voteAverageTo.value < formValues.voteAverageFrom.value){
-          changeFormValue('voteAverageTo', formValues.voteAverageFrom);
+        if(formValues.voteAverageTo.value <= formValues.voteAverageFrom.value){
+          changeFormValue('voteAverageTo', newAvailableVotes[0]);
         }
       }
-    },[formValues?.voteAverageFrom]);
+    },[formOptions?.votes, formValues?.voteAverageFrom]);
 
     useEffect(()=>{
-      if(formValues){
+      if(formValues?.yearFrom && formValues?.yearTo){
         const from = fromValue(formValues.yearFrom.value);
         const to = toValue(formValues.yearTo.value);
         if(to < from){
@@ -184,25 +153,41 @@ export default function DiscoverForm({
       }else{
         return availableVotes.votes[0];
       }
-      
     }
     useEffect(()=>{
-      if(!tmdbConfig || !tmdbConfig.sort_values || !formValues.sortValues){return;}
+      if(!formOptions){return;}
+      if(!formValues){
+        setFormValues({
+          mediaType: formOptions.mediaType[0],
+          withGenres: [],
+          withGenresLogic: ",",
+          withoutGenres: [],
+          originalLanguage: formOptions.originalLanguages[0],
+          yearFrom: formOptions.years[0],
+          yearTo: formOptions.years[0],
+          voteAverageFrom: formOptions.votes[0],
+          voteAverageTo: formOptions.votes[0],
+          voteCountFrom: "",
+          voteCountTo: "",
+          runtimeFrom: formOptions.runtimes[0],
+          sortBy: formOptions.sortValues[0],
+          orderBy: formOptions.orderValues[0],
+        })
+        return;
+      }
       setFormValues(curr=>({
           ...curr,
           mediaType: formOptions.mediaType.filter(m=>m.value===curr.mediaType.value)[0],
-          withGenres: allGenres.map(m=>curr.withGenres.map(w=>w.value).includes(m.value) && m),
-          withGenresLogic: curr.withGenresLogic,
-          withoutGenres: allGenres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
-          sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
-          orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
+          withGenres: formOptions.genres.map(m=>curr.withGenres.map(w=>w.value).includes(m.value) && m),
+          withoutGenres: formOptions.genres.map(m=>curr.withoutGenres.map(w=>w.value).includes(m.value) && m),
+          originalLanguage: formOptions.originalLanguages.filter(m=>m.value===curr.originalLanguage?.value)[0],
           yearFrom: formOptions.years.filter(m=>m.value===curr.yearFrom.value)[0],
           yearTo: formOptions.years.filter(m=>m.value===curr.yearTo.value)[0],
-          originalLanguage: formOptions.originalLanguages.filter(m=>m.value===curr.originalLanguage?.value)[0],
-          voteAverageFrom: formOptions.votes.filter(m=>m.value===curr.voteAverageFrom.value)[0],
-          voteAverageTo: getAverageTo(curr),
+          runtimeFrom: formOptions.runtimes.filter(m=>m.value===curr.runtimeFrom.value)[0],
+          sortBy: formOptions.sortValues.filter(m=>m.value===curr.sortBy.value)[0],
+          orderBy: formOptions.orderValues.filter(m=>m.value===curr.orderBy.value)[0],
       }));
-    },[tmdbConfig, websiteLang]) 
+    },[formOptions]) 
 
     const changeFormValue = (key, value) => {
       setFormValues(curr=>({...curr, [key]: value}));
@@ -233,7 +218,7 @@ export default function DiscoverForm({
       }));
     }
 
-    return isMounted && (
+    return isMounted && formOptions && formValues && (
       <div className="form">
         <div className="form-group">
           <label>{translate("Media type")}</label>
@@ -250,7 +235,7 @@ export default function DiscoverForm({
             <div className="select-with-button">
               <Select
                 instanceId={`withGenres`} 
-                options={formOptions.genres}
+                options={availableGenres}
                 value={formValues.withGenres}
                 isMulti
                 onChange={(e)=>{changeFormValue('withGenres', e)}}
@@ -265,7 +250,7 @@ export default function DiscoverForm({
           <label>{translate("Without genres")}</label>
           <Select
             instanceId={"withoutGenres"} 
-            options={formOptions.genres}
+            options={availableGenres}
             value={formValues.withoutGenres}
             isMulti
             onChange={(e)=>{changeFormValue('withoutGenres', e)}}
@@ -405,7 +390,6 @@ export default function DiscoverForm({
           <div className="year-group">
             <span>{translate("From")}</span>
             <Select
-              className={isRuntimeRange && 'half'}
               instanceId={"runtimeFrom"} 
               options={formOptions.runtimes}
               value={formValues.runtimeFrom}

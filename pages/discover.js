@@ -65,7 +65,6 @@ export default function Discover() {
   const [isYearRange, setIsYearRange] = useLocalStorage('isYearRange-discover', false);
   const [isVoteAverageRange, setIsVoteAverageRange] = useLocalStorage('isVoteAverageRange-discover', false);
   const [isVoteCountRange, setIsVoteCountRange] = useLocalStorage('isVoteCountRange-discover', false);
-  const [isRuntimeRange, setIsRuntimeRange] = useLocalStorage('isRuntimeRange-discover', false);
 
   const changeConfig = async (formValues) => {
 
@@ -157,8 +156,6 @@ export default function Discover() {
           setIsVoteAverageRange={setIsVoteAverageRange}
           isVoteCountRange={isVoteCountRange}
           setIsVoteCountRange={setIsVoteCountRange}
-          isRuntimeRange={isRuntimeRange}
-          setIsRuntimeRange={setIsRuntimeRange}
           onSubmit={formValues => {
             setForceReload(true);
             changeConfig(formValues);
