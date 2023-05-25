@@ -9,7 +9,7 @@ import {AiOutlineLoading} from 'react-icons/ai';
 import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
 
-export const MediaCover = ({data, character, showTitle, href, onClick, mediaType, showStatus, page, hideTrash, hideFavorites, hide}) => {
+export const MediaCover = ({data, character, showTitle, href, onClick, mediaType, showStatus, showUpcoming, page, hideTrash, hideFavorites, hide}) => {
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -19,9 +19,11 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
     const router = useRouter();
 
     const {
-        translate, favorites, trashed
+        User
     } = useContext(Context);
 
+    const {user} = User;
+    const {favorites, trashed} = user ?? {};
 
     const favoritesIncludes = (id) => {
       let isIncluded = false;
@@ -64,6 +66,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
               data={data} 
               mediaType={mediaType}
               showStatus={showStatus}
+              showUpcoming={showUpcoming}
               character={character}
               showTitle={showTitle}
               isFavorite={isFavorite} 
@@ -77,6 +80,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
                 data={data} 
                 mediaType={mediaType}
                 showStatus={showStatus}
+                showUpcoming={showUpcoming}
                 character={character}
                 showTitle={showTitle}
                 isFavorite={isFavorite} 
@@ -89,13 +93,17 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
     )
   }
 
-  const Content = ({data, mediaType, character, showStatus, showTitle, isFavorite, isTrash}) => {
+  const Content = ({data, mediaType, character, showStatus, showUpcoming, showTitle, isFavorite, isTrash}) => {
 
     const router = useRouter();
-
+    
     const {
-        translate, properNames, setFavorites, setTrash, favorites, trashed
+        User,
+        translate, properNames,
     } = useContext(Context);
+
+    const {user, updateUser} = User;
+    const {favorites, trashed} = user ?? {};
 
     const currentNames = properNames[mediaType];
 
@@ -120,38 +128,53 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
         vote < 100 ? "lightblue" : "blue";
     }
 
-    const addFavorite = (data) => {
+    const cleanData = (mediaType, data) => {
+      if(mediaType === "movie"){
+        const {id, original_language, original_title, poster_path, release_date, vote_average, vote_count} = data;
+        return {id, original_language, original_title, poster_path, release_date, vote_average, vote_count};
+      }else if(mediaType === "tv"){
+        const {id, original_language, original_name, poster_path, first_air_date, vote_average, vote_count} = data;
+        return {id, original_language, original_name, poster_path, first_air_date, vote_average, vote_count};
+      }else if(mediaType === "person"){
+        const {id, gender, original_name, name, profile_path, popularity, known_for_department} = data;
+        return {id, gender, original_name, name, profile_path, popularity, known_for_department};
+      }
+    }
+
+    const addFavorite = (fullData) => {
+      const data = cleanData(mediaType, fullData);
       const newFavs = {...favorites};
       newFavs[mediaType] = favorites[mediaType] ? [...favorites[mediaType], data] : [data];
-      setFavorites(newFavs);
+      updateUser({favorites: newFavs});
     }
     
     const removeFavorite = (id) => {
-      const curr = {...favorites};
-      curr[mediaType].forEach((media, i)=>{
+      const newFavs = {...favorites};
+      newFavs[mediaType].forEach((media, i)=>{
         if(media.id===id){
-          curr[mediaType].splice(i, 1);
+          newFavs[mediaType].splice(i, 1);
           return;
         }
       });
-      setFavorites(curr);
+      updateUser({favorites: newFavs});
     }
 
-    const addTrash = (data) => {
+    const addTrash = (fullData) => {
+      const data = cleanData(mediaType, fullData);
       const newTrash = {...trashed};
       newTrash[mediaType] = trashed[mediaType] ? [...trashed[mediaType], data] : [data];
-      setTrash(newTrash);
+      updateUser({trashed: newTrash});
     }
     
     const removeTrash = (id) => {
-      const curr = {...trashed};
-      curr[mediaType].forEach((media, i)=>{
+      const newTrash = {...trashed};
+      newTrash[mediaType].forEach((media, i)=>{
         if(media.id===id){
-          curr[mediaType].splice(i, 1);
+          newTrash[mediaType].splice(i, 1);
           return;
         }
       });
-      setTrash(curr);
+      updateUser({trashed: newTrash});
     }
 
     const [optionsMode, setOptionsMode] = useState(false);
@@ -244,25 +267,24 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
           }
           <div className={`vote-count ${popColor(data.popularity)}`}>{data.gender === 1 ? "F" : data.gender === 2 ? "M" : "NB"}</div>
         </>}
-        {data.status &&
+        {showStatus && mediaType === 'movie' && data.status &&
           <div 
             className={`upcoming-alert ${data.status ? data.status.toLowerCase().replaceAll(" ", "-") : ""}`}
-          >{translate(data.status ?? "upcoming")}</div>
+          >{translate(data.status)}</div>
         }
-        {showStatus && mediaType !== "person" && !data.status && moment(data[currentNames.release_date],"YYYY-MM-DD").valueOf() > moment().valueOf() ? 
+        {showUpcoming && mediaType !== "person" && !data.status && moment(data[currentNames.release_date],"YYYY-MM-DD").valueOf() > moment().valueOf() && 
           <div 
             className={`upcoming-alert`}
           >{translate("upcoming")}</div>
-        : <>
-          {showStatus && mediaType === 'tv' && <>
-            {data.status === 'Canceled' ? 
-              <div className="canceled-alert">{translate("canceled")}</div>
-            : data.in_production ? 
-              <div className="ongoing-alert">{translate("ongoing")}</div>
-            :
-              <div className="ended-alert">{translate("ended")}</div>
-            }
-          </>}
+        }
+        {showStatus && mediaType === 'tv' && data.status && <>
+          {data.status === 'Canceled' ? 
+            <div className="canceled-alert">{translate("canceled")}</div>
+          : data.in_production ? 
+            <div className="ongoing-alert">{translate("ongoing")}</div>
+          :
+            <div className="ended-alert">{translate("ended")}</div>
+          }
         </>}
         {mediaType !== "person" && 
           <div className="flag-container">

@@ -77,7 +77,7 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
                             page={mediaPage.page}
                             key={`media${m}`} 
                             mediaType={mediaType} 
-                            showStatus 
+                            showUpcoming 
                             showTitle 
                             data={media} 
                             // href={`/${mediaType}/${media.id}`}

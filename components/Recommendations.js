@@ -25,18 +25,20 @@ export default function Recommendations({mediaType, mediaId}) {
   },[]);
 
   const {
+    User,
     api_key,
-    tmdbConfig,
-    translate, currentUser, websiteLang,
+    translate, websiteLang,
     getMedia
   } = useContext(Context);
 
+  const {user} = User;
+
   const router = useRouter();
   useEffect(()=>{
-    if(!currentUser){
+    if(!user){
       router.push("/");
     }
-  },[currentUser]);
+  },[user]);
 
   useEffect(()=>{
     if(mediaId){
@@ -103,7 +105,7 @@ export default function Recommendations({mediaType, mediaId}) {
 
   const [popupId, setPopupId] = useState(null);
 
-  return isMounted && currentUser && (<>
+  return isMounted && user && (<>
     <Head>
       <title>{translate("Hyur's Media Library")}</title>
       <meta name="description" content="Created by Hyur" />

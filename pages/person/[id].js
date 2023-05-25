@@ -6,15 +6,17 @@ import { Context } from '/lib/Context';
 export default function Movie() {
 
     const {
-        currentUser
+        User
     } = useContext(Context);
+
+    const {user} = User;
     
     const router = useRouter();
     useEffect(()=>{
-    if(!currentUser){
+    if(!user){
         router.push("/");
     }
-    },[currentUser]);
+    },[user]);
 
     const {id} = router.query;
 
@@ -23,5 +25,5 @@ export default function Movie() {
         setIsMounted(true);
     },[]);
 
-    return isMounted && id && currentUser && <PersonPopup id={id} />
+    return isMounted && id && user && <PersonPopup id={id} />
 }

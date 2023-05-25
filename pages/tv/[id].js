@@ -6,15 +6,17 @@ import { Context } from '/lib/Context';
 export default function Tv() {
 
     const {
-        currentUser
+        User
     } = useContext(Context);
+
+    const {user} = User;
     
     const router = useRouter();
     useEffect(()=>{
-    if(!currentUser){
+    if(!user){
         router.push("/");
     }
-    },[currentUser]);
+    },[user]);
 
     const {id} = router.query;
 
@@ -23,5 +25,5 @@ export default function Tv() {
         setIsMounted(true);
     },[]);
 
-    return isMounted && id && currentUser && <MediaPopup mediaType="tv" id={id} />
+    return isMounted && id && user && <MediaPopup mediaType="tv" id={id} />
 }

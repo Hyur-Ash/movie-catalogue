@@ -22,9 +22,11 @@ export default function Discover() {
   },[]);
 
   const {
+    User,
     translate, 
-    users, setUsers, currentUser,currentUserIndex, setCurrentUserIndex
   } = useContext(Context);
+
+  const {user, subscribeUser, loginUser, logoutUser, updateUser} = User;
 
   const [formValues, setFormValues] = useState({
     userName: "",
@@ -40,22 +42,25 @@ export default function Discover() {
   const messages = {
     already: translate("User is already existing."),
     created: translate("User successfully created!"),
-    notFound: translate("User not found.")
+    notFound: translate("Username or password is incorrect."),
+    changed: translate("Password changed successfully."),
   }
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  return isMounted && users && (<>
+  const [isLoading, setIsLoading] = useState(false);
+
+  return isMounted && (<>
     <Head>
       <title>{translate("Hyur's Media Library")}</title>
       <meta name="description" content="Created by Hyur" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
-    <Header langOnly={!currentUser}/>
+    <Header langOnly={!user}/>
     <div className="my-container">
       
-        {currentUserIndex === null && <>
+        {!user && <>
             <h2 className="page-title">{subscribeMode ? translate("Subscribe") : translate("Log In")}</h2>
             <button onClick={()=>{setSubscribeMode(!subscribeMode)}}>
                 {subscribeMode ? translate("Already subscribed") : translate("New here")}?
@@ -81,37 +86,35 @@ export default function Discover() {
                     </div>
                     <div className="form-group submit">
                         <button 
-                            disabled={formValues.userName.trim().length === 0 || formValues.password.length === 0}
-                            onClick={()=>{
+                            disabled={isLoading || formValues.userName.trim().length === 0 || formValues.password.length === 0}
+                            onClick={async ()=>{
+                                if(isLoading){return;}
+                                setIsLoading(true);
                                 if(subscribeMode){
-                                    let isAlreadyExisting = false;
-                                    users.forEach(user => {
-                                        if(user.userName === formValues.userName.trim()){
-                                            isAlreadyExisting = true;
-                                        }
-                                    });
-                                    if(isAlreadyExisting){
-                                        alert(messages.already);
-                                        return;
-                                    }
-                                    setUsers([...users, {
+                                    const response = await subscribeUser({
                                         userName: formValues.userName.trim(),
                                         password: formValues.password
-                                    }]);
-                                    setFormValues({userName: "", password: ""});
-                                    alert(messages.created);
-                                }else{
-                                    let userIndex = null;
-                                    users.forEach( (user, i) => {
-                                        if(user.userName === formValues.userName.trim() && user.password === formValues.password){
-                                            userIndex = i;
-                                        }
                                     });
-                                    if(userIndex === null){
-                                        alert(messages.notFound);
+                                    if(!response.ok){
+                                        setIsLoading(false);
+                                        alert(response.message || messages.already);
                                         return;
                                     }
-                                    setCurrentUserIndex(userIndex);
+                                    setFormValues({userName: "", password: ""});
+                                    setSubscribeMode(false);
+                                    setIsLoading(false);
+                                    alert(messages.created);
+                                }else{
+                                    const response = await loginUser({
+                                        userName: formValues.userName.trim(),
+                                        password: formValues.password
+                                    });
+                                    if(!response.ok){
+                                        setIsLoading(false);
+                                        alert(response.message || messages.notFound);
+                                        return;
+                                    }
+                                    setIsLoading(false);
                                 }
                             }}
                         >
@@ -121,9 +124,9 @@ export default function Discover() {
                 </div>
             </main>
         </>}
-        {currentUser && <>
-            <h2 className="page-title">{translate("Welcome")} {currentUser.userName} !</h2>
-            <button onClick={()=>{setCurrentUserIndex(null)}}>
+        {user && <>
+            <h2 className="page-title">{translate("Welcome")} {user.userName} !</h2>
+            <button onClick={logoutUser}>
                 {translate("Log out")}
             </button>
             <div style={{color:"white"}}>
@@ -136,14 +139,19 @@ export default function Discover() {
                     <p>{translate("New password")}</p>
                     <input style={{padding:".25em .75em"}} type="password" value={newPassword} onChange={(e)=>{setNewPassword(e.target.value)}}/>
                 </div>
-                <button disabled={oldPassword !== currentUser.password && newPassword.length === 0} onClick={()=>{
-                    if(oldPassword !== currentUser.password && newPassword.length === 0){return;}
-                    const index = users.indexOf(currentUser);
-                    const newUsers = JSON.parse(JSON.stringify(users));
-                    newUsers[index].password = newPassword;
-                    setUsers(newUsers);
+                <button disabled={isLoading || oldPassword !== user.password || newPassword.length === 0} onClick={async ()=>{
+                    if(oldPassword !== user.password && newPassword.length === 0){return;}
+                    setIsLoading(true);
+                    const response = await updateUser({password: newPassword});
+                    if(!response.ok){
+                        setIsLoading(false);
+                        alert(response.message);
+                        return;
+                    }
                     setOldPassword("");
                     setNewPassword("");
+                    setIsLoading(false);
+                    alert(messages.changed);
                 }}>
                     {translate("Change")}
                 </button>

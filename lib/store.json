@@ -186,6 +186,15 @@
         "You have no trashed TV Shows.":{
             "it": "Non hai Serie TV cestinate."
         },
+        "You have no trashed People.":{
+            "it": "Non hai Persone cestinate."
+        },
+        "You have no favorite People.":{
+            "it": "Non hai Persone preferite."
+        },
+        "People":{
+            "it": "Persone"
+        },
         "From":{
             "it": "Da"
         },
@@ -257,11 +266,11 @@
         },
         "Empty movie trash":{
             "it": "Svuota Film cestinati",
-            "en": "Empty Movie Trash"
+            "en": "Empty Trashed Movies"
         }, 
         "Empty tv trash":{
             "it": "Svuota Serie TV cestinate",
-            "en": "Empty TV Show Trash"
+            "en": "Empty Trashed TV Shows"
         }, 
         "Empty movie favorites":{
             "it": "Svuota Film preferiti",
@@ -270,6 +279,14 @@
         "Empty tv favorites":{
             "it": "Svuota Serie TV preferite",
             "en": "Empty TV Show Favorites"
+        },
+        "Empty person favorites":{
+            "it": "Svuota Persone preferite",
+            "en": "Empty Favorite People"
+        },
+        "Empty person trash":{
+            "it": "Svuota Persone cestinate",
+            "en": "Empty Trashed People"
         },
         "Subscribe":{
             "it": "Registrati"

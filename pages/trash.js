@@ -16,7 +16,7 @@ import Header from '/components/Header';
 import { MediaPopup } from '/components/MediaPopup';
 import { PersonPopup } from '/components/PersonPopup';
 
-export default function Favorites() {
+export default function Trash() {
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(()=>{
@@ -24,25 +24,26 @@ export default function Favorites() {
   },[]);
 
   const {
-    yearsContent,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-    totalDPages, setCurrentDPage, 
-    translate, websiteLang, setWebsiteLang,
-    languagesOptions, setFavorites, currentUser, setTrash, trashed,
+    User,
+    translate,
   } = useContext(Context);
+
+  const {user, updateUser} = User;
+  const {trashed} = user ?? {};
 
   const router = useRouter();
   useEffect(()=>{
-    if(!currentUser){
+    if(!user){
       router.push("/");
     }
-  },[currentUser]);
+  },[user]);
 
   const MediaSelect = ({value, onChange}) => {
     return (
         <div className="media-select">
             <div className={`media-option ${value === 'movie' ? 'active' : ''}`} onClick={()=>{onChange('movie')}}>{translate("Movies")}</div>
             <div className={`media-option ${value === 'tv' ? 'active' : ''}`} onClick={()=>{onChange('tv')}}>{translate("TV Shows")}</div>
+            <div className={`media-option ${value === 'person' ? 'active' : ''}`} onClick={()=>{onChange('person')}}>{translate("People")}</div>
         </div>
     )
   }
@@ -52,7 +53,7 @@ export default function Favorites() {
 
   const [popupConfig, setPopupConfig] = useState(null);
 
-  return isMounted && currentUser && (<>
+  return isMounted && user && (<>
     <Header />
     <div className="my-container">
         <h2 className="page-title">{translate("Trash")}</h2>
@@ -66,9 +67,9 @@ export default function Favorites() {
                 <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
                   <button onClick={()=>{setEmptyTrashMode(false)}}>{translate("Cancel")}</button>
                   <button onClick={()=>{
-                    const newTrashed = JSON.parse(JSON.stringify(trashed));
-                    newTrashed[selectedMedia] = [];
-                    setTrash(newTrashed);
+                    const newTrash = JSON.parse(JSON.stringify(trashed));
+                    newTrash[selectedMedia] = [];
+                    updateUser({trashed: newTrash})
                     setEmptyTrashMode(false);
                   }}>{translate(`Empty ${selectedMedia} trash`)}</button>
                 </div>
@@ -81,7 +82,7 @@ export default function Favorites() {
             <div className="media-group">
                 {trashed[selectedMedia].length === 0 ?
                     <div className="message">
-                        <h3>{translate(`You have no trashed ${selectedMedia === 'movie' ? 'Movies' : 'TV Shows'}.`)}</h3>
+                        <h3>{translate(`You have no trashed ${selectedMedia === 'movie' ? 'Movies' : selectedMedia === 'tv' ? 'TV Shows' : 'People'}.`)}</h3>
                         <Link className="c-button" href="/discover">{translate("Discover")}</Link>
                     </div>
                 :
@@ -90,6 +91,7 @@ export default function Favorites() {
                             <MediaCover 
                               mediaType={selectedMedia} 
                               showTitle 
+                              showUpcoming
                               data={media} 
                               key={`media${i}`} 
                               // href={`/${selectedMedia}/${media.id}`}
@@ -110,13 +112,13 @@ export default function Favorites() {
     {popupConfig !== null && popupConfig.mediaType !== "person" && 
       <MediaPopup mediaType={popupConfig.mediaType} id={popupConfig.id} onClose={()=>{
         setPopupConfig(null);
-        window.history.pushState({}, "", `/favorites`);
+        window.history.pushState({}, "", `/trash`);
       }} />
     }
     {popupConfig !== null && popupConfig.mediaType === "person" && 
       <PersonPopup id={popupConfig.id} onClose={()=>{
         setPopupConfig(null);
-        window.history.pushState({}, "", `/favorites`);
+        window.history.pushState({}, "", `/trash`);
       }} />
     }
   </>)

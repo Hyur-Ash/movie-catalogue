@@ -24,12 +24,12 @@ export default function Header({langOnly}){
     },[]);
 
     const {
-        yearsContent,
-        discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-        totalDPages, currentDPage, setCurrentDPage, 
+        User,
         translate, websiteLang, setWebsiteLang, 
-        languagesOptions, currentUser
+        languagesOptions,
     } = useContext(Context);
+
+    const {user} = User;
 
     const menuVoices = [
         {name: translate("Search"), href: '/search', icon: <FaSearch className="icon"/>},
@@ -41,7 +41,7 @@ export default function Header({langOnly}){
     return isMounted && (
         <header style={langOnly ? {justifyContent:"space-between"} : {}}>
             <div className="logo-container">
-                <Link className="logo" href="/"><h1><LogoIcon className="logo-icon"/><span>{websiteLang !== "it" ? currentUser ? currentUser.userName : "..." : ""}{websiteLang === "it" ? "Mediateca di " : "'s Media Library"}{websiteLang === "it" ? currentUser ? currentUser.userName : "..." : ""}</span></h1></Link>
+                <Link className="logo" href="/"><h1><LogoIcon className="logo-icon"/><span>{websiteLang !== "it" ? user ? user.userName : "..." : ""}{websiteLang === "it" ? "Mediateca di " : "'s Media Library"}{websiteLang === "it" ? user ? user.userName : "..." : ""}</span></h1></Link>
             </div>
             {!langOnly &&
                 <nav>

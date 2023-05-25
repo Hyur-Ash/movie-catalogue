@@ -413,6 +413,7 @@ img{
     }
     .title{
       font-size: .75em;
+      text-align: center;
     }
   }
 }
@@ -487,7 +488,7 @@ header{
         display: flex;
         align-items: center;
         gap: 1rem;
-        font-size: clamp(2vw, 2rem, 5vw);
+        font-size: 1.25rem;
         span{
           @media screen and (max-width: 700px){
             display: none;

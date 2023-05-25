@@ -24,19 +24,19 @@ export default function Favorites() {
   },[]);
 
   const {
-    yearsContent,
-    discoveredMedias, singleMedia, setSingleMedia, discoverMedias, loadingMedias, loadSingleMedia, lastDiscover,
-    totalDPages, setCurrentDPage, 
-    translate, websiteLang, setWebsiteLang,
-    languagesOptions, setFavorites, currentUser, favorites
+    User,
+    translate
   } = useContext(Context);
+
+  const {user, updateUser} = User;
+  const {favorites} = user ?? {};
 
   const router = useRouter();
   useEffect(()=>{
-    if(!currentUser){
+    if(!user){
       router.push("/");
     }
-  },[currentUser]);
+  },[user]);
 
   const MediaSelect = ({value, onChange}) => {
     return (
@@ -53,7 +53,7 @@ export default function Favorites() {
 
   const [popupConfig, setPopupConfig] = useState(null);
 
-  return isMounted && currentUser && (<>
+  return isMounted && user && (<>
     <Header />
     <div className="my-container">
         <h2 className="page-title">{translate("Favorites")}</h2>
@@ -69,7 +69,7 @@ export default function Favorites() {
                   <button onClick={()=>{
                     const newFavs = JSON.parse(JSON.stringify(favorites));
                     newFavs[selectedMedia] = [];
-                    setFavorites(newFavs);
+                    updateUser({favorites: newFavs});
                     setEmptyFavoritesMode(false);
                   }}>{translate(`Empty ${selectedMedia} favorites`)}</button>
                 </div>
@@ -93,6 +93,7 @@ export default function Favorites() {
                               showTitle 
                               data={media} 
                               key={`media${i}`} 
+                              showUpcoming
                               // href={`/${selectedMedia}/${media.id}`}
                               onClick={()=>{
                                 setPopupConfig({

@@ -26,16 +26,19 @@ export default function Discover() {
   },[]);
 
   const {
+    User,
     api_key,
-    translate, currentUser, websiteLang, properNames,
+    translate, websiteLang, properNames,
   } = useContext(Context);
+  
+  const {user} = User;
 
   const router = useRouter();
   useEffect(()=>{
-    if(!currentUser){
+    if(!user){
       router.push("/");
     }
-  },[currentUser]);
+  },[user]);
 
   const [config, setConfig] = useLocalStorage("config-search", {});
   const configRef = useRef(config);
@@ -123,7 +126,7 @@ export default function Discover() {
 
   const [popupId, setPopupId] = useState(null);
 
-  return isMounted && currentUser && (<>
+  return isMounted && user && (<>
     <Head>
       <title>{translate("Hyur's Media Library")}</title>
       <meta name="description" content="Created by Hyur" />
