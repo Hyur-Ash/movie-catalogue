@@ -1,4 +1,4 @@
-import {useState, useEffect, useContext, Fragment} from 'react';
+import {useState, useEffect, useContext, useRef, Fragment} from 'react';
 import { Context } from '/lib/Context';
 import Select from 'react-select';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
@@ -13,9 +13,11 @@ import {SiWikidata} from 'react-icons/si';
 import {FaImdb} from 'react-icons/fa';
 import {AiFillHome} from 'react-icons/ai';
 import {BsInstagram, BsFacebook, BsTwitter} from 'react-icons/bs';
-import CastMember from '/components/CastMember';
+import SimpleCover from '/components/SimpleCover';
 import Company from '/components/Company';
 import { PersonPopup } from '/components/PersonPopup';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Scrollbar, A11y, Mousewheel, FreeMode } from 'swiper';
 
 export const MediaPopup = ({mediaType, id, onClose}) => {
 
@@ -45,7 +47,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
         time = Array.isArray(time) ? time[0] : time;
         const hours = Math.floor(parseInt(time)/60);
         const minutes = Math.floor(((time/60) - Math.floor(time/60))*60);
-        return `${hours > 0 ? `${hours} ${translate("hours")} ${translate("and")} ` : ''}${minutes > 0 ? `${minutes} ${translate("minutes")}` : ''}`;
+        return `${hours > 0 ? `${hours} ${translate("hours")}` : ''}${minutes > 0 ? ` ${hours > 0 ? translate("and") : ""} ${minutes} ${translate("minutes")}` : ''}`;
     }
 
     const closeMediaModal = () => {
@@ -133,16 +135,37 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
         }
     });
 
+    const collection = !singleMedia || !singleMedia[websiteLang] ? null : singleMedia[websiteLang]?.collection || singleMedia.en?.collection;
+
+    const sagaIndex = collection && collection?.parts?.findIndex(p=>p.id === singleMedia[websiteLang].id) + 1;
+    console.log(collection)
+
+    const [mediaConfig, setMediaConfig] = useState(null);
     const [personId, setPersonId] = useState(null);
+
+    const [selectedSeason, setSelectedSeason] = useState(null);
+
+    const [slidesPerView, setSlidersPerView] = useState(0);
+    const resizeHandler = () => {
+        const w = window.innerWidth;
+        if(w){
+            setSlidersPerView(w > 1200 ? 6 : w > 1000 ? 5 : w > 993);
+        }
+    }
+    useEffect(()=>{
+        window.addEventListener("resize", resizeHandler);
+    },[]);
+
+    const swiperRef = useRef();
 
     return isMounted && id && currentNames && (<>
         <div className="media-popup">
             {singleMedia && singleMedia[websiteLang] &&
                 <div className="overlay-backdrop">
-                <img alt={singleMedia[websiteLang].title} src={singleMedia[websiteLang].backdrop_path? `${tmdb_main_url_img_high}/${singleMedia[websiteLang].backdrop_path}` : `img/not-found.jpg`}/>
+                    <img alt={singleMedia[websiteLang].title} src={singleMedia[websiteLang].backdrop_path? `${tmdb_main_url_img_high}/${singleMedia[websiteLang].backdrop_path}` : `img/not-found.jpg`}/>
                 </div>
             }
-            {loadingMedias !== true && singleMedia && singleMedia[websiteLang] &&
+            {mediaConfig === null && personId === null && loadingMedias !== true && singleMedia && singleMedia[websiteLang] &&
                 <Modal className="single-media" isOpen={singleMedia !== null} toggle={closeMediaModal} size={"xl"}>
                 <ModalHeader toggle={closeMediaModal}>
                     <div className="c-modal-title">
@@ -160,7 +183,12 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                 </ModalHeader>
                 <ModalBody>
                     <div className="media-info">
-                        <MediaCover showStatus mediaType={mediaType} data={singleMedia[websiteLang]}/>
+                        <MediaCover 
+                            sagaIndex={sagaIndex && <span>{sagaIndex}<sup>{translate(sagaIndex === 1 ? "st" : sagaIndex === 2 ? "nd" : sagaIndex === 3 ? "rd" : "th")}</sup></span>}
+                            showStatus 
+                            mediaType={mediaType} 
+                            data={singleMedia[websiteLang]}
+                        />
                         <div className="general-info">
                             <div className="socials">
                                 {(singleMedia[websiteLang].homepage || singleMedia.en.homepage) &&
@@ -188,17 +216,45 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                                     <a href={`stremio://detail/${mediaType === "movie" ? "movie" : "series"}/${singleMedia.socials.imdb_id}`} target="_blank" rel="noreferrer"><img src="/img/stremio.png"/></a>
                                 }
                             </div>
+                            {collection &&
+                                <div className="voice"><strong>{translate("Saga")}</strong> {singleMedia[websiteLang].collection.name.replaceAll("Collection", "")}</div>
+                            }
                             <div className="voice"><strong>{translate("Original title")}</strong> {singleMedia[websiteLang][currentNames.original_title]}</div>
-                            <div className="voice"><strong>{translate("Release date")}</strong> {moment(singleMedia[websiteLang][currentNames.release_date], "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
+                            {singleMedia[websiteLang].release_date &&
+                                <div className="voice"><strong>{translate("Release date")}</strong> {moment(singleMedia[websiteLang].release_date, "YYYY-MM-DD").format("DD/MM/YYYY")}</div>
+                            }
+                            {singleMedia[websiteLang].first_air_date &&
+                                <div className="voice">
+                                    <strong>{translate("Airing")}</strong> 
+                                    <span>
+                                        <span>{moment(singleMedia[websiteLang].first_air_date, "YYYY-MM-DD").format("DD/MM/YYYY")}</span>
+                                        <span> - </span>
+                                        {singleMedia[websiteLang].in_production &&
+                                            <span>{translate("ongoing")}</span>
+                                        }
+                                        {!singleMedia[websiteLang].in_production &&
+                                            <span>{moment(singleMedia[websiteLang].last_air_date, "YYYY-MM-DD").format("DD/MM/YYYY")}</span>
+                                        }
+                                    </span>
+                                </div>
+                            }
                             {mediaType === 'tv' && <>
-                                <div><strong>{translate("Number of Seasons")}</strong> {singleMedia[websiteLang].number_of_seasons}</div>
-                                <div><strong>{translate("Number of Episodes")}</strong> {singleMedia[websiteLang].number_of_episodes}</div>
+                                <div className="voice"><strong>{translate("Length")}</strong> {singleMedia[websiteLang].number_of_seasons} Seasons ({singleMedia[websiteLang].number_of_episodes} {translate("episodes")})</div>
                             </>}
-                            <div className="voice"><strong>{translate("Runtime")}</strong> {getRuntime(singleMedia[websiteLang][currentNames.runtime])}</div>
+                            {mediaType === 'movie' &&
+                                <div className="voice"><strong>{translate("Runtime")}</strong> {getRuntime(singleMedia[websiteLang].runtime)}</div>
+                            }
+                            {mediaType === 'tv' && singleMedia[websiteLang].episode_run_time?.length > 0 &&
+                                <div className="voice">
+                                    <strong>{translate("Episodes Runtime")}</strong>
+                                    {singleMedia[websiteLang].episode_run_time.map(r => getRuntime(r)).join(", ")}
+                                </div>
+                            }
                             <div className="voice"><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}</strong> {singleMedia[websiteLang].genres.map(g=>g.name).join(", ")}</div>
                             <div className="voice"><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}</strong> {singleMedia[websiteLang].spoken_languages.map(g=>g.name).join(", ")}</div>
                         </div>
                     </div>
+                    <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
                     {singleMedia.duringcreditsstinger && !singleMedia.aftercreditsstinger &&
                         <div className="announcement green">{translate("WITH DURING CREDITS STINGER!")}</div>
                     }
@@ -208,10 +264,73 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                     {singleMedia.aftercreditsstinger && singleMedia.duringcreditsstinger &&
                         <div className="announcement green">{translate("WITH DURING & AFTER CREDITS STINGERS!")}</div>
                     }
+                    {collection && <>
+                        <div className="overview">
+                            <h4>{translate("Saga Overview")}</h4>
+                            {collection.overview}
+                        </div>
+                        <div className="saga-parts">
+                            {collection.parts.map( (part, p) => (
+                                <MediaCover 
+                                    disabled={part.id === singleMedia[websiteLang].id}
+                                    key={`part${p}`} 
+                                    headline={moment(part.release_date, "YYYY-MM-DD").format("YYYY")} 
+                                    showTitle 
+                                    showStatus 
+                                    mediaType={part.media_type} 
+                                    data={part}
+                                    onClick={()=>{
+                                        setMediaConfig({mediaType: part.media_type, id: part.id});
+                                        window.history.pushState({}, "", `/media/${part.id}`);
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </>}
                     {singleMedia.en.overview.length > 0 &&
                         <div className="overview">
-                            <h4>{translate("Overview")}</h4>
+                            <h4>{translate(collection || mediaType === "tv" ? `${mediaType}-overview` : "Overview")}</h4>
                             {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
+                        </div>
+                    }
+                    {singleMedia[websiteLang].seasons && 
+                        <div className="seasons">
+                            <Swiper
+                                ref={swiperRef}
+                                modules={[Navigation, Pagination, Scrollbar, A11y, Mousewheel, FreeMode]}
+                                breakpoints={{
+                                    0: {slidesPerView: 3},
+                                    500: {slidesPerView: 4},
+                                    1000: {slidesPerView: 5},
+                                    1200: {slidesPerView: 6},
+                                }}
+                                freeMode
+                                // mousewheel={{sensitivity: 1}}
+                                spaceBetween={10}
+                                scrollbar={{ draggable: true }}
+                                onSlideChange={() => console.log('slide change')}
+                                onSwiper={(swiper) => console.log(swiper)}
+                            >
+                                {singleMedia[websiteLang].seasons.map((season, s) => (
+                                    <SwiperSlide key={`season${s}`}>
+                                        <SimpleCover 
+                                            name={`${translate("Season")} ${season.season_number}`}
+                                            imagePath={season.poster_path}
+                                            headline={moment(season.air_date, "YYYY-MM-DD").format("YYYY")}
+                                            onClick={()=>{setSelectedSeason(season)}}
+                                            transparent={!selectedSeason || selectedSeason.id !== season.id}
+                                        />
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
+                            <div className="swiper-button-prev" onClick={()=>{swiperRef.current.swiper.slidePrev();}}></div>
+                            <div className="swiper-button-next" onClick={()=>{swiperRef.current.swiper.slideNext();}}></div>
+                        </div>
+                    }
+                    {selectedSeason?.overview &&
+                        <div className="overview">
+                            <h4>{translate("Season")} {translate("Overview")}</h4>
+                            {selectedSeason.overview}
                         </div>
                     }
                     <div className="credits-container">
@@ -246,10 +365,33 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                                     <h4>{translate(directors.length > 1 ? "Directors" : "Director")}</h4> 
                                     <div className="cast-members">
                                         {directors.map((data, c) => (
-                                            <CastMember key={`cast${c}`} data={data} onClick={()=>{
-                                                setPersonId(data.id);
-                                                window.history.pushState({}, "", `/person/${data.id}`);
-                                            }}/>
+                                            <SimpleCover 
+                                                key={`cast${c}`} 
+                                                name={data.original_name || data.name}
+                                                imagePath={data.profile_path}
+                                                onClick={()=>{
+                                                    setPersonId(data.id);
+                                                    window.history.pushState({}, "", `/person/${data.id}`);
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            }
+                            {singleMedia[websiteLang]?.created_by?.length > 0 &&
+                                <div className="voice">
+                                    <h4>{translate(singleMedia[websiteLang].created_by.length > 1 ? "Creators" : "Creator")}</h4> 
+                                    <div className="cast-members">
+                                        {singleMedia[websiteLang].created_by.map((data, c) => (
+                                            <SimpleCover 
+                                                key={`cast${c}`} 
+                                                name={data.original_name || data.name}
+                                                imagePath={data.profile_path}
+                                                onClick={()=>{
+                                                    setPersonId(data.id);
+                                                    window.history.pushState({}, "", `/person/${data.id}`);
+                                                }}
+                                            />
                                         ))}
                                     </div>
                                 </div>
@@ -285,10 +427,16 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                             <h4>{translate("Main Cast")}</h4> 
                             <div className="cast-members">
                                 {mainCast.map((data, c) => (
-                                    <CastMember key={`cast${c}`} data={data} onClick={()=>{
-                                        setPersonId(data.id);
-                                        window.history.pushState({}, "", `/person/${data.id}`);
-                                    }}/>
+                                    <SimpleCover 
+                                        key={`cast${c}`} 
+                                        name={data.original_name || data.name}
+                                        imagePath={data.profile_path}
+                                        headline={data.character}
+                                        onClick={()=>{
+                                            setPersonId(data.id);
+                                            window.history.pushState({}, "", `/person/${data.id}`);
+                                        }}
+                                    />
                                 ))}
                             </div>
                             {restOfCast.length > 0 &&
@@ -316,7 +464,6 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                             {singleMedia.keywords.map(k=>k.name).join(", ")}
                         </div>
                     }
-                    <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
                     <div className="media-categories">
                         {mediaCategories.map( (mc, i) => (
                             <div 
@@ -351,6 +498,12 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                 </Modal>
             }
         </div>
+        {mediaConfig !== null && 
+          <MediaPopup mediaType={mediaConfig.mediaType} id={mediaConfig.id} onClose={()=>{
+            setMediaConfig(null);
+            window.history.pushState({}, "", `/${mediaType}/${id}`);
+          }} />
+        }
         {personId !== null && 
           <PersonPopup id={personId} onClose={()=>{
             setPersonId(null);

@@ -179,6 +179,11 @@ button, .c-button{
   &:not(.clickable){
     cursor: unset;
   }
+  &.disabled{
+    opacity: .25;
+    pointer-events: none;
+    cursor: default;
+  }
   .cover{
     width: 100%;
     aspect-ratio: 18/27;
@@ -239,130 +244,126 @@ button, .c-button{
   }
   .flag-container{
     position: absolute;
-    top: 5px;
-    left: 5px;
+    top: 0px;
+    left: 0px;
     background-color: rgba(0,0,0,0.1);
     border-radius: 15px;
-    padding: 0 5px;
     .flag{
       width: 2rem !important;
       height: 2rem !important;
     }
   }
-  .upcoming-alert{
+  .alert{
     text-transform: uppercase;
     position: absolute;
     bottom: 0;
     left: 0;
-    background-color: $red;
-    color: white;
-    font-weight: 500;
-    padding: .5rem;
-    font-size: .9em;
-    display: flex;
-    align-items: center;
-    &.rumored{
-      background-color: black;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: inset .25px -.25px 5px .25px rgba(0, 0, 0, 0.5);
+    &.upcoming{
+      background-color: $red;
+      color: white;
+      font-weight: 500;
+      padding: .5rem;
+      font-size: .9em;
+      display: flex;
+      align-items: center;
+      &.rumored{
+        background-color: black;
+      }
+      &.canceled{
+        background-color: black;
+      }
+      &.in-production{
+        background-color: red;
+      }
+      &.post-production{
+        background-color: blue;
+      }
+      &.released{
+        background-color: green;
+      }
+    }
+    &.ongoing{
+      height: 2.5rem;
+      background-color: $yellow;
+      color: black;
+      font-weight: 500;
+      padding: .5rem;
     }
     &.canceled{
+      height: 2.5rem;
+      background-color: $red;
+      color: white;
+      font-weight: 500;
+      padding: .5rem;
+    }
+    &.person{
+      height: 2.5rem;
       background-color: black;
+      color: white;
+      font-weight: 500;
+      padding: .5rem;
+      font-size: .8em;
+      &.acting{
+        background-color: palevioletred;
+      }
+      &.production{
+        background-color: green;
+      }
+      &.writing, &.creator{
+        background-color: orange;
+      }
+      &.directing{
+        background-color: blue;
+      }
+      &.sound{
+        background-color: brown;
+      }
+      &.camera{
+        background-color: rgb(42, 165, 132);
+      }
+      &.costume{
+        background-color: rgb(108, 42, 165);
+      }
+      &.visualeffects, &.editing{
+        background-color: rgb(114, 114, 114);
+      }
+      &.art{
+        background-color: yellowgreen;
+      }
     }
-    &.in-production{
-      background-color: red;
-    }
-    &.post-production{
-      background-color: blue;
-    }
-    &.released{
-      background-color: green;
-    }
-  }
-  .ongoing-alert{
-    text-transform: uppercase;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2.5rem;
-    background-color: $yellow;
-    color: black;
-    font-weight: 500;
-    padding: .5rem;
-  }
-  .canceled-alert{
-    text-transform: uppercase;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2.5rem;
-    background-color: $red;
-    color: white;
-    font-weight: 500;
-    padding: .5rem;
-  }
-  .person-alert{
-    text-transform: uppercase;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2.5rem;
-    background-color: black;
-    color: white;
-    font-weight: 500;
-    padding: .5rem;
-    font-size: .8em;
-    &.acting{
-      background-color: palevioletred;
-    }
-    &.production{
-      background-color: green;
-    }
-    &.writing, &.creator{
-      background-color: orange;
-    }
-    &.directing{
-      background-color: blue;
-    }
-    &.sound{
-      background-color: brown;
-    }
-    &.camera{
-      background-color: rgb(42, 165, 132);
-    }
-    &.costume{
-      background-color: rgb(108, 42, 165);
-    }
-    &.visualeffects, &.editing{
-      background-color: rgb(114, 114, 114);
-    }
-    &.art{
-      background-color: yellowgreen;
+    &.ended{
+      height: 2.5rem;
+      background-color: $green;
+      color: black;
+      font-weight: 500;
+      padding: .5rem;
     }
   }
-  .ended-alert{
-    text-transform: uppercase;
+  .vote{
     position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2.5rem;
-    background-color: $green;
-    color: black;
-    font-weight: 500;
-    padding: .5rem;
-  }
-  .vote-average{
-    position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 0px;
+    right: 0px;
     color: black;
     background-color: white;
-    border-radius: 50%;
-    width: 2.75rem;
-    height: 2.75rem;
+    border-bottom-left-radius: 50%;
+    min-width: 40px;
+    // height: 2.75rem;
+    padding-top: 0;
+    padding-right: .5em;
+    padding-bottom: .5em;
+    padding-left: .75em;
     display: flex;
-    justify-content: center;
-    padding-top: .2rem;
+    flex-direction: column;
+    align-items: center;
     font-weight: 500;
-    box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.75);
+    font-size: .9rem;
+    .count{
+      font-size: .6rem;
+    }
+    box-shadow: inset -.1px .1px 2.5px .1px rgba(0,0,0,0.5);
     &.black{background-color: black;}
     &.grey{background-color: grey;}
     &.lightgreen{background-color: lightgreen;}
@@ -375,19 +376,43 @@ button, .c-button{
     &.lightblue{background-color: lightblue;}
     &.blue{background-color: blue;}
   }
-  .vote-count{
-    background-color: transparent;
+  .saga-index{
     position: absolute;
-    top: calc(5px + 1.4rem);
-    right: 5px;
-    font-size: calc(2rem / 3);
+    top: 0;
+    left: calc(50% - 25px);
+    width: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: 600;
+    background-color: white;
+    padding-bottom: .25em;
+    font-size: 1rem;
     color: black;
-    width: 2.75rem;
-    text-align: center;
+    box-shadow: inset -.1px .1px 2.5px .1px rgba(0,0,0,0.5);
+    border-top: none;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
   }
-  .vote-average, .vote-count{
+  .vote{
     &.black, &.grey, &.green, &.darkgreen, &.red, &.blue{
       color: white;
+    }
+  }
+}
+
+.saga-parts{
+  padding: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  width: 800px;
+  max-width: 100%;
+  margin: auto;
+  .media-container{
+    width: 150px;
+    .cover-title{
+      color: black;
     }
   }
 }
@@ -623,25 +648,66 @@ header{
   }
 }
 
+.swiper-button-next, .swiper-button-prev{
+  @media screen and (max-width: 1200px){
+    display: none !important;
+  }
+}
+
+.swiper-button-next{
+  // right: -10px !important;
+  // left: unset !important;
+  // z-index: 1000 !important;
+}
+
 .cast-members{
-    display: flex;
-    gap: .5rem;
-    flex-wrap: wrap;
-  .cast-member{
-    cursor: pointer;
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  .simple-cover{
     width: 100px;
-    img{
-      max-width: 100%;
+  }
+}
+.seasons{
+  width: 800px;
+  max-width: 100%;
+  margin: auto;
+  margin-top: 1rem;
+  padding: 0 50px;
+  @media screen and (max-width: 1200px){
+    padding: 0;
+  }
+  position: relative;
+  .simple-cover{
+    padding-bottom: 1rem;
+    // width: calc((800px / 6) - .5rem);
+    // @media screen and (max-width: 1200px){
+    //   width: calc((800px / 5) - 1rem);
+    // }
+    // @media screen and (max-width: 1000px){
+    //   width: calc((500px / 4) - 1rem);
+    // }
+    // @media screen and (max-width: 500px){
+    //   width: calc((100vw / 3) - 2rem);
+    // }
+  }
+}
+.simple-cover{
+  cursor: pointer;
+  img{
+    max-width: 100%;
+  }
+  &.transparent{
+    opacity: .5;
+  }
+  .name{
+    text-align: center;
+    font-size: .75em;
+    &.orig{
+      font-weight: 600;
     }
-    .name{
-      text-align: center;
-      font-size: .75em;
-      &.orig{
-        font-weight: 600;
-      }
-      &.char{
-        font-style: italic;
-      }
+    &.char{
+      font-style: italic;
     }
   }
 }

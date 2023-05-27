@@ -138,6 +138,14 @@
         "Spoken languages":{
             "it": "Lingue parlate"
         },
+        "movie-overview":{
+            "en": "Movie Overview",
+            "it": "Trama del Film"
+        },
+        "tv-overview":{
+            "en": "TV Series Overview",
+            "it": "Trama della Serie TV"
+        },
         "Overview":{
             "it": "Trama"
         },
@@ -620,6 +628,24 @@
         },
         "Canceled":{
             "it": "Annullato"
+        },
+        "st":{
+            "it": "°"
+        },
+        "nd":{
+            "it": "°"
+        },
+        "rd":{
+            "it": "°"
+        },
+        "th":{
+            "it": "°"
+        },
+        "Saga Overview":{
+            "it": "Trama della Saga"
+        },
+        "Airing":{
+            "it": "In onda"
         }
     }
 }

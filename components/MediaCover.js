@@ -9,7 +9,7 @@ import {AiOutlineLoading} from 'react-icons/ai';
 import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
 
-export const MediaCover = ({data, character, showTitle, href, onClick, mediaType, showStatus, showUpcoming, page, hideTrash, hideFavorites, hide}) => {
+export const MediaCover = ({sagaIndex, disabled, data, headline, showTitle, href, onClick, mediaType, showStatus, showUpcoming, page, hideTrash, hideFavorites, hide}) => {
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -57,7 +57,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
     return isMounted && mediaType && (
       <div className={`media-container media-id-${data.id} ${(hide || (isTrash && hideTrash) || (isFavorite && hideFavorites)) ? "no-display" : ""} ${page ? `page${page}` : ""}`} ref={contentRef}>
         {href ? 
-          <Link href={href} className="media clickable" onClick={(e)=>{
+          <Link href={href} className={`media clickable ${disabled ? "disabled" : ""}`} onClick={(e)=>{
             if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
               e.preventDefault();
             }
@@ -67,24 +67,26 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
               mediaType={mediaType}
               showStatus={showStatus}
               showUpcoming={showUpcoming}
-              character={character}
+              headline={headline}
               showTitle={showTitle}
               isFavorite={isFavorite} 
               isTrash={isTrash}
+              sagaIndex={sagaIndex}
               />
           </Link>
         :
-        <div className={`media ${onClick ? "clickable" : ""}`} onClick={()=>{onClick && onClick()}}>
+        <div className={`media ${disabled ? "disabled" : ""} ${onClick ? "clickable" : ""}`} onClick={()=>{onClick && onClick()}}>
             {data && data.id &&
-              <Content 
+              <Content
                 data={data} 
                 mediaType={mediaType}
                 showStatus={showStatus}
                 showUpcoming={showUpcoming}
-                character={character}
+                headline={headline}
                 showTitle={showTitle}
                 isFavorite={isFavorite} 
                 isTrash={isTrash}
+                sagaIndex={sagaIndex}
               />
             }
           </div>
@@ -93,7 +95,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
     )
   }
 
-  const Content = ({data, mediaType, character, showStatus, showUpcoming, showTitle, isFavorite, isTrash}) => {
+  const Content = ({data, mediaType, headline, showStatus, showUpcoming, showTitle, isFavorite, isTrash, sagaIndex}) => {
 
     const router = useRouter();
     
@@ -180,7 +182,7 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
     const [optionsMode, setOptionsMode] = useState(false);
 
     return (<>
-      <div className="cover">
+      <div className={`cover`}>
         <div 
           style={{opacity: mainPicLoaded ? 0 : 1}} 
           id={`thumbnail_${data.id}`} 
@@ -256,34 +258,41 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
               }}/>
           </div>
         </>}
+        {sagaIndex &&
+          <div className={`saga-index`}>{sagaIndex}</div>
+        }
         {mediaType !== "person" && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
-          <div className={`vote-average ${voteColor(data.vote_average)}`}>{Math.round(data.vote_average*10)/10}</div>
-          <div className={`vote-count ${voteColor(data.vote_average)}`}>{data.vote_count}</div>
+          <div className={`vote ${voteColor(data.vote_average)}`}>
+            <div className="average">{Math.round(data.vote_average*10)/10}</div>
+            <div className="count">{data.vote_count}</div>
+          </div>
         </>}
         {mediaType === "person" && <>
-          <div className={`vote-average ${popColor(data.popularity)}`}>{Math.floor(data.popularity)}</div>
+          <div className={`vote ${popColor(data.popularity)}`}>
+            <div className="average">{Math.floor(data.popularity)}</div>
+            <div className="count">{data.gender === 1 ? "F" : data.gender === 2 ? "M" : "NB"}</div>
+          </div>
           {data.known_for_department &&
-            <div className={`${data.known_for_department.replaceAll(" ","").split("&")[0].toLowerCase()} person-alert`}>{translate(data.known_for_department.split("&")[0])}</div>
+            <div className={`${data.known_for_department.replaceAll(" ","").split("&")[0].toLowerCase()} person alert`}>{translate(data.known_for_department.split("&")[0])}</div>
           }
-          <div className={`vote-count ${popColor(data.popularity)}`}>{data.gender === 1 ? "F" : data.gender === 2 ? "M" : "NB"}</div>
         </>}
         {showStatus && mediaType === 'movie' && data.status &&
           <div 
-            className={`upcoming-alert ${data.status ? data.status.toLowerCase().replaceAll(" ", "-") : ""}`}
+            className={`upcoming alert ${data.status ? data.status.toLowerCase().replaceAll(" ", "-") : ""}`}
           >{translate(data.status)}</div>
         }
         {showUpcoming && mediaType !== "person" && !data.status && moment(data[currentNames.release_date],"YYYY-MM-DD").valueOf() > moment().valueOf() && 
           <div 
-            className={`upcoming-alert`}
+            className={`upcoming alert`}
           >{translate("upcoming")}</div>
         }
         {showStatus && mediaType === 'tv' && data.status && <>
           {data.status === 'Canceled' ? 
-            <div className="canceled-alert">{translate("canceled")}</div>
+            <div className="canceled alert">{translate("canceled")}</div>
           : data.in_production ? 
-            <div className="ongoing-alert">{translate("ongoing")}</div>
+            <div className="ongoing alert">{translate("ongoing")}</div>
           :
-            <div className="ended-alert">{translate("ended")}</div>
+            <div className="ended alert">{translate("ended")}</div>
           }
         </>}
         {mediaType !== "person" && 
@@ -292,16 +301,16 @@ export const MediaCover = ({data, character, showTitle, href, onClick, mediaType
           </div>
         }
         {mediaType !== "person" && 
-          <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}/${data.poster_path}` : `/img/not-found.jpg`} 
+          <img className="main-image" alt={data[currentNames.title]} src={data.poster_path? `${tmdb_main_url_img_low}${data.poster_path}` : `/img/not-found.jpg`} 
           onLoad={()=>{setMainPicLoaded(true)}}/>
         }
         {mediaType === "person" && 
-          <img className="main-image" alt={data.original_name} src={data.profile_path? `${tmdb_main_url_img_low}/${data.profile_path}` : '/img/person-not-found.jpg'} 
+          <img className="main-image" alt={data.original_name} src={data.profile_path? `${tmdb_main_url_img_low}${data.profile_path}` : '/img/person-not-found.jpg'} 
           onLoad={()=>{setMainPicLoaded(true)}}/>
         }
-        {character &&
+        {headline &&
           <div className={`cover-title ontop`}>
-            {character}
+            {headline}
           </div>
         }
       </div>

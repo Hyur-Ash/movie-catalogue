@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import '/components/Navigator.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from 'react';
+import 'swiper/swiper-bundle.css';
 //date/time pickers
 // import 'react-calendar/dist/Calendar.css';
 // import 'react-clock/dist/Clock.css';

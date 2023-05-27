@@ -12,7 +12,6 @@ import Link from 'next/link';
 import {SiWikidata} from 'react-icons/si';
 import {FaImdb, FaTiktok} from 'react-icons/fa';
 import {BsInstagram, BsFacebook, BsTwitter} from 'react-icons/bs';
-import CastMember from '/components/CastMember';
 import { MediaPopup } from '/components/MediaPopup';
 
 export const PersonPopup = ({id, onClose}) => {
@@ -177,7 +176,7 @@ export const PersonPopup = ({id, onClose}) => {
                     <div style={{background:"black", height: "100%"}}></div>
                 </div>
             }
-            {loadingPerson !== true && person && person[websiteLang] &&
+            {mediaConfig === null && loadingPerson !== true && person && person[websiteLang] &&
                 <Modal className="single-media" isOpen={person !== null} toggle={closeModal} size={"xl"}>
                 <ModalHeader toggle={closeModal}>
                     <div className="c-modal-title">
@@ -354,7 +353,7 @@ export const PersonPopup = ({id, onClose}) => {
                                                 });
                                                 window.history.pushState({}, "", `/${data.mediaType}/${data.id}`);
                                             }}
-                                            character={!data.job ? `${translate("Actor").toUpperCase()}${data.character ? ` - ${data.character}` : ""}` : translate(data.job).toUpperCase()} 
+                                            headline={!data.job ? `${translate("Actor").toUpperCase()}${data.character ? ` - ${data.character}` : ""}` : translate(data.job).toUpperCase()} 
                                             data={data} 
                                             showTitle 
                                             mediaType={data.mediaType}
