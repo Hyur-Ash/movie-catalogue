@@ -9,7 +9,7 @@ import {AiOutlineLoading} from 'react-icons/ai';
 import {MdCancel, MdRecommend} from 'react-icons/md';
 import {useRouter} from 'next/router';
 
-export const MediaCover = ({sagaIndex, disabled, data, headline, showTitle, href, onClick, mediaType, showStatus, showUpcoming, page, hideTrash, hideFavorites, hide}) => {
+export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, href, onClick, mediaType, showStatus, showUpcoming, page, hideTrash, hideFavorites, hide}) => {
 
     const [isMounted, setIsMounted] = useState(false);
     useEffect(()=>{
@@ -57,7 +57,7 @@ export const MediaCover = ({sagaIndex, disabled, data, headline, showTitle, href
     return isMounted && mediaType && (
       <div className={`media-container media-id-${data.id} ${(hide || (isTrash && hideTrash) || (isFavorite && hideFavorites)) ? "no-display" : ""} ${page ? `page${page}` : ""}`} ref={contentRef}>
         {href ? 
-          <Link href={href} className={`media clickable ${disabled ? "disabled" : ""}`} onClick={(e)=>{
+          <Link href={href} className={`media clickable ${highlight ? "highlight" : ""}`} onClick={(e)=>{
             if(!href || e.target.classList.contains('is-favorites') || e.target.classList.contains('add-favorites') || e.target.tagName === 'path'){
               e.preventDefault();
             }
@@ -75,7 +75,7 @@ export const MediaCover = ({sagaIndex, disabled, data, headline, showTitle, href
               />
           </Link>
         :
-        <div className={`media ${disabled ? "disabled" : ""} ${onClick ? "clickable" : ""}`} onClick={()=>{onClick && onClick()}}>
+        <div className={`media ${highlight ? "highlight" : ""} ${onClick ? "clickable" : ""}`} onClick={()=>{onClick && onClick()}}>
             {data && data.id &&
               <Content
                 data={data} 
@@ -261,7 +261,7 @@ export const MediaCover = ({sagaIndex, disabled, data, headline, showTitle, href
         {sagaIndex &&
           <div className={`saga-index`}>{sagaIndex}</div>
         }
-        {mediaType !== "person" && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
+        {mediaType !== "person" && data[currentNames.release_date]?.length > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD") < moment(Date.now()) && <>
           <div className={`vote ${voteColor(data.vote_average)}`}>
             <div className="average">{Math.round(data.vote_average*10)/10}</div>
             <div className="count">{data.vote_count}</div>
@@ -281,7 +281,7 @@ export const MediaCover = ({sagaIndex, disabled, data, headline, showTitle, href
             className={`upcoming alert ${data.status ? data.status.toLowerCase().replaceAll(" ", "-") : ""}`}
           >{translate(data.status)}</div>
         }
-        {showUpcoming && mediaType !== "person" && !data.status && moment(data[currentNames.release_date],"YYYY-MM-DD").valueOf() > moment().valueOf() && 
+        {showUpcoming && mediaType !== "person" && !data.status && data[currentNames.release_date]?.length > 0 && moment(data[currentNames.release_date],"YYYY-MM-DD").valueOf() > moment().valueOf() && 
           <div 
             className={`upcoming alert`}
           >{translate("upcoming")}</div>

@@ -16,8 +16,7 @@ import {BsInstagram, BsFacebook, BsTwitter} from 'react-icons/bs';
 import SimpleCover from '/components/SimpleCover';
 import Company from '/components/Company';
 import { PersonPopup } from '/components/PersonPopup';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Scrollbar, A11y, Mousewheel, FreeMode } from 'swiper';
+import CoverScroller from '/components/CoverScroller';
 
 export const MediaPopup = ({mediaType, id, onClose}) => {
 
@@ -135,28 +134,23 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
         }
     });
 
-    const collection = !singleMedia || !singleMedia[websiteLang] ? null : singleMedia[websiteLang]?.collection || singleMedia.en?.collection;
+    const orderByDate = (array, dateKey) => {
+        return array.sort((a,b)=>moment(a[dateKey], "YYYY-MM-DD").valueOf() < moment(b[dateKey], "YYYY-MM-DD").valueOf() ? -1 : 1);
+    }
 
-    const sagaIndex = collection && collection?.parts?.findIndex(p=>p.id === singleMedia[websiteLang].id) + 1;
+    const collection = !singleMedia || !singleMedia[websiteLang] ? null : singleMedia[websiteLang]?.collection || singleMedia.en?.collection;
     console.log(collection)
+
+    const sagaIndex = collection?.parts && orderByDate(collection.parts, "release_date").findIndex(p=>p.id === singleMedia[websiteLang].id) + 1;
+    
+    const getCardinal = (n) => {
+        return n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th";
+    }
 
     const [mediaConfig, setMediaConfig] = useState(null);
     const [personId, setPersonId] = useState(null);
 
     const [selectedSeason, setSelectedSeason] = useState(null);
-
-    const [slidesPerView, setSlidersPerView] = useState(0);
-    const resizeHandler = () => {
-        const w = window.innerWidth;
-        if(w){
-            setSlidersPerView(w > 1200 ? 6 : w > 1000 ? 5 : w > 993);
-        }
-    }
-    useEffect(()=>{
-        window.addEventListener("resize", resizeHandler);
-    },[]);
-
-    const swiperRef = useRef();
 
     return isMounted && id && currentNames && (<>
         <div className="media-popup">
@@ -184,7 +178,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                 <ModalBody>
                     <div className="media-info">
                         <MediaCover 
-                            sagaIndex={sagaIndex && <span>{sagaIndex}<sup>{translate(sagaIndex === 1 ? "st" : sagaIndex === 2 ? "nd" : sagaIndex === 3 ? "rd" : "th")}</sup></span>}
+                            sagaIndex={sagaIndex && <span>{sagaIndex}<sup>{translate(getCardinal(sagaIndex))}</sup></span>}
                             showStatus 
                             mediaType={mediaType} 
                             data={singleMedia[websiteLang]}
@@ -241,7 +235,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                             {mediaType === 'tv' && <>
                                 <div className="voice"><strong>{translate("Length")}</strong> {singleMedia[websiteLang].number_of_seasons} Seasons ({singleMedia[websiteLang].number_of_episodes} {translate("episodes")})</div>
                             </>}
-                            {mediaType === 'movie' &&
+                            {mediaType === 'movie' && singleMedia[websiteLang].runtime > 0 &&
                                 <div className="voice"><strong>{translate("Runtime")}</strong> {getRuntime(singleMedia[websiteLang].runtime)}</div>
                             }
                             {mediaType === 'tv' && singleMedia[websiteLang].episode_run_time?.length > 0 &&
@@ -250,11 +244,17 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                                     {singleMedia[websiteLang].episode_run_time.map(r => getRuntime(r)).join(", ")}
                                 </div>
                             }
-                            <div className="voice"><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}</strong> {singleMedia[websiteLang].genres.map(g=>g.name).join(", ")}</div>
-                            <div className="voice"><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}</strong> {singleMedia[websiteLang].spoken_languages.map(g=>g.name).join(", ")}</div>
+                            {singleMedia[websiteLang].genres.length > 0 &&
+                                <div className="voice"><strong>{translate(singleMedia[websiteLang].genres.length > 1 ? "Genres" : "Genre")}</strong> {singleMedia[websiteLang].genres.map(g=>g.name).join(", ")}</div>
+                            }
+                            {singleMedia[websiteLang].spoken_languages > 0 &&
+                                <div className="voice"><strong>{translate(singleMedia[websiteLang].spoken_languages.length > 1 ? "Spoken languages" : "Spoken language")}</strong> {singleMedia[websiteLang].spoken_languages.map(g=>g.name).join(", ")}</div>
+                            }
                         </div>
                     </div>
-                    <h3>{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}</h3>
+                    {(singleMedia[websiteLang].tagline.length > 0 || singleMedia.en.tagline > 0) &&
+                        <h3>{"“"}{singleMedia[websiteLang].tagline.length > 0 ? singleMedia[websiteLang].tagline : singleMedia.en.tagline}{"”"}</h3>
+                    }
                     {singleMedia.duringcreditsstinger && !singleMedia.aftercreditsstinger &&
                         <div className="announcement green">{translate("WITH DURING CREDITS STINGER!")}</div>
                     }
@@ -270,21 +270,24 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                             {collection.overview}
                         </div>
                         <div className="saga-parts">
-                            {collection.parts.map( (part, p) => (
-                                <MediaCover 
-                                    disabled={part.id === singleMedia[websiteLang].id}
-                                    key={`part${p}`} 
-                                    headline={moment(part.release_date, "YYYY-MM-DD").format("YYYY")} 
-                                    showTitle 
-                                    showStatus 
-                                    mediaType={part.media_type} 
-                                    data={part}
-                                    onClick={()=>{
-                                        setMediaConfig({mediaType: part.media_type, id: part.id});
-                                        window.history.pushState({}, "", `/media/${part.id}`);
-                                    }}
-                                />
-                            ))}
+                            <CoverScroller>
+                                {orderByDate(collection.parts, "release_date").map( (part, p) => (
+                                    <MediaCover 
+                                        sagaIndex={<span>{p+1}<sup>{translate(getCardinal(p+1))}</sup></span>}
+                                        highlight={part.id === singleMedia[websiteLang].id}
+                                        key={`part${p}`} 
+                                        headline={part.release_date?.length > 0 ? moment(part.release_date, "YYYY-MM-DD").format("YYYY") : translate("UPCOMING")} 
+                                        showTitle 
+                                        showStatus 
+                                        mediaType={part.media_type} 
+                                        data={part}
+                                        onClick={part.id !== singleMedia[websiteLang].id ? ()=>{
+                                            setMediaConfig({mediaType: part.media_type, id: part.id});
+                                            window.history.pushState({}, "", `/${part.media_type}/${part.id}`);
+                                        } : null}
+                                    />
+                                ))}
+                            </CoverScroller>
                         </div>
                     </>}
                     {singleMedia.en.overview.length > 0 &&
@@ -295,36 +298,18 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                     }
                     {singleMedia[websiteLang].seasons && 
                         <div className="seasons">
-                            <Swiper
-                                ref={swiperRef}
-                                modules={[Navigation, Pagination, Scrollbar, A11y, Mousewheel, FreeMode]}
-                                breakpoints={{
-                                    0: {slidesPerView: 3},
-                                    500: {slidesPerView: 4},
-                                    1000: {slidesPerView: 5},
-                                    1200: {slidesPerView: 6},
-                                }}
-                                freeMode
-                                // mousewheel={{sensitivity: 1}}
-                                spaceBetween={10}
-                                scrollbar={{ draggable: true }}
-                                onSlideChange={() => console.log('slide change')}
-                                onSwiper={(swiper) => console.log(swiper)}
-                            >
+                            <CoverScroller simple>
                                 {singleMedia[websiteLang].seasons.map((season, s) => (
-                                    <SwiperSlide key={`season${s}`}>
-                                        <SimpleCover 
-                                            name={`${translate("Season")} ${season.season_number}`}
-                                            imagePath={season.poster_path}
-                                            headline={moment(season.air_date, "YYYY-MM-DD").format("YYYY")}
-                                            onClick={()=>{setSelectedSeason(season)}}
-                                            transparent={!selectedSeason || selectedSeason.id !== season.id}
-                                        />
-                                    </SwiperSlide>
+                                    <SimpleCover 
+                                        key={`season${s}`}
+                                        name={`${translate("Season")} ${season.season_number}`}
+                                        imagePath={season.poster_path}
+                                        headline={moment(season.air_date, "YYYY-MM-DD").format("YYYY")}
+                                        onClick={()=>{setSelectedSeason(season)}}
+                                        transparent={!selectedSeason || selectedSeason.id !== season.id}
+                                    />
                                 ))}
-                            </Swiper>
-                            <div className="swiper-button-prev" onClick={()=>{swiperRef.current.swiper.slidePrev();}}></div>
-                            <div className="swiper-button-next" onClick={()=>{swiperRef.current.swiper.slideNext();}}></div>
+                            </CoverScroller>
                         </div>
                     }
                     {selectedSeason?.overview &&

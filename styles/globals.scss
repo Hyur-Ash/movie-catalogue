@@ -179,11 +179,6 @@ button, .c-button{
   &:not(.clickable){
     cursor: unset;
   }
-  &.disabled{
-    opacity: .25;
-    pointer-events: none;
-    cursor: default;
-  }
   .cover{
     width: 100%;
     aspect-ratio: 18/27;
@@ -223,9 +218,9 @@ button, .c-button{
     }
   }
   .cover-title{
-    margin-top: .5rem;
     overflow: hidden;
     font-size: .9em;
+    padding: 0.25em .5em;
     &.ontop{
       margin: 0;
       position: absolute;
@@ -399,18 +394,24 @@ button, .c-button{
       color: white;
     }
   }
+  &.highlight{
+    background-color: rgba(255, 215, 0, .5);
+    .thumbnail{
+      background-color: rgba(255, 215, 0, .5);
+      opacity: 1 !important;
+      svg{
+        opacity: 0;
+      }
+    }
+  }
 }
 
 .saga-parts{
   padding: 1rem 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
   width: 800px;
   max-width: 100%;
   margin: auto;
   .media-container{
-    width: 150px;
     .cover-title{
       color: black;
     }
@@ -668,6 +669,13 @@ header{
     width: 100px;
   }
 }
+
+.cover-scroller{
+  .simple-cover, .media-container{
+    padding-bottom: 1rem;
+  }
+}
+
 .seasons{
   width: 800px;
   max-width: 100%;
@@ -678,20 +686,8 @@ header{
     padding: 0;
   }
   position: relative;
-  .simple-cover{
-    padding-bottom: 1rem;
-    // width: calc((800px / 6) - .5rem);
-    // @media screen and (max-width: 1200px){
-    //   width: calc((800px / 5) - 1rem);
-    // }
-    // @media screen and (max-width: 1000px){
-    //   width: calc((500px / 4) - 1rem);
-    // }
-    // @media screen and (max-width: 500px){
-    //   width: calc((100vw / 3) - 2rem);
-    // }
-  }
 }
+
 .simple-cover{
   cursor: pointer;
   img{
@@ -777,16 +773,19 @@ header{
     right: 0.33rem;
   }
   &.options, &.options2, &.option1, &.option2{
-    bottom: 4rem;
+    bottom: 4.25rem;
+    svg{
+      font-size: 1.5rem;
+    }
   }
   &.options2, &.option1, &.option2{
     background-color: rgba(0,0,0,.75);
   }
   &.option1{
-    right: 4rem;
+    right: 3rem;
   }
   &.option2{
-    right: 7.5rem;
+    right: 5.5rem;
   }
 }
 
