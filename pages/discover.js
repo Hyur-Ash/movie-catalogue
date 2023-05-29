@@ -65,7 +65,7 @@ export default function Discover() {
       }
   },[websiteLang]);
 
-  const [isYearRange, setIsYearRange] = useLocalStorage('isYearRange-discover', false);
+  const [isYearRange, setIsYearRange] = useLocalStorage('isYearRange-discover', true);
   const [isVoteAverageRange, setIsVoteAverageRange] = useLocalStorage('isVoteAverageRange-discover', false);
   const [isVoteCountRange, setIsVoteCountRange] = useLocalStorage('isVoteCountRange-discover', false);
 
@@ -78,6 +78,8 @@ export default function Discover() {
         sort_by: `${FV.sortBy.value}.${FV.orderBy.value}`,
         with_genres: FV.withGenres.map(e=>e.value).join(FV.withGenresLogic),
         without_genres: FV.withoutGenres.map(e=>e.value).join(","),
+        with_keywords: FV.withKeywords.map(e=>e.value).join(FV.withKeywordsLogic),
+        without_keywords: FV.withoutKeywords.map(e=>e.value).join(", "),
         language: websiteLang,
         with_original_language: FV.originalLanguage.value === 'any' ? '' : FV.originalLanguage.value,
         ["vote_average.gte"]: FV.voteAverageFrom.value === 'any' ? '' : FV.voteAverageFrom.value.toString(),

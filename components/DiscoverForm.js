@@ -13,6 +13,7 @@ import {MediaCover} from '/components/MediaCover';
 import {FaStar, FaFilm, FaSearch, FaTrash} from 'react-icons/fa';
 import {TfiLayoutMediaLeft as LogoIcon} from 'react-icons/tfi';
 import Link from 'next/link';
+import SearchSelect from '/components/SearchSelect';
 
 export default function DiscoverForm({
   onSubmit, 
@@ -162,6 +163,9 @@ export default function DiscoverForm({
           withGenres: [],
           withGenresLogic: ",",
           withoutGenres: [],
+          withKeywords: [],
+          withKeywordsLogic: ",",
+          withoutKeywords: [],
           originalLanguage: formOptions.originalLanguages[0],
           yearFrom: formOptions.years[0],
           yearTo: formOptions.years[0],
@@ -231,21 +235,21 @@ export default function DiscoverForm({
           />
         </div>
         <div className={`form-group genres three`}>
-            <label>{translate("With genres")}</label>
-            <div className="select-with-button">
-              <Select
-                instanceId={`withGenres`} 
-                options={availableGenres}
-                value={formValues.withGenres}
-                isMulti
-                onChange={(e)=>{changeFormValue('withGenres', e)}}
-                placeholder={translate("Select...")}
-              />
-              <button onClick={()=>{
-                changeFormValue('withGenresLogic', formValues.withGenresLogic === "," ? "|" : ",");
-              }}>{formValues.withGenresLogic === "," ? translate("AND") : translate("OR")}</button>
-            </div>
+          <label>{translate("With genres")}</label>
+          <div className="select-with-button">
+            <Select
+              instanceId={`withGenres`} 
+              options={availableGenres}
+              value={formValues.withGenres}
+              isMulti
+              onChange={(e)=>{changeFormValue('withGenres', e)}}
+              placeholder={translate("Select...")}
+            />
+            <button onClick={()=>{
+              changeFormValue('withGenresLogic', formValues.withGenresLogic === "," ? "|" : ",");
+            }}>{formValues.withGenresLogic === "," ? translate("AND") : translate("OR")}</button>
           </div>
+        </div>
         <div className="form-group">
           <label>{translate("Without genres")}</label>
           <Select
@@ -256,6 +260,35 @@ export default function DiscoverForm({
             onChange={(e)=>{changeFormValue('withoutGenres', e)}}
             placeholder={translate("Select...")}
           />
+        </div>
+        <div className={`form-group genres three`}>
+          <label>{translate("With keywords")}</label>
+          <div className="select-with-button">
+            <SearchSelect
+              type={'keyword'}
+              instanceId={`withKeywords`} 
+              value={formValues.withKeywords}
+              isMulti
+              onChange={(e)=>{changeFormValue('withKeywords', e)}}
+              placeholder={translate("Select...")}
+            />
+            <button onClick={()=>{
+              changeFormValue('withKeywordsLogic', formValues.withKeywordsLogic === "," ? "|" : ",");
+            }}>{formValues.withKeywordsLogic === "," ? translate("AND") : translate("OR")}</button>
+          </div>
+        </div>
+        <div className={`form-group`}>
+          <label>{translate("Without keywords")}</label>
+          <div className="select-with-button">
+            <SearchSelect
+              type={'keyword'}
+              instanceId={`withoutKeywords`} 
+              value={formValues.withoutKeywords}
+              isMulti
+              onChange={(e)=>{changeFormValue('withoutKeywords', e)}}
+              placeholder={translate("Select...")}
+            />
+          </div>
         </div>
         <div className="form-group">
           <label>{translate("Original language")}</label>
@@ -427,7 +460,22 @@ export default function DiscoverForm({
           <button 
           className="red" 
           onClick={()=>{
-            setFormValues(firstFormValues);
+            setFormValues({
+              mediaType: formOptions.mediaType[0],
+              withGenres: [],
+              withGenresLogic: ",",
+              withoutGenres: [],
+              originalLanguage: formOptions.originalLanguages[0],
+              yearFrom: formOptions.years[0],
+              yearTo: formOptions.years[0],
+              voteAverageFrom: formOptions.votes[0],
+              voteAverageTo: formOptions.votes[0],
+              voteCountFrom: "",
+              voteCountTo: "",
+              runtimeFrom: formOptions.runtimes[0],
+              sortBy: formOptions.sortValues[0],
+              orderBy: formOptions.orderValues[0],
+            });
           }}>{translate("Reset")}</button>
         </div>
       </div>
