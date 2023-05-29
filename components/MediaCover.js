@@ -102,6 +102,7 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
     const {
         User,
         translate, properNames,
+        voteColor
     } = useContext(Context);
 
     const {user, updateUser} = User;
@@ -112,10 +113,6 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
     const [mainPicLoaded, setMainPicLoaded] = useState(false);
 
     const tmdb_main_url_img_low = "https://www.themoviedb.org/t/p/w220_and_h330_face";
-
-    const voteColor = (vote) => {
-        return vote > 3 ? vote > 4.5 ? vote > 6 ? vote > 7.5 ? vote > 9? "lightblue" : "green" : "lightgreen" : "yellow" : "orange" : "red";
-    }
 
     const popColor = (vote) => {
         return vote < 10 ? "black" :

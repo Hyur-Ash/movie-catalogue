@@ -129,8 +129,6 @@ export const PersonPopup = ({id, onClose}) => {
             }
         })
         setCurrentCredits(credits);
-        console.log({credits})
-        // console.log({person, selectedMedias, selectedRoles})
     },[person, selectedMedias, selectedRoles, sortBy, orderBy]);
 
     const getPopularName = (popularity) => {

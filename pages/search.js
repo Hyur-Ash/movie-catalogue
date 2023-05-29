@@ -46,7 +46,6 @@ export default function Discover() {
 
   const [forceReload, setForceReload] = useState(false);
   useEffect(()=>{
-    console.log(JSON.stringify(config) !== JSON.stringify(configRef.current))
       if(!isLoading && (forceReload || !forceReload && JSON.stringify(config) !== JSON.stringify(configRef.current)) ){
           setForceReload(false);
           setMediaPages([]);
@@ -77,7 +76,7 @@ export default function Discover() {
         query: FV.query.trim().length > 0 ? FV.query.trim() : "",
         language: websiteLang,
     }
-    if(mediaType !== "person"){
+    if(mediaType === "movie" || mediaType === "tv"){
       params[currentNames.primary_release_year] = FV.year.value;
     }
     setConfig({params, mediaType});
@@ -110,7 +109,6 @@ export default function Discover() {
   }
 
   const loadPages = async (start, step, startPages) => {
-      console.log(start, step, startPages)
       setIsLoading(true);
       const pages = JSON.parse(JSON.stringify(startPages));
       for(let i=start; i<start+step; i++){

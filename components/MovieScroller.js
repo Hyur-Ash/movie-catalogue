@@ -76,7 +76,7 @@ export default function MovieScroller({mediaPages, mediaType, hideTrash, isLoadi
                         <MediaCover
                             page={mediaPage.page}
                             key={`media${m}`} 
-                            mediaType={mediaType} 
+                            mediaType={media.media_type || mediaType} 
                             showUpcoming 
                             showTitle 
                             data={media} 

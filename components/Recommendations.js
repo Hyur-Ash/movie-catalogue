@@ -93,7 +93,6 @@ export default function Recommendations({mediaType, mediaId}) {
   }
 
   const loadPages = async (start, step, startPages) => {
-      console.log(start, step, startPages)
       setIsLoading(true);
       const pages = JSON.parse(JSON.stringify(startPages));
       for(let i=start; i<start+step; i++){

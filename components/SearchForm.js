@@ -75,7 +75,7 @@ export default function SearchForm({onSubmit}){
               isSearchable={false}
               />
           </div>
-          {formValues.mediaType.value !== "person" &&
+          {(formValues.mediaType.value === "movie" || formValues.mediaType.value === "tv") &&
             <div className="form-group">
               <label className="year-label">
                 {translate("Year")}

@@ -32,21 +32,22 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
 
     const {
         api_key,
-        tmdbConfig,
         tmdb_main_url,
-        yearsContent,
-        discoveredMedias, discoverMedias, loadingMedias, lastDiscover,
-        totalDPages, setCurrentDPage,
+        loadingMedias,
         translate, websiteLang, setWebsiteLang, languagesOptions, properNames, getMedia,
+        getEpisodes,
     } = useContext(Context);
 
     const currentNames = properNames[mediaType];
 
-    const getRuntime = (time) => {
+    const getRuntime = (time, short) => {
         time = Array.isArray(time) ? time[0] : time;
         const hours = Math.floor(parseInt(time)/60);
         const minutes = Math.floor(((time/60) - Math.floor(time/60))*60);
-        return `${hours > 0 ? `${hours} ${translate("hours")}` : ''}${minutes > 0 ? ` ${hours > 0 ? translate("and") : ""} ${minutes} ${translate("minutes")}` : ''}`;
+        const hoursText = short ? "h" : hours > 1 ? "hours" : "hour";
+        const andText = short ? "" : "and";
+        const minutesText = short ? "m" : minutes > 1 ? "minutes" : "minute";
+        return `${hours > 0 ? `${hours} ${translate(hoursText)}` : ''}${minutes > 0 ? ` ${hours > 0 ? translate(andText) : ""} ${minutes} ${translate(minutesText)}` : ''}`;
     }
 
     const closeMediaModal = () => {
@@ -105,7 +106,6 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
         try{
             const mediaInfo = await getMedia(mediaType, id, websiteLang)
             setSingleMedia(mediaInfo);
-            // console.log(mediaInfo)
         }catch(error){
             console.error(error);
         }finally{
@@ -122,24 +122,13 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
     const producers = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Producer");
     const storyWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Story");
     const screenplayWriters = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.crew.filter(w=>w.job === "Screenplay");
-    let allCast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast;
-    const mainCast = allCast.slice(0,6);
-    const otherCast = allCast.slice(6,allCast.length);
-    const restOfCast = [];
-    otherCast.forEach(c => {
-        if(c.popularity > 15){
-            mainCast.push(c);
-        }else{
-            restOfCast.push(c);
-        }
-    });
+    const cast = !singleMedia || !singleMedia.credits ? [] : singleMedia.credits.cast;
 
     const orderByDate = (array, dateKey) => {
         return array.sort((a,b)=>moment(a[dateKey], "YYYY-MM-DD").valueOf() < moment(b[dateKey], "YYYY-MM-DD").valueOf() ? -1 : 1);
     }
 
     const collection = !singleMedia || !singleMedia[websiteLang] ? null : singleMedia[websiteLang]?.collection || singleMedia.en?.collection;
-    console.log(collection)
 
     const sagaIndex = collection?.parts && orderByDate(collection.parts, "release_date").findIndex(p=>p.id === singleMedia[websiteLang].id) + 1;
     
@@ -147,10 +136,34 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
         return n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th";
     }
 
+    const productionCompanies = !singleMedia || !singleMedia[websiteLang] ? [] : singleMedia[websiteLang].production_companies.filter(pc => pc.logo_path?.length > 0);
+
     const [mediaConfig, setMediaConfig] = useState(null);
     const [personId, setPersonId] = useState(null);
 
     const [selectedSeason, setSelectedSeason] = useState(null);
+    const [episodes, setEpisodes] = useState(null);
+    const loadEpisodes = async (seriesId, seasonNumber) => {
+        const loadedEpisodes = await getEpisodes(seriesId, seasonNumber);
+        setEpisodes(loadedEpisodes);
+    }
+    useEffect(()=>{
+        if(!selectedSeason){
+            setEpisodes(null);
+            return;
+        }
+        loadEpisodes(id, selectedSeason.season_number);
+    },[selectedSeason]);
+    
+    const [selectedEpisode, setSelectedEpisode] = useState(null);
+    useEffect(()=>{
+        setSelectedEpisode(null);
+        setSelectedSeason(null);
+    },[websiteLang]);
+
+    const getFilteredCrew = (crew, job) => {
+        return crew.filter(m => m.job === job);
+    }
 
     return isMounted && id && currentNames && (<>
         <div className="media-popup">
@@ -296,103 +309,215 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                             {singleMedia[websiteLang].overview.length > 0 ? singleMedia[websiteLang].overview : singleMedia.en.overview}
                         </div>
                     }
-                    {singleMedia[websiteLang].seasons && 
+                    {singleMedia[websiteLang].seasons && <>
+                        <h4>{translate("Seasons")}</h4>
                         <div className="seasons">
                             <CoverScroller simple>
                                 {singleMedia[websiteLang].seasons.map((season, s) => (
                                     <SimpleCover 
                                         key={`season${s}`}
-                                        name={`${translate("Season")} ${season.season_number}`}
+                                        title={`${season.season_number > 0 && !season.name.includes(season.season_number) ? `${season.season_number}. ` : ""}${season.name}`}
+                                        headline={season.air_date?.length > 0 && moment(season.air_date, "YYYY-MM-DD").format("YYYY")}
                                         imagePath={season.poster_path}
-                                        headline={moment(season.air_date, "YYYY-MM-DD").format("YYYY")}
-                                        onClick={()=>{setSelectedSeason(season)}}
-                                        transparent={!selectedSeason || selectedSeason.id !== season.id}
+                                        onClick={()=>{
+                                            setEpisodes(null);
+                                            setSelectedEpisode(null);
+                                            setSelectedSeason(selectedSeason && selectedSeason.id === season.id ? null : season);
+                                        }}
+                                        highlight={selectedSeason && selectedSeason.id === season.id}
+                                        vote={selectedSeason && selectedSeason.id === season.id && episodes && {
+                                            average: Math.round(episodes.reduce((sum, ep) => sum + ep.vote_average, 0)/episodes.length*10)/10, 
+                                            count: Math.round(episodes.reduce((sum, ep) => sum + ep.vote_count, 0)/episodes.length)
+                                        }}
                                     />
                                 ))}
                             </CoverScroller>
                         </div>
-                    }
+                    </>}
                     {selectedSeason?.overview &&
                         <div className="overview">
-                            <h4>{translate("Season")} {translate("Overview")}</h4>
+                            <h4>{selectedSeason.name} - {translate("Overview")}</h4>
                             {selectedSeason.overview}
                         </div>
                     }
-                    <div className="credits-container">
-                        <div className="credits">
-                            {singleMedia[websiteLang].budget > 0 && singleMedia[websiteLang].revenue > 0 && <>
-                                {singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 1 ? <div className="announcement red">FLOP</div> : 
-                                singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 2 ? <div className="announcement grey">BREAK EVEN</div> : 
-                                singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 3 ? <div className="announcement green">HIT</div> : 
-                                <div className="announcement blue">BLOCKBUSTER</div>}
-                                <div className="box-office" style={{display: "flex"}}>
-                                    <div className="voice" style={{width:"50%"}}>
-                                        <h4>{translate("Budget")}</h4>
-                                        <span className="profit">
-                                            {singleMedia[websiteLang].budget.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0})}
-                                        </span>
-                                    </div>
-                                    <div className="voice" style={{width:"50%"}}>
-                                        <h4>{translate("Revenue")}</h4> 
-                                        <span className={`profit ${
-                                            singleMedia[websiteLang].budget && singleMedia[websiteLang].revenue ? 
-                                            singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 1 ? "red" : 
-                                            singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 2 ? "grey" : 
-                                            singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 3 ? "green" : 
-                                            "blue" : ""}`}>
-                                            {singleMedia[websiteLang].revenue.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0})}
-                                        </span>
-                                    </div>
-                                </div>
-                            </>}
-                            {directors.length > 0 &&
-                                <div className="voice">
-                                    <h4>{translate(directors.length > 1 ? "Directors" : "Director")}</h4> 
-                                    <div className="cast-members">
-                                        {directors.map((data, c) => (
-                                            <SimpleCover 
-                                                key={`cast${c}`} 
-                                                name={data.original_name || data.name}
-                                                imagePath={data.profile_path}
-                                                onClick={()=>{
-                                                    setPersonId(data.id);
-                                                    window.history.pushState({}, "", `/person/${data.id}`);
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            }
-                            {singleMedia[websiteLang]?.created_by?.length > 0 &&
-                                <div className="voice">
-                                    <h4>{translate(singleMedia[websiteLang].created_by.length > 1 ? "Creators" : "Creator")}</h4> 
-                                    <div className="cast-members">
-                                        {singleMedia[websiteLang].created_by.map((data, c) => (
-                                            <SimpleCover 
-                                                key={`cast${c}`} 
-                                                name={data.original_name || data.name}
-                                                imagePath={data.profile_path}
-                                                onClick={()=>{
-                                                    setPersonId(data.id);
-                                                    window.history.pushState({}, "", `/person/${data.id}`);
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            }
+                    {episodes?.length > 0 && <>
+                        <h4>{translate("Episodes")}</h4>
+                        <div className="episodes">
+                            <CoverScroller>
+                                {episodes.map((episode, e) => (
+                                    <SimpleCover 
+                                        key={`episode${e}`}
+                                        title={`${episode.episode_number}. ${episode.name}`}
+                                        headline={`${episode.air_date?.length > 0 &&  moment(episode.air_date, "YYYY-MM-DD").format("DD/MM/YYYY")}${episode.runtime ? ` | ${getRuntime(episode.runtime, true)}` : ""}`}
+                                        imageMain={"https://image.tmdb.org/t/p/w300"}
+                                        imagePath={episode.still_path}
+                                        onClick={()=>{setSelectedEpisode(selectedEpisode && selectedEpisode.id === episode.id ? null : episode)}}
+                                        highlight={selectedEpisode && selectedEpisode.id === episode.id}
+                                        vote={{average: episode.vote_average, count: episode.vote_count}}
+                                    />
+                                ))}
+                            </CoverScroller>
                         </div>
+                    </>}
+                    {selectedEpisode && <>
+                        {selectedEpisode.overview &&
+                            <div className="overview">
+                                <h4>{translate("Episode Overview")}</h4>
+                                {selectedEpisode.overview}
+                            </div>
+                        }
+                        {selectedEpisode.guest_stars?.length > 0 &&
+                            <div className="cast">
+                                <h4>{translate(selectedEpisode.guest_stars.length > 1 ? "Episode Guest Stars" : "Episode Guest Star")}</h4> 
+                                <CoverScroller simple>
+                                    {selectedEpisode.guest_stars.map((data, c) => (
+                                        <SimpleCover 
+                                            key={`episodeCrew${c}`} 
+                                            title={data.original_name || data.name}
+                                            imagePath={data.profile_path}
+                                            onClick={()=>{
+                                                setPersonId(data.id);
+                                                window.history.pushState({}, "", `/person/${data.id}`);
+                                            }}
+                                        />
+                                    ))}
+                                </CoverScroller>
+                            </div>
+                        }
+                        {selectedEpisode.crew &&
+                            <div className="credits-container">
+                                {getFilteredCrew(selectedEpisode.crew, "Director").length > 0 &&
+                                    <div className="credits">
+                                        <div className="voice">
+                                            <h4>{translate(getFilteredCrew(selectedEpisode.crew, "Director").length > 1 ? "Episode Directors" : "Episode Director")}</h4> 
+                                            <div className="cast-members">
+                                                {getFilteredCrew(selectedEpisode.crew, "Director").map((data, c) => (
+                                                    <SimpleCover 
+                                                        key={`episodeCrew${c}`} 
+                                                        title={data.original_name || data.name}
+                                                        imagePath={data.profile_path}
+                                                        onClick={()=>{
+                                                            setPersonId(data.id);
+                                                            window.history.pushState({}, "", `/person/${data.id}`);
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                {getFilteredCrew(selectedEpisode.crew, "Producer").length > 0 &&
+                                    <div className="credits">
+                                        <div className="voice">
+                                            <h4>{translate(getFilteredCrew(selectedEpisode.crew, "Producer").length > 1 ? "Episode Producers" : "Episode Producer")}</h4> 
+                                            <div className="cast-members">
+                                                {getFilteredCrew(selectedEpisode.crew, "Producer").map((data, c) => (
+                                                    <SimpleCover 
+                                                        key={`episodeCrew${c}`} 
+                                                        title={data.original_name || data.name}
+                                                        imagePath={data.profile_path}
+                                                        onClick={()=>{
+                                                            setPersonId(data.id);
+                                                            window.history.pushState({}, "", `/person/${data.id}`);
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </>}
+                    <div className="credits-container">
+                        {(  (singleMedia[websiteLang].budget > 0 && singleMedia[websiteLang].revenue > 0) ||
+                            directors.length > 0 ||
+                            singleMedia[websiteLang]?.created_by?.length > 0 ) &&
+                            <div className="credits">
+                                {singleMedia[websiteLang].budget > 0 && singleMedia[websiteLang].revenue > 0 && <>
+                                    {singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 1 ? <div className="announcement red">FLOP</div> : 
+                                    singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 2 ? <div className="announcement grey">BREAK EVEN</div> : 
+                                    singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 3 ? <div className="announcement green">HIT</div> : 
+                                    <div className="announcement blue">BLOCKBUSTER</div>}
+                                    <div className="box-office" style={{display: "flex"}}>
+                                        <div className="voice" style={{width:"50%"}}>
+                                            <h4>{translate("Budget")}</h4>
+                                            <span className="profit">
+                                                {singleMedia[websiteLang].budget.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                                            </span>
+                                        </div>
+                                        <div className="voice" style={{width:"50%"}}>
+                                            <h4>{translate("Revenue")}</h4> 
+                                            <span className={`profit ${
+                                                singleMedia[websiteLang].budget && singleMedia[websiteLang].revenue ? 
+                                                singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 1 ? "red" : 
+                                                singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 2 ? "grey" : 
+                                                singleMedia[websiteLang].revenue / singleMedia[websiteLang].budget < 3 ? "green" : 
+                                                "blue" : ""}`}>
+                                                {singleMedia[websiteLang].revenue.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </>}
+                                {directors.length > 0 &&
+                                    <div className="voice">
+                                        <h4>{translate(directors.length > 1 ? "Directors" : "Director")}</h4> 
+                                        <div className="cast-members">
+                                            {directors.map((data, c) => (
+                                                <SimpleCover 
+                                                    key={`cast${c}`} 
+                                                    title={data.original_name || data.name}
+                                                    imagePath={data.profile_path}
+                                                    onClick={()=>{
+                                                        setPersonId(data.id);
+                                                        window.history.pushState({}, "", `/person/${data.id}`);
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                }
+                                {singleMedia[websiteLang]?.created_by?.length > 0 &&
+                                    <div className="voice">
+                                        <h4>{translate(singleMedia[websiteLang].created_by.length > 1 ? "Creators" : "Creator")}</h4> 
+                                        <div className="cast-members">
+                                            {singleMedia[websiteLang].created_by.map((data, c) => (
+                                                <SimpleCover 
+                                                    key={`cast${c}`} 
+                                                    title={data.original_name || data.name}
+                                                    imagePath={data.profile_path}
+                                                    onClick={()=>{
+                                                        setPersonId(data.id);
+                                                        window.history.pushState({}, "", `/person/${data.id}`);
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
                         <div className="credits">
-                            {singleMedia[websiteLang].production_companies.length > 0 &&
-                                <div className="voice">
-                                    <h4>{translate(singleMedia[websiteLang].production_companies.length > 1 ? "Production companies" : "Production company")}</h4> 
+                            {productionCompanies?.length > 0 && <>
+                                <div className="voice mobile-only">
+                                    <h4>{translate(productionCompanies.length > 1 ? "Production companies" : "Production company")}</h4> 
                                     <div className="production-companies">
-                                        {singleMedia[websiteLang].production_companies.map((pc, index)=>(
+                                        <CoverScroller simple>
+                                            {productionCompanies.map((pc, index)=>(
+                                                <Company data={pc} key={`pc${index}`}/>
+                                            ))}
+                                        </CoverScroller>
+                                    </div>
+                                </div>
+                                <div className="voice desktop-only">
+                                    <h4>{translate(productionCompanies.length > 1 ? "Production companies" : "Production company")}</h4> 
+                                    <div className="production-companies desktop">
+                                        {productionCompanies.map((pc, index)=>(
                                             <Company data={pc} key={`pc${index}`}/>
                                         ))}
                                     </div>
                                 </div>
-                            }
+                            </>}
                             {singleMedia[websiteLang].production_countries.length > 0 &&
                                 <div className="voice"><h4>{translate(singleMedia[websiteLang].production_countries.length > 1 ? "Production countries" : "Production country")}</h4> {singleMedia[websiteLang].production_countries.map(g=>g.name).join(", ")}</div>
                             }
@@ -407,42 +532,46 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                             }
                         </div>
                     </div>
-                    {mainCast.length > 0 &&
+                    {cast.slice(0,10).length > 0 && <>
                         <div className="cast">
-                            <h4>{translate("Main Cast")}</h4> 
-                            <div className="cast-members">
-                                {mainCast.map((data, c) => (
+                            <h4>{cast.slice(10,cast.length).length > 0 ? translate("Main Cast") : translate("Cast")}</h4> 
+                            <CoverScroller simple>
+                                {cast.slice(0,10).map((data, c) => (
                                     <SimpleCover 
                                         key={`cast${c}`} 
-                                        name={data.original_name || data.name}
+                                        title={data.original_name || data.name}
+                                        subtitle={data.character}
                                         imagePath={data.profile_path}
-                                        headline={data.character}
+                                        type="person"
                                         onClick={()=>{
                                             setPersonId(data.id);
                                             window.history.pushState({}, "", `/person/${data.id}`);
                                         }}
                                     />
                                 ))}
-                            </div>
-                            {restOfCast.length > 0 &&
-                                <div className="other-cast">
-                                    <h4>Rest of Cast</h4> {restOfCast.map((data, c)=>{
-                                        return(
-                                            <span key={`other${c}`}>
-                                                {c > 0 && ", "}
-                                                <strong style={{cursor:"pointer"}} onClick={()=>{
-                                                    setPersonId(data.id);
-                                                    window.history.pushState({}, "", `/person/${data.id}`);
-                                                }}>{data.original_name}</strong>
-                                                {data.character && " as "}
-                                                {data.character && <span style={{fontStyle:"italic"}}>{data.character}</span>}
-                                            </span>
-                                        )
-                                    })}
-                                </div>
-                            }
+                            </CoverScroller>
                         </div>
-                    }
+                        {cast.slice(10,cast.length).length > 0 &&
+                            <div className="cast">
+                                <h4>{translate("Rest of Cast")}</h4> 
+                                <CoverScroller simple>
+                                    {cast.slice(10,cast.length).map((data, c) => data.profile_path && (
+                                        <SimpleCover 
+                                            key={`cast${c}`} 
+                                            title={data.original_name || data.name}
+                                            subtitle={data.character}
+                                            imagePath={data.profile_path}
+                                            type="person"
+                                            onClick={()=>{
+                                                setPersonId(data.id);
+                                                window.history.pushState({}, "", `/person/${data.id}`);
+                                            }}
+                                        />
+                                    ))}
+                                </CoverScroller>
+                            </div>
+                        }
+                    </>}
                     {singleMedia.keywords.length > 0 &&
                         <div className="extra">
                             <h4>{translate("Keywords")}</h4>

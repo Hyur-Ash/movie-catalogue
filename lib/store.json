@@ -646,6 +646,43 @@
         },
         "Airing":{
             "it": "In onda"
+        },
+        "Main Cast":{
+            "it": "Cast Principale"
+        },
+        "Rest of Cast":{
+            "it": "Cast Secondario"
+        },
+        "Episodes Runtime":{
+            "it": "Durata Episodi"
+        },
+        "Season Overview":{
+            "it": "Trama della Stagione"
+        },
+        "Episode Overview":{
+            "it": "Trama dell'Episodio"
+        },
+        "Episode Director":{
+            "it": "Regista dell'Episodio"
+        },
+        "Episode Directors":{
+            "it": "Registi dell'Episodio"
+        },
+        "Episode Producers":{
+            "it": "Produttori dell'Episodio"
+        },
+        "Episode Guest Stars":{
+            "it": "Ospiti speciali dell'Episodio"
+        },
+        "Episode Guest Star":{
+            "it": "Ospite speciale dell'Episodio"
+        },
+        "Seasons":{
+            "it": "Stagioni"
+        },
+        "Episodes":{
+            "it": "Episodi"
         }
+
     }
 }

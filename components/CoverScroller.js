@@ -23,25 +23,25 @@ export default function CoverScroller({children, simple}){
     }
 
     return(
-        <div className="cover-scroller">
+        <div className={`cover-scroller ${children.length > breakpoints["1200"].slidesPerView ? "paddinged" : ""}`}>
             <Swiper
                 ref={swiperRef}
                 modules={[Navigation, Pagination, Scrollbar, A11y, Mousewheel, FreeMode]}
                 breakpoints={breakpoints}
-                freeMode
                 spaceBetween={10}
                 scrollbar={{ draggable: true }}
-                onSlideChange={() => console.log('slide change')}
-                onSwiper={(swiper) => console.log(swiper)}
+                autoHeight
             >
-                {children.map((slide, s) => (
+                {children.map((slide, s) => slide && (
                     <SwiperSlide key={`slide${s}`}>
                         {slide}
                     </SwiperSlide>
                 ))}
             </Swiper>
-            <div className="swiper-button-prev" onClick={()=>{swiperRef.current.swiper.slidePrev();}}></div>
-            <div className="swiper-button-next" onClick={()=>{swiperRef.current.swiper.slideNext();}}></div>
+            {children.length > breakpoints["1200"].slidesPerView && <>
+                <div className="swiper-button-prev" onClick={()=>{swiperRef.current.swiper.slidePrev();}}></div>
+                <div className="swiper-button-next" onClick={()=>{swiperRef.current.swiper.slideNext();}}></div>
+            </>}
         </div>
     )
 }
