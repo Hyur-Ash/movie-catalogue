@@ -26,7 +26,7 @@ export default function Discover() {
     translate, 
   } = useContext(Context);
 
-  const {user, subscribeUser, loginUser, logoutUser, updateUser} = User;
+  const {user, subscribeUser, loginUser, logoutUser, updatePasswordUser} = User;
 
   const [formValues, setFormValues] = useState({
     userName: "",
@@ -142,7 +142,7 @@ export default function Discover() {
                 <button disabled={isLoading || oldPassword !== user.password || newPassword.length === 0} onClick={async ()=>{
                     if(oldPassword !== user.password && newPassword.length === 0){return;}
                     setIsLoading(true);
-                    const response = await updateUser({password: newPassword});
+                    const response = await updatePasswordUser( newPassword);
                     if(!response.ok){
                         setIsLoading(false);
                         alert(response.message);

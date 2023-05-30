@@ -28,15 +28,20 @@ export default function Trash() {
     translate,
   } = useContext(Context);
 
-  const {user, updateUser} = User;
+  const {user, refreshUser, removeMediaFromUserList} = User;
   const {trashed} = user ?? {};
 
   const router = useRouter();
   useEffect(()=>{
     if(!user){
-      router.push("/");
+        router.push("/");
     }
   },[user]);
+  useEffect(()=>{
+      if(user){
+          refreshUser();
+      }
+  },[]);
 
   const MediaSelect = ({value, onChange}) => {
     return (
@@ -67,9 +72,7 @@ export default function Trash() {
                 <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
                   <button onClick={()=>{setEmptyTrashMode(false)}}>{translate("Cancel")}</button>
                   <button onClick={()=>{
-                    const newTrash = JSON.parse(JSON.stringify(trashed));
-                    newTrash[selectedMedia] = [];
-                    updateUser({trashed: newTrash})
+                    removeMediaFromUserList("all", selectedMedia, "trashed");
                     setEmptyTrashMode(false);
                   }}>{translate(`Empty ${selectedMedia} trash`)}</button>
                 </div>

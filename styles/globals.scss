@@ -54,6 +54,7 @@ h1,h2,h3{
 
 .select-with-button{
   display: flex;
+  align-items: center;
   gap: .5rem;
   >div{
     width: 100%;

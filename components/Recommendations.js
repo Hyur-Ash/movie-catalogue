@@ -31,14 +31,19 @@ export default function Recommendations({mediaType, mediaId}) {
     getMedia
   } = useContext(Context);
 
-  const {user} = User;
+  const {user, refreshUser} = User;
 
   const router = useRouter();
   useEffect(()=>{
     if(!user){
-      router.push("/");
+        router.push("/");
     }
   },[user]);
+  useEffect(()=>{
+      if(user){
+          refreshUser();
+      }
+  },[]);
 
   useEffect(()=>{
     if(mediaId){

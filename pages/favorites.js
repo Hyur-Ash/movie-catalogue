@@ -28,15 +28,21 @@ export default function Favorites() {
     translate
   } = useContext(Context);
 
-  const {user, updateUser} = User;
+  const {user, refreshUser, removeMediaFromUserList} = User;
   const {favorites} = user ?? {};
 
   const router = useRouter();
   useEffect(()=>{
     if(!user){
-      router.push("/");
+        router.push("/");
     }
   },[user]);
+  useEffect(()=>{
+      if(user){
+          refreshUser();
+      }
+  },[]);
+
 
   const MediaSelect = ({value, onChange}) => {
     return (
@@ -67,9 +73,7 @@ export default function Favorites() {
                 <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
                   <button onClick={()=>{setEmptyFavoritesMode(false)}}>{translate("Cancel")}</button>
                   <button onClick={()=>{
-                    const newFavs = JSON.parse(JSON.stringify(favorites));
-                    newFavs[selectedMedia] = [];
-                    updateUser({favorites: newFavs});
+                    removeMediaFromUserList("all", selectedMedia, "favorites");
                     setEmptyFavoritesMode(false);
                   }}>{translate(`Empty ${selectedMedia} favorites`)}</button>
                 </div>

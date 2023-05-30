@@ -31,14 +31,19 @@ export default function Discover() {
     translate, websiteLang, properNames,
   } = useContext(Context);
   
-  const {user} = User;
+  const {user, refreshUser} = User;
 
   const router = useRouter();
   useEffect(()=>{
     if(!user){
-      router.push("/");
+        router.push("/");
     }
   },[user]);
+  useEffect(()=>{
+      if(user){
+          refreshUser();
+      }
+  },[]);
 
   const [config, setConfig] = useLocalStorage("config-search", {});
   const configRef = useRef(config);

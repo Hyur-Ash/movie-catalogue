@@ -9,14 +9,19 @@ export default function Tv() {
         User
     } = useContext(Context);
 
-    const {user} = User;
+    const {user, refreshUser} = User;
     
     const router = useRouter();
     useEffect(()=>{
-    if(!user){
-        router.push("/");
-    }
-    },[user]);
+        if(!user){
+            router.push("/");
+        }
+      },[user]);
+      useEffect(()=>{
+          if(user){
+              refreshUser();
+          }
+      },[]);
 
     const {id} = router.query;
 

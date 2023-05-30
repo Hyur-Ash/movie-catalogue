@@ -22,6 +22,7 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
         User
     } = useContext(Context);
 
+    
     const {user} = User;
     const {favorites, trashed} = user ?? {};
 
@@ -105,7 +106,7 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
         voteColor
     } = useContext(Context);
 
-    const {user, updateUser} = User;
+    const {user, addMediaToUserList, removeMediaFromUserList} = User;
     const {favorites, trashed} = user ?? {};
 
     const currentNames = properNames[mediaType];
@@ -127,7 +128,7 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
         vote < 100 ? "lightblue" : "blue";
     }
 
-    const cleanData = (mediaType, data) => {
+    const cleanMedia = (mediaType, data) => {
       if(mediaType === "movie"){
         const {id, original_language, original_title, poster_path, release_date, vote_average, vote_count} = data;
         return {id, original_language, original_title, poster_path, release_date, vote_average, vote_count};
@@ -141,39 +142,21 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
     }
 
     const addFavorite = (fullData) => {
-      const data = cleanData(mediaType, fullData);
-      const newFavs = {...favorites};
-      newFavs[mediaType] = favorites[mediaType] ? [...favorites[mediaType], data] : [data];
-      updateUser({favorites: newFavs});
+      const data = cleanMedia(mediaType, fullData);
+      addMediaToUserList(data, mediaType, "favorites");
     }
     
     const removeFavorite = (id) => {
-      const newFavs = {...favorites};
-      newFavs[mediaType].forEach((media, i)=>{
-        if(media.id===id){
-          newFavs[mediaType].splice(i, 1);
-          return;
-        }
-      });
-      updateUser({favorites: newFavs});
+      removeMediaFromUserList(id, mediaType, "favorites");
     }
 
     const addTrash = (fullData) => {
-      const data = cleanData(mediaType, fullData);
-      const newTrash = {...trashed};
-      newTrash[mediaType] = trashed[mediaType] ? [...trashed[mediaType], data] : [data];
-      updateUser({trashed: newTrash});
+      const data = cleanMedia(mediaType, fullData);
+      addMediaToUserList(data, mediaType, "trashed");
     }
     
     const removeTrash = (id) => {
-      const newTrash = {...trashed};
-      newTrash[mediaType].forEach((media, i)=>{
-        if(media.id===id){
-          newTrash[mediaType].splice(i, 1);
-          return;
-        }
-      });
-      updateUser({trashed: newTrash});
+      removeMediaFromUserList(id, mediaType, "trashed");
     }
 
     const [optionsMode, setOptionsMode] = useState(false);
