@@ -3,22 +3,31 @@ import { Context } from '/lib/Context';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Scrollbar, A11y, Mousewheel, FreeMode } from 'swiper';
 
-export default function CoverScroller({children, simple}){
+export default function CoverScroller({children, breakType}){
 
     const swiperRef = useRef();
 
     let breakpoints = {
-        0: {slidesPerView: 3},
-        500: {slidesPerView: 4},
+        0: {slidesPerView: 2},
+        500: {slidesPerView: 3},
         1000: {slidesPerView: 5},
-        1200: {slidesPerView: 6},
+        1200: {slidesPerView: 5},
     };
-    if(!simple){
+    if(breakType === "medium"){
         breakpoints = {
             0: {slidesPerView: 2},
-            500: {slidesPerView: 3},
+            300: {slidesPerView: 3},
+            400: {slidesPerView: 4},
+            1000: {slidesPerView: 6},
+            1200: {slidesPerView: 6},
+        };
+    }
+    if(breakType === "big"){
+        breakpoints = {
+            0: {slidesPerView: 3},
+            400: {slidesPerView: 4},
             1000: {slidesPerView: 5},
-            1200: {slidesPerView: 5},
+            1200: {slidesPerView: 6},
         };
     }
 

@@ -65,13 +65,13 @@ export default function Trash() {
         <div style={{height: "100px"}}>
           {trashed[selectedMedia].length > 0 && <>
               {!emptyTrashMode &&
-                <button onClick={()=>{setEmptyTrashMode(true)}}>{translate(`Empty ${selectedMedia} trash`)}</button>
+                <button className="c-button" onClick={()=>{setEmptyTrashMode(true)}}>{translate(`Empty ${selectedMedia} trash`)}</button>
               }
               {emptyTrashMode && <>
                 <h3 style={{color: "white", marginBottom: "1.5rem"}}>{translate("Are you sure?")}</h3>
                 <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
-                  <button onClick={()=>{setEmptyTrashMode(false)}}>{translate("Cancel")}</button>
-                  <button onClick={()=>{
+                  <button className="c-button" onClick={()=>{setEmptyTrashMode(false)}}>{translate("Cancel")}</button>
+                  <button className="c-button" onClick={()=>{
                     removeMediaFromUserList("all", selectedMedia, "trashed");
                     setEmptyTrashMode(false);
                   }}>{translate(`Empty ${selectedMedia} trash`)}</button>

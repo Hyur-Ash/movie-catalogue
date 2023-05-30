@@ -62,7 +62,7 @@ export default function Discover() {
       
         {!user && <>
             <h2 className="page-title">{subscribeMode ? translate("Subscribe") : translate("Log In")}</h2>
-            <button onClick={()=>{setSubscribeMode(!subscribeMode)}}>
+            <button className="c-button" onClick={()=>{setSubscribeMode(!subscribeMode)}}>
                 {subscribeMode ? translate("Already subscribed") : translate("New here")}?
             </button>
 
@@ -86,6 +86,7 @@ export default function Discover() {
                     </div>
                     <div className="form-group submit">
                         <button 
+                            className="c-button"
                             disabled={isLoading || formValues.userName.trim().length === 0 || formValues.password.length === 0}
                             onClick={async ()=>{
                                 if(isLoading){return;}
@@ -126,7 +127,7 @@ export default function Discover() {
         </>}
         {user && <>
             <h2 className="page-title">{translate("Welcome")} {user.userName} !</h2>
-            <button onClick={logoutUser}>
+            <button className="c-button" onClick={logoutUser}>
                 {translate("Log out")}
             </button>
             <div style={{color:"white"}}>
@@ -139,7 +140,7 @@ export default function Discover() {
                     <p>{translate("New password")}</p>
                     <input style={{padding:".25em .75em"}} type="password" value={newPassword} onChange={(e)=>{setNewPassword(e.target.value)}}/>
                 </div>
-                <button disabled={isLoading || oldPassword !== user.password || newPassword.length === 0} onClick={async ()=>{
+                <button className="c-button" disabled={isLoading || oldPassword !== user.password || newPassword.length === 0} onClick={async ()=>{
                     if(oldPassword !== user.password && newPassword.length === 0){return;}
                     setIsLoading(true);
                     const response = await updatePasswordUser( newPassword);

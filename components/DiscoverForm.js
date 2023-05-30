@@ -4,7 +4,12 @@ import { Context } from '/lib/Context';
 import {Form, FormGroup, Label, Input} from 'reactstrap';
 import Select from 'react-select'; 
 import {Navigator} from '/components/Navigator';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import {
+  Accordion,
+  AccordionBody,
+  AccordionHeader,
+  AccordionItem,
+} from 'reactstrap';
 import axios from 'axios';
 import {useLocalStorage} from '/lib/useLocalStorage';
 import {useRouter} from 'next/router';
@@ -160,20 +165,36 @@ export default function DiscoverForm({
       if(!formValues){
         setFormValues({
           mediaType: formOptions.mediaType[0],
+          originalLanguage: formOptions.originalLanguages[0],
+          filterYears: true,
+          yearFrom: formOptions.years[0],
+          yearTo: formOptions.years[0],
+          runtimeFrom: formOptions.runtimes[0],
+          filterGenres: true,
           withGenres: [],
           withGenresLogic: ",",
           withoutGenres: [],
+          filterKeywords: true,
           withKeywords: [],
           withKeywordsLogic: ",",
           withoutKeywords: [],
-          originalLanguage: formOptions.originalLanguages[0],
-          yearFrom: formOptions.years[0],
-          yearTo: formOptions.years[0],
+          filterCompanies: true,
+          withCompanies: [],
+          withCompaniesLogic: ",",
+          withoutCompanies: [],
+          filterPeople: true,
+          withCast: [],
+          withCastLogic: ",",
+          withCrew: [],
+          withCrewLogic: ",",
+          withPeople: [],
+          withPeopleLogic: ",",
+          filterVote: true,
           voteAverageFrom: formOptions.votes[0],
           voteAverageTo: formOptions.votes[0],
           voteCountFrom: "",
           voteCountTo: "",
-          runtimeFrom: formOptions.runtimes[0],
+          filterSorting: true,
           sortBy: formOptions.sortValues[0],
           orderBy: formOptions.orderValues[0],
         })
@@ -222,262 +243,443 @@ export default function DiscoverForm({
       }));
     }
 
+    const [accordionOpen, setAccordionOpen] = useLocalStorage("accordionOpen-discover", ["showMedia", "showGenres", "showSorting"]);
+
+    const accordionToggle = (id) => {
+      if(accordionOpen.includes(id)){
+        setAccordionOpen(accordionOpen.filter(th => th !== id));
+      }else{
+        setAccordionOpen([...accordionOpen, id]);
+      }
+    }
+
     return isMounted && formOptions && formValues && (
       <div className="form">
-        <div className="form-group">
-          <label>{translate("Media type")}</label>
-          <Select
-            instanceId={"mediaType"} 
-            options={formOptions.mediaType}
-            value={formValues.mediaType}
-            onChange={(e)=>{changeFormValue('mediaType', e)}}
-            isSearchable={false}
-          />
-        </div>
-        <div className={`form-group genres three`}>
-          <label>{translate("With genres")}</label>
-          <div className="select-with-button">
-            <Select
-              instanceId={`withGenres`} 
-              options={availableGenres}
-              value={formValues.withGenres}
-              isMulti
-              onChange={(e)=>{changeFormValue('withGenres', e)}}
-              placeholder={translate("Select...")}
-            />
-            <button onClick={()=>{
-              changeFormValue('withGenresLogic', formValues.withGenresLogic === "," ? "|" : ",");
-            }}>{formValues.withGenresLogic === "," ? translate("AND") : translate("OR")}</button>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>{translate("Without genres")}</label>
-          <Select
-            instanceId={"withoutGenres"} 
-            options={availableGenres}
-            value={formValues.withoutGenres}
-            isMulti
-            onChange={(e)=>{changeFormValue('withoutGenres', e)}}
-            placeholder={translate("Select...")}
-          />
-        </div>
-        <div className={`form-group genres three`}>
-          <label>{translate("With keywords")}</label>
-          <div className="select-with-button">
-            <SearchSelect
-              type={'keyword'}
-              instanceId={`withKeywords`} 
-              value={formValues.withKeywords}
-              isMulti
-              onChange={(e)=>{changeFormValue('withKeywords', e)}}
-              placeholder={translate("Select...")}
-            />
-            <button onClick={()=>{
-              changeFormValue('withKeywordsLogic', formValues.withKeywordsLogic === "," ? "|" : ",");
-            }}>{formValues.withKeywordsLogic === "," ? translate("AND") : translate("OR")}</button>
-          </div>
-        </div>
-        <div className={`form-group`}>
-          <label>{translate("Without keywords")}</label>
-          <div className="select-with-button">
-            <SearchSelect
-              type={'keyword'}
-              instanceId={`withoutKeywords`} 
-              value={formValues.withoutKeywords}
-              isMulti
-              onChange={(e)=>{changeFormValue('withoutKeywords', e)}}
-              placeholder={translate("Select...")}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>{translate("Original language")}</label>
-          <Select
-            instanceId={"originalLanguage"} 
-            options={formOptions.originalLanguages}
-            value={formValues.originalLanguage}
-            onChange={(e)=>{changeFormValue('originalLanguage', e)}}
-            placeholder={translate("Select...")}
-          />
-        </div>
-        <div className="form-group">
-          <label className="year-label">
-            {translate("Year")}
-            <FormGroup switch>
-                <Input
-                  type="switch"
-                  role="switch"
-                  checked={isYearRange}
-                  onChange={() => {setIsYearRange(!isYearRange);}}
-                />
-                <Label>{translate("Range")}</Label>
-            </FormGroup>
-          </label>
-          <div className="year-group">
-            {isYearRange && <span>{translate("From")}</span>}
-            <Select
-              className={isYearRange? 'half' : ''}
-              instanceId={"yearFrom"} 
-              options={formOptions.years}
-              value={formValues.yearFrom}
-              onChange={(e)=>{changeFormValue('yearFrom', e)}}
-              placeholder={translate("Select...")}
-            />
-            {isYearRange && <span>{translate("to")}</span>}
-            {isYearRange &&
-              <Select
-                className={isYearRange? 'half' : ''}
-                instanceId={"yearTo"} 
-                options={formOptions.years.filter(f=>(toValue(f.value) > fromValue(formValues.yearFrom.value)))}
-                value={formValues.yearTo}
-                onChange={(e)=>{changeFormValue('yearTo', e)}}
-                placeholder={translate("Select...")}
-              />
-            }
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="year-label">
-            {translate("Vote average")}
-            {formValues.mediaType.value === 'movie' &&
-              <FormGroup switch>
-                  <Input
-                    type="switch"
-                    role="switch"
-                    checked={isVoteAverageRange}
-                    onChange={() => {setIsVoteAverageRange(!isVoteAverageRange);}}
-                  />
-                  <Label>{translate("Range")}</Label>
-              </FormGroup>
-            }
-          </label>
-          <div className="year-group">
-            <span>{translate("From")}</span>
-            <Select
-              className={formValues.mediaType.value === 'movie' && isVoteAverageRange && 'half'}
-              instanceId={"voteAverageFrom"} 
-              options={formOptions.votes}
-              value={formValues.voteAverageFrom}
-              onChange={(e)=>{changeFormValue('voteAverageFrom', e)}}
-              placeholder={translate("Select...")}
-            />
-            {formValues.mediaType.value === 'movie' && <>
-              {isVoteAverageRange && <span>{translate("to")}</span>}
-              {isVoteAverageRange &&
+        <Accordion open={accordionOpen} toggle={accordionToggle}>
+          {/* MEDIA */}
+          <AccordionItem>
+            <AccordionHeader targetId="showMedia">
+              <span>{translate("Media")}</span>
+            </AccordionHeader>
+            <AccordionBody accordionId="showMedia">
+              {/* Media Type */}
+              <div className="form-group">
+                <label>{translate("Type")}</label>
                 <Select
-                  className={'half'}
-                  instanceId={"voteAverageTo"} 
-                  options={availableVotes}
-                  value={formValues.voteAverageTo}
-                  onChange={(e)=>{changeFormValue('voteAverageTo', e)}}
+                  instanceId={"mediaType"} 
+                  options={formOptions.mediaType}
+                  value={formValues.mediaType}
+                  onChange={(e)=>{changeFormValue('mediaType', e)}}
+                  isSearchable={false}
+                />
+              </div>
+              {/* Original Language */}
+              <div className="form-group">
+                <label>{translate("Original language")}</label>
+                <Select
+                  instanceId={"originalLanguage"} 
+                  options={formOptions.originalLanguages}
+                  value={formValues.originalLanguage}
+                  onChange={(e)=>{changeFormValue('originalLanguage', e)}}
                   placeholder={translate("Select...")}
                 />
-              }
-            </>}
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="year-label">
-            {translate("Vote count")}
-            {formValues.mediaType.value === 'movie' &&
-              <FormGroup switch>
-                  <Input
-                    type="switch"
-                    role="switch"
-                    checked={isVoteCountRange}
-                    onChange={() => {setIsVoteCountRange(!isVoteCountRange);}}
+              </div>
+              {/* Runtime */}
+              <div className="form-group">
+                <label className="range-label">
+                  {translate("Runtime")}
+                </label>
+                <div className="range-group">
+                  <span>{translate("From")}</span>
+                  <Select
+                    instanceId={"runtimeFrom"} 
+                    options={formOptions.runtimes}
+                    value={formValues.runtimeFrom}
+                    onChange={(e)=>{changeFormValue('runtimeFrom', e)}}
+                    placeholder={translate("Select...")}
                   />
-                  <Label>{translate("Range")}</Label>
-              </FormGroup>
-            }
-          </label>
-          <div className="year-group">
-            <span>{translate("From")}</span>
-            <Input
-              className={formValues.mediaType.value === 'movie' && isVoteCountRange ? 'half' : ''}
-              type="number"
-              value={formValues.voteCountFrom}
-              onChange={(e)=>{handleVoteCount('from', e.target.value)}}
-              // onBlur={(e)=>{handleVoteCount('from', e.target.value, true)}}
-              min={0}
-            />
-            {formValues.mediaType.value === 'movie' && <>
-              {isVoteCountRange && <span>{translate("to")}</span>}
-              {isVoteCountRange &&
-                <Input
-                  className={'half'}
-                  type="number"
-                  value={formValues.voteCountTo}
-                  onChange={(e)=>{handleVoteCount('to', e.target.value)}}
-                  // onBlur={(e)=>{handleVoteCount('to', e.target.value, true)}}
-                  min={0}
+                </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* GENRES */}
+          <AccordionItem>
+            <AccordionFilterHeader targetId="showGenres" switchKey={"filterGenres"} values={{formValues, setFormValues}}>
+              <span>{translate("Genres")}</span>
+            </AccordionFilterHeader>
+            <AccordionBody accordionId="showGenres">
+              <div className={`form-group genres three`}>
+                <label>{translate("With genres")}</label>
+                <div className="select-with-button">
+                  <Select
+                    instanceId={`withGenres`} 
+                    options={availableGenres}
+                    value={formValues.withGenres}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withGenres', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                  <button className="c-button" onClick={()=>{
+                    changeFormValue('withGenresLogic', formValues.withGenresLogic === "," ? "|" : ",");
+                  }}>{formValues.withGenresLogic === "," ? translate("AND") : translate("OR")}</button>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>{translate("Without genres")}</label>
+                <Select
+                  instanceId={"withoutGenres"} 
+                  options={availableGenres}
+                  value={formValues.withoutGenres}
+                  isMulti
+                  onChange={(e)=>{changeFormValue('withoutGenres', e)}}
+                  placeholder={translate("Select...")}
                 />
-              }
-            </>}
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="year-label">
-            {translate("Runtime")}
-          </label>
-          <div className="year-group">
-            <span>{translate("From")}</span>
-            <Select
-              instanceId={"runtimeFrom"} 
-              options={formOptions.runtimes}
-              value={formValues.runtimeFrom}
-              onChange={(e)=>{changeFormValue('runtimeFrom', e)}}
-              placeholder={translate("Select...")}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>{translate("Sort By")}</label>
-          <Select
-            instanceId={"sortBy"} 
-            options={formOptions.sortValues}
-            value={formValues.sortBy}
-            onChange={(e)=>{changeFormValue('sortBy', e)}}
-          />
-        </div>
-        <div className="form-group">
-          <label>{translate("Order By")}</label>
-          <Select
-            instanceId={"orderBy"} 
-            options={formOptions.orderValues}
-            value={formValues.orderBy}
-            onChange={(e)=>{changeFormValue('orderBy', e)}}
-            isSearchable={false}
-          />
-        </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* YEARS */}
+          <AccordionItem>
+            <AccordionFilterHeader targetId="showYears" switchKey={"filterYears"} values={{formValues, setFormValues}}>
+              <span>{translate("Years")}</span>
+            </AccordionFilterHeader>
+            <AccordionBody accordionId="showYears">
+              {/* Year/Years */}
+              <div className="form-group">
+                <label className="range-label">
+                  {translate(isYearRange ? "Years" : "Year")}
+                  <FormGroup switch>
+                      <Input
+                        type="switch"
+                        role="switch"
+                        checked={isYearRange}
+                        onChange={() => {setIsYearRange(!isYearRange);}}
+                      />
+                      <Label>{translate("Range")}</Label>
+                  </FormGroup>
+                </label>
+                <div className="range-group">
+                  {isYearRange && <span>{translate("From")}</span>}
+                  <Select
+                    className={isYearRange? 'half' : ''}
+                    instanceId={"yearFrom"} 
+                    options={formOptions.years}
+                    value={formValues.yearFrom}
+                    onChange={(e)=>{changeFormValue('yearFrom', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                  {isYearRange && <span>{translate("to")}</span>}
+                  {isYearRange &&
+                    <Select
+                      className={isYearRange? 'half' : ''}
+                      instanceId={"yearTo"} 
+                      options={formOptions.years.filter(f=>(toValue(f.value) > fromValue(formValues.yearFrom.value)))}
+                      value={formValues.yearTo}
+                      onChange={(e)=>{changeFormValue('yearTo', e)}}
+                      placeholder={translate("Select...")}
+                    />
+                  }
+                </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* VOTE*/}
+          <AccordionItem>
+            <AccordionFilterHeader targetId="showVote" switchKey={"filterVote"} values={{formValues, setFormValues}}>
+              <span>{translate("Vote")}</span>
+            </AccordionFilterHeader>
+            <AccordionBody accordionId="showVote">
+              {/* Vote average */}
+              <div className="form-group">
+                <label className="range-label">
+                  {translate("Vote average")}
+                  {formValues.mediaType.value === 'movie' &&
+                    <FormGroup switch>
+                        <Input
+                          type="switch"
+                          role="switch"
+                          checked={isVoteAverageRange}
+                          onChange={() => {setIsVoteAverageRange(!isVoteAverageRange);}}
+                        />
+                        <Label>{translate("Range")}</Label>
+                    </FormGroup>
+                  }
+                </label>
+                <div className="range-group">
+                  <span>{translate("From")}</span>
+                  <Select
+                    className={formValues.mediaType.value === 'movie' && isVoteAverageRange && 'half'}
+                    instanceId={"voteAverageFrom"} 
+                    options={formOptions.votes}
+                    value={formValues.voteAverageFrom}
+                    onChange={(e)=>{changeFormValue('voteAverageFrom', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                  {formValues.mediaType.value === 'movie' && <>
+                    {isVoteAverageRange && <span>{translate("to")}</span>}
+                    {isVoteAverageRange &&
+                      <Select
+                        className={'half'}
+                        instanceId={"voteAverageTo"} 
+                        options={availableVotes}
+                        value={formValues.voteAverageTo}
+                        onChange={(e)=>{changeFormValue('voteAverageTo', e)}}
+                        placeholder={translate("Select...")}
+                      />
+                    }
+                  </>}
+                </div>
+              </div>
+              {/* Vote count */}
+              <div className="form-group">
+                <label className="range-label">
+                  {translate("Vote count")}
+                  {formValues.mediaType.value === 'movie' &&
+                    <FormGroup switch>
+                        <Input
+                          type="switch"
+                          role="switch"
+                          checked={isVoteCountRange}
+                          onChange={() => {setIsVoteCountRange(!isVoteCountRange);}}
+                        />
+                        <Label>{translate("Range")}</Label>
+                    </FormGroup>
+                  }
+                </label>
+                <div className="range-group">
+                  <span>{translate("From")}</span>
+                  <Input
+                    className={formValues.mediaType.value === 'movie' && isVoteCountRange ? 'half' : ''}
+                    type="number"
+                    value={formValues.voteCountFrom}
+                    onChange={(e)=>{handleVoteCount('from', e.target.value)}}
+                    // onBlur={(e)=>{handleVoteCount('from', e.target.value, true)}}
+                    min={0}
+                  />
+                  {formValues.mediaType.value === 'movie' && <>
+                    {isVoteCountRange && <span>{translate("to")}</span>}
+                    {isVoteCountRange &&
+                      <Input
+                        className={'half'}
+                        type="number"
+                        value={formValues.voteCountTo}
+                        onChange={(e)=>{handleVoteCount('to', e.target.value)}}
+                        // onBlur={(e)=>{handleVoteCount('to', e.target.value, true)}}
+                        min={0}
+                      />
+                    }
+                  </>}
+                </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* KEYWORDS*/}
+          <AccordionItem>
+            <AccordionFilterHeader targetId="showKeywords" switchKey={"filterKeywords"} values={{formValues, setFormValues}}>
+              <span>{translate("Keywords")}</span>
+            </AccordionFilterHeader>
+            <AccordionBody accordionId="showKeywords">
+              <div className={`form-group genres three`}>
+                <label>{translate("With keywords")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'keyword'}
+                    instanceId={`withKeywords`} 
+                    value={formValues.withKeywords}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withKeywords', e)}}
+                    placeholder={translate("Select...")}
+                    excludeIds={formValues.withoutKeywords?.map(o=>o.value)}
+                  />
+                  <button className="c-button" onClick={()=>{
+                    changeFormValue('withKeywordsLogic', formValues.withKeywordsLogic === "," ? "|" : ",");
+                  }}>{formValues.withKeywordsLogic === "," ? translate("AND") : translate("OR")}</button>
+                </div>
+              </div>
+              <div className={`form-group`}>
+                <label>{translate("Without keywords")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'keyword'}
+                    instanceId={`withoutKeywords`} 
+                    value={formValues.withoutKeywords}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withoutKeywords', e)}}
+                    placeholder={translate("Select...")}
+                    excludeIds={formValues.withKeywords?.map(o=>o.value)}
+                  />
+                </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* COMPANIES*/}
+          <AccordionItem>
+            <AccordionFilterHeader targetId="showCompanies" switchKey={"filterCompanies"} values={{formValues, setFormValues}}>
+              <span>{translate("Companies")}</span>
+            </AccordionFilterHeader>
+            <AccordionBody accordionId="showCompanies">
+              <div className={`form-group genres three`}>
+                <label>{translate("With companies")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'company'}
+                    instanceId={`withCompanies`} 
+                    value={formValues.withCompanies}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withCompanies', e)}}
+                    placeholder={translate("Select...")}
+                    excludeIds={formValues.withousCompanies?.map(o=>o.value)}
+                  />
+                  <button className="c-button" onClick={()=>{
+                    changeFormValue('withCompaniesLogic', formValues.withCompaniesLogic === "," ? "|" : ",");
+                  }}>{formValues.withCompaniesLogic === "," ? translate("AND") : translate("OR")}</button>
+                </div>
+              </div>
+              <div className={`form-group`}>
+                <label>{translate("Without companies")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'company'}
+                    instanceId={`withoutCompanies`} 
+                    value={formValues.withoutCompanies}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withoutCompanies', e)}}
+                    placeholder={translate("Select...")}
+                    excludeIds={formValues.withCompanies?.map(o=>o.value)}
+                  />
+                </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* PEOPLE*/}
+          <AccordionItem>
+            <AccordionFilterHeader targetId="showPeople" switchKey={"filterPeople"} values={{formValues, setFormValues}}>
+              <span>{translate("People")}</span>
+            </AccordionFilterHeader>
+            <AccordionBody accordionId="showPeople">
+              <div className={`form-group genres three`}>
+                <label>{translate("With cast")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'person'}
+                    instanceId={`withCast`} 
+                    value={formValues.withCast}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withCast', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                  <button className="c-button" onClick={()=>{
+                    changeFormValue('withCastLogic', formValues.withCastLogic === "," ? "|" : ",");
+                  }}>{formValues.withCastLogic === "," ? translate("AND") : translate("OR")}</button>
+                </div>
+              </div>
+              <div className={`form-group genres three`}>
+                <label>{translate("With crew")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'person'}
+                    instanceId={`withCrew`} 
+                    value={formValues.withCrew}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withCrew', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                  <button className="c-button" onClick={()=>{
+                    changeFormValue('withCrewLogic', formValues.withCrewLogic === "," ? "|" : ",");
+                  }}>{formValues.withCrewLogic === "," ? translate("AND") : translate("OR")}</button>
+                </div>
+              </div>
+              <div className={`form-group genres three`}>
+                <label>{translate("With people")}</label>
+                <div className="select-with-button">
+                  <SearchSelect
+                    type={'person'}
+                    instanceId={`withPeople`} 
+                    value={formValues.withPeople}
+                    isMulti
+                    onChange={(e)=>{changeFormValue('withPeople', e)}}
+                    placeholder={translate("Select...")}
+                  />
+                  <button className="c-button" onClick={()=>{
+                    changeFormValue('withPeopleLogic', formValues.withPeopleLogic === "," ? "|" : ",");
+                  }}>{formValues.withPeopleLogic === "," ? translate("AND") : translate("OR")}</button>
+                </div>
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+          {/* SORTING*/}
+          <AccordionItem>
+            <AccordionHeader targetId="showSorting">{translate("Sorting")}</AccordionHeader>
+            <AccordionBody accordionId="showSorting">
+              <div className="form-group">
+                <label>{translate("Sort By")}</label>
+                <Select
+                  instanceId={"sortBy"} 
+                  options={formOptions.sortValues}
+                  value={formValues.sortBy}
+                  onChange={(e)=>{changeFormValue('sortBy', e)}}
+                />
+              </div>
+              <div className="form-group">
+                <label>{translate("Order By")}</label>
+                <Select
+                  instanceId={"orderBy"} 
+                  options={formOptions.orderValues}
+                  value={formValues.orderBy}
+                  onChange={(e)=>{changeFormValue('orderBy', e)}}
+                  isSearchable={false}
+                />
+              </div>
+            </AccordionBody>
+          </AccordionItem>
+
+        </Accordion>
         <div className="form-group submit">
           <button 
+            className="c-button" 
             disabled={loadingMedias === true} 
             onClick={()=>{
               onSubmit(formValues);
             }}
           >{translate("Discover")}</button>
           <button 
-          className="red" 
-          onClick={()=>{
-            setFormValues({
-              mediaType: formOptions.mediaType[0],
-              withGenres: [],
-              withGenresLogic: ",",
-              withoutGenres: [],
-              originalLanguage: formOptions.originalLanguages[0],
-              yearFrom: formOptions.years[0],
-              yearTo: formOptions.years[0],
-              voteAverageFrom: formOptions.votes[0],
-              voteAverageTo: formOptions.votes[0],
-              voteCountFrom: "",
-              voteCountTo: "",
-              runtimeFrom: formOptions.runtimes[0],
-              sortBy: formOptions.sortValues[0],
-              orderBy: formOptions.orderValues[0],
-            });
+            className="c-button red" 
+            onClick={()=>{
+              setFormValues({
+                mediaType: formOptions.mediaType[0],
+                withGenres: [],
+                withGenresLogic: ",",
+                withoutGenres: [],
+                originalLanguage: formOptions.originalLanguages[0],
+                yearFrom: formOptions.years[0],
+                yearTo: formOptions.years[0],
+                voteAverageFrom: formOptions.votes[0],
+                voteAverageTo: formOptions.votes[0],
+                voteCountFrom: "",
+                voteCountTo: "",
+                runtimeFrom: formOptions.runtimes[0],
+                sortBy: formOptions.sortValues[0],
+                orderBy: formOptions.orderValues[0],
+              });
           }}>{translate("Reset")}</button>
         </div>
       </div>
     )
+}
+
+const AccordionFilterHeader = ({targetId, switchKey, children, values}) => {
+  const {formValues, setFormValues} = values;
+  return (
+    <AccordionHeader className={!formValues[switchKey] ? "not-filtering" : ""} targetId={targetId}>
+        <FormGroup switch>
+            <Input
+              type="switch"
+              role="switch"
+              checked={formValues[switchKey]}
+              onChange={(e) => {setFormValues(curr => ({...curr, [switchKey]: e.target.checked}))}}
+              onClick={(e)=>{e.stopPropagation();}}
+            />
+        </FormGroup>
+        {children}
+      </AccordionHeader>
+  )
 }

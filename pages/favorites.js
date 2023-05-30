@@ -66,13 +66,13 @@ export default function Favorites() {
         <div style={{height: "100px"}}>
           {favorites[selectedMedia].length > 0 && <>
               {!emptyFavoritesMode &&
-                <button onClick={()=>{setEmptyFavoritesMode(true)}}>{translate(`Empty ${selectedMedia} favorites`)}</button>
+                <button className="c-button" onClick={()=>{setEmptyFavoritesMode(true)}}>{translate(`Empty ${selectedMedia} favorites`)}</button>
               }
               {emptyFavoritesMode && <>
                 <h3 style={{color: "white", marginBottom: "1.5rem"}}>{translate("Are you sure?")}</h3>
                 <div className="buttons" style={{display: "flex", gap: "2.5rem"}}>
-                  <button onClick={()=>{setEmptyFavoritesMode(false)}}>{translate("Cancel")}</button>
-                  <button onClick={()=>{
+                  <button className="c-button" onClick={()=>{setEmptyFavoritesMode(false)}}>{translate("Cancel")}</button>
+                  <button className="c-button" onClick={()=>{
                     removeMediaFromUserList("all", selectedMedia, "favorites");
                     setEmptyFavoritesMode(false);
                   }}>{translate(`Empty ${selectedMedia} favorites`)}</button>

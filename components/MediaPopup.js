@@ -165,6 +165,19 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
         return crew.filter(m => m.job === job);
     }
 
+    const getAverage = (array, key) => {
+        let sum = 0;
+        let count = 0;
+        array.forEach(el => {
+            const val = el[key];
+            if(val){
+                sum += val;
+                count ++;
+            }
+        });
+        return Math.round(sum/count*10)/10;
+    }
+
     return isMounted && id && currentNames && (<>
         <div className="media-popup">
             {singleMedia && singleMedia[websiteLang] &&
@@ -310,9 +323,9 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                         </div>
                     }
                     {singleMedia[websiteLang].seasons && <>
-                        <h4>{translate("Seasons")}</h4>
                         <div className="seasons">
-                            <CoverScroller simple>
+                            <h4>{translate("Seasons")}</h4>
+                            <CoverScroller breakType="medium">
                                 {singleMedia[websiteLang].seasons.map((season, s) => (
                                     <SimpleCover 
                                         key={`season${s}`}
@@ -326,8 +339,8 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                                         }}
                                         highlight={selectedSeason && selectedSeason.id === season.id}
                                         vote={selectedSeason && selectedSeason.id === season.id && episodes && {
-                                            average: Math.round(episodes.reduce((sum, ep) => sum + ep.vote_average, 0)/episodes.length*10)/10, 
-                                            count: Math.round(episodes.reduce((sum, ep) => sum + ep.vote_count, 0)/episodes.length)
+                                            average: getAverage(episodes, "vote_average"), 
+                                            count: Math.round(getAverage(episodes, "vote_count")), 
                                         }}
                                     />
                                 ))}
@@ -341,8 +354,8 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                         </div>
                     }
                     {episodes?.length > 0 && <>
-                        <h4>{translate("Episodes")}</h4>
                         <div className="episodes">
+                            <h4>{translate("Episodes")}</h4>
                             <CoverScroller>
                                 {episodes.map((episode, e) => (
                                     <SimpleCover 
@@ -353,7 +366,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                                         imagePath={episode.still_path}
                                         onClick={()=>{setSelectedEpisode(selectedEpisode && selectedEpisode.id === episode.id ? null : episode)}}
                                         highlight={selectedEpisode && selectedEpisode.id === episode.id}
-                                        vote={{average: episode.vote_average, count: episode.vote_count}}
+                                        vote={episode.vote_average && {average: episode.vote_average, count: episode.vote_count}}
                                     />
                                 ))}
                             </CoverScroller>
@@ -369,7 +382,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                         {selectedEpisode.guest_stars?.length > 0 &&
                             <div className="cast">
                                 <h4>{translate(selectedEpisode.guest_stars.length > 1 ? "Episode Guest Stars" : "Episode Guest Star")}</h4> 
-                                <CoverScroller simple>
+                                <CoverScroller breakType="medium">
                                     {selectedEpisode.guest_stars.map((data, c) => (
                                         <SimpleCover 
                                             key={`episodeCrew${c}`} 
@@ -502,7 +515,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                                 <div className="voice mobile-only">
                                     <h4>{translate(productionCompanies.length > 1 ? "Production companies" : "Production company")}</h4> 
                                     <div className="production-companies">
-                                        <CoverScroller simple>
+                                        <CoverScroller breakType="big">
                                             {productionCompanies.map((pc, index)=>(
                                                 <Company data={pc} key={`pc${index}`}/>
                                             ))}
@@ -535,7 +548,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                     {cast.slice(0,10).length > 0 && <>
                         <div className="cast">
                             <h4>{cast.slice(10,cast.length).length > 0 ? translate("Main Cast") : translate("Cast")}</h4> 
-                            <CoverScroller simple>
+                            <CoverScroller breakType="medium">
                                 {cast.slice(0,10).map((data, c) => (
                                     <SimpleCover 
                                         key={`cast${c}`} 
@@ -554,7 +567,7 @@ export const MediaPopup = ({mediaType, id, onClose}) => {
                         {cast.slice(10,cast.length).length > 0 &&
                             <div className="cast">
                                 <h4>{translate("Rest of Cast")}</h4> 
-                                <CoverScroller simple>
+                                <CoverScroller breakType="medium">
                                     {cast.slice(10,cast.length).map((data, c) => data.profile_path && (
                                         <SimpleCover 
                                             key={`cast${c}`} 

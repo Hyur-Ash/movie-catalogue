@@ -79,32 +79,50 @@ export default function Discover() {
     const FV = JSON.parse(JSON.stringify(formValues));
     const currentNames = properNames[FV.mediaType.value];
     const params = {
-        api_key,
-        sort_by: `${FV.sortBy.value}.${FV.orderBy.value}`,
-        with_genres: FV.withGenres.map(e=>e.value).join(FV.withGenresLogic),
-        without_genres: FV.withoutGenres.map(e=>e.value).join(","),
-        with_keywords: FV.withKeywords.map(e=>e.value).join(FV.withKeywordsLogic),
-        without_keywords: FV.withoutKeywords.map(e=>e.value).join(", "),
-        language: websiteLang,
-        with_original_language: FV.originalLanguage.value === 'any' ? '' : FV.originalLanguage.value,
-        ["vote_average.gte"]: FV.voteAverageFrom.value === 'any' ? '' : FV.voteAverageFrom.value.toString(),
-        ["vote_count.gte"]: FV.voteCountFrom.toString(),
-        ["with_runtime.gte"]: FV.runtimeFrom.value || 1,
+      api_key,
+      language: websiteLang,
+      with_original_language: FV.originalLanguage.value === 'any' ? '' : FV.originalLanguage.value,
+      ["with_runtime.gte"]: FV.runtimeFrom.value || 1,
+      sort_by: `${FV.sortBy.value}.${FV.orderBy.value}`,
     }
-    if(FV.mediaType.value === 'movie'){
-        if(isVoteAverageRange){
-            params["vote_average.lte"] = FV.voteAverageTo.value === 'any' ? '' :FV.voteAverageTo.value.toString();
-        }
-        if(isVoteCountRange){
-            params["vote_count.lte"] = FV.voteCountTo.toString();
-        }
+    if(FV.filterGenres){
+      params.with_genres = FV.withGenres.map(e=>e.value).join(FV.withGenresLogic);
+      params.without_genres = FV.withoutGenres.map(e=>e.value).join(",");
     }
-    if(!isYearRange){
-        params[currentNames.primary_release_year] = FV.yearFrom.value;
-    }else{
-        params[currentNames["primary_release_date.gte"]] = FV.yearFrom.value.length > 0 ? FV.yearFrom.value : '0';
-        params[currentNames["primary_release_date.lte"]] = FV.yearTo.value.length > 0 ? FV.yearTo.value : '3000';
+    if(FV.filterYears){
+      if(!isYearRange){
+          params[currentNames.primary_release_year] = FV.yearFrom.value;
+      }else{
+          params[currentNames["primary_release_date.gte"]] = FV.yearFrom.value.length > 0 ? FV.yearFrom.value : '0';
+          params[currentNames["primary_release_date.lte"]] = FV.yearTo.value.length > 0 ? FV.yearTo.value : '3000';
+      }
     }
+    if(FV.filterVote){
+      params["vote_average.gte"] = FV.voteAverageFrom.value === 'any' ? '' : FV.voteAverageFrom.value.toString();
+      params["vote_count.gte"] = FV.voteCountFrom.toString();
+        if(FV.mediaType.value === 'movie'){
+          if(isVoteAverageRange){
+              params["vote_average.lte"] = FV.voteAverageTo.value === 'any' ? '' :FV.voteAverageTo.value.toString();
+          }
+          if(isVoteCountRange){
+              params["vote_count.lte"] = FV.voteCountTo.toString();
+          }
+      }
+    }
+    if(FV.filterKeywords){
+      params.with_keywords = FV.withKeywords.map(e=>e.value).join(FV.withKeywordsLogic);
+      params.without_keywords = FV.withoutKeywords.map(e=>e.value).join(", ");
+    }
+    if(FV.filterCompanies){
+      params.with_companies = FV.withCompanies.map(e=>e.value).join(FV.withCompaniesLogic);
+      params.without_companies = FV.withoutCompanies.map(e=>e.value).join(", ");
+    }
+    if(FV.filterPeople){
+      params.with_cast = FV.withCast.map(e=>e.value).join(FV.withCastLogic);
+      params.with_crew = FV.withCast.map(e=>e.value).join(FV.withCrewLogic);
+      params.with_people = FV.withCast.map(e=>e.value).join(FV.withPeopleLogic);
+    }
+    
     setConfig({params, mediaType: FV.mediaType.value});
 
   }

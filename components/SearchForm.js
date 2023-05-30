@@ -77,8 +77,8 @@ export default function SearchForm({onSubmit}){
           </div>
           {(formValues.mediaType.value === "movie" || formValues.mediaType.value === "tv") &&
             <div className="form-group">
-              <label className="year-label">
-                {translate("Year")}
+              <label className="range-label">
+                <strong>{translate("Year")}</strong>
               </label>
                 <Select
                   className={isYearRange? 'half' : ''}
@@ -104,7 +104,7 @@ export default function SearchForm({onSubmit}){
             />
           </div>
           <div className="form-group submit">
-            <button disabled={loadingMedias === true} onClick={()=>{
+            <button className="c-button" disabled={loadingMedias === true} onClick={()=>{
               onSubmit(formValues)
             }}>{translate("Search")}</button>
           </div>
