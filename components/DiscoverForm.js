@@ -152,52 +152,48 @@ export default function DiscoverForm({
       }
     },[formValues?.yearFrom, formValues?.yearTo])
 
-    const getAverageTo = (curr) => {
-      const voteSearch = availableVotes.filter(m=>m.value===curr.voteAverageTo.value);
-      if(voteSearch && voteSearch[0]){
-        return voteSearch[0];
-      }else{
-        return availableVotes.votes[0];
-      }
+    const resetFormValues = (formOptions) => {
+      setFormValues({
+        mediaType: formOptions.mediaType[0],
+        originalLanguage: formOptions.originalLanguages[0],
+        filterYears: true,
+        yearFrom: formOptions.years[0],
+        yearTo: formOptions.years[0],
+        runtimeFrom: formOptions.runtimes[0],
+        filterGenres: true,
+        withGenres: [],
+        withGenresLogic: ",",
+        withoutGenres: [],
+        filterKeywords: true,
+        withKeywords: [],
+        withKeywordsLogic: ",",
+        withoutKeywords: [],
+        filterCompanies: true,
+        withCompanies: [],
+        withCompaniesLogic: ",",
+        withoutCompanies: [],
+        filterPeople: true,
+        withCast: [],
+        withCastLogic: ",",
+        withCrew: [],
+        withCrewLogic: ",",
+        withPeople: [],
+        withPeopleLogic: ",",
+        filterVote: true,
+        voteAverageFrom: formOptions.votes[0],
+        voteAverageTo: formOptions.votes[0],
+        voteCountFrom: "",
+        voteCountTo: "",
+        filterSorting: true,
+        sortBy: formOptions.sortValues[0],
+        orderBy: formOptions.orderValues[0],
+      });
     }
+
     useEffect(()=>{
       if(!formOptions){return;}
       if(!formValues){
-        setFormValues({
-          mediaType: formOptions.mediaType[0],
-          originalLanguage: formOptions.originalLanguages[0],
-          filterYears: true,
-          yearFrom: formOptions.years[0],
-          yearTo: formOptions.years[0],
-          runtimeFrom: formOptions.runtimes[0],
-          filterGenres: true,
-          withGenres: [],
-          withGenresLogic: ",",
-          withoutGenres: [],
-          filterKeywords: true,
-          withKeywords: [],
-          withKeywordsLogic: ",",
-          withoutKeywords: [],
-          filterCompanies: true,
-          withCompanies: [],
-          withCompaniesLogic: ",",
-          withoutCompanies: [],
-          filterPeople: true,
-          withCast: [],
-          withCastLogic: ",",
-          withCrew: [],
-          withCrewLogic: ",",
-          withPeople: [],
-          withPeopleLogic: ",",
-          filterVote: true,
-          voteAverageFrom: formOptions.votes[0],
-          voteAverageTo: formOptions.votes[0],
-          voteCountFrom: "",
-          voteCountTo: "",
-          filterSorting: true,
-          sortBy: formOptions.sortValues[0],
-          orderBy: formOptions.orderValues[0],
-        })
+        resetFormValues(formOptions);
         return;
       }
       setFormValues(curr=>({
@@ -644,22 +640,7 @@ export default function DiscoverForm({
           <button 
             className="c-button red" 
             onClick={()=>{
-              setFormValues({
-                mediaType: formOptions.mediaType[0],
-                withGenres: [],
-                withGenresLogic: ",",
-                withoutGenres: [],
-                originalLanguage: formOptions.originalLanguages[0],
-                yearFrom: formOptions.years[0],
-                yearTo: formOptions.years[0],
-                voteAverageFrom: formOptions.votes[0],
-                voteAverageTo: formOptions.votes[0],
-                voteCountFrom: "",
-                voteCountTo: "",
-                runtimeFrom: formOptions.runtimes[0],
-                sortBy: formOptions.sortValues[0],
-                orderBy: formOptions.orderValues[0],
-              });
+              resetFormValues(formOptions);
           }}>{translate("Reset")}</button>
         </div>
       </div>

@@ -119,8 +119,8 @@ export default function Discover() {
     }
     if(FV.filterPeople){
       params.with_cast = FV.withCast.map(e=>e.value).join(FV.withCastLogic);
-      params.with_crew = FV.withCast.map(e=>e.value).join(FV.withCrewLogic);
-      params.with_people = FV.withCast.map(e=>e.value).join(FV.withPeopleLogic);
+      params.with_crew = FV.withCrew.map(e=>e.value).join(FV.withCrewLogic);
+      params.with_people = FV.withPeople.map(e=>e.value).join(FV.withPeopleLogic);
     }
     
     setConfig({params, mediaType: FV.mediaType.value});
