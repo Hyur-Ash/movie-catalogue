@@ -357,48 +357,44 @@
         "Place of birth":{
             "it": "Luogo di nascita"
         },
-        "Known for":{
-            "it": "Conosciuto principalmente come",
-            "en": "Mostly known as"
+        "Mostly known for":{
+            "it": "Conosciuto principalmente per"
         },
         "Acting":{
-            "it": "Attore",
-            "en": "Actor"
+            "it": "Cast",
+            "en": "Cast"
         },
         "Directing":{
-            "it": "Regista",
-            "en": "Director"
+            "it": "Regia"
         },
         "Writing":{
-            "it": "Scrittore",
-            "en": "Writer"
+            "it": "Scrittura"
         },
         "Production":{
-            "it": "Produttore",
-            "en": "Producer"
+            "it": "Produzione"
         },
-        "Costume":{
-            "it": "Costumista",
-            "en": "Costumer"
+        "Costume & Make-Up":{
+            "it": "Costume & Trucco"
+        },
+        "Lighting":{
+            "it": "Illuminazione"
         },
         "Visual Effects":{
-            "it": "Artista VFX",
-            "en": "VFX Artist"
+            "it": "Effetti Visivi"
         },
         "Art":{
-            "it": "Direttore Artistico",
-            "en": "Art Director"
+            "it": "Scenografia",
+            "en": "Scenography"
         },
         "Editing":{
-            "it": "Montatore",
-            "en": "Editor"
+            "it": "Montaggio"
         },
         "Creator":{
             "it": "Ideatore"
         },
         "Sound":{
-            "it": "Suono/Compositore",
-            "en": "Sound/Soundtrack"
+            "it": "Suono/Musiche",
+            "en": "Sound/Score"
         },
         "Role":{
             "it": "Ruolo"
@@ -408,6 +404,9 @@
         },
         "Sort by":{
             "it": "Ordina per"
+        },
+        "Department":{
+            "it": "Dipartimento"
         },
         "Order by":{
             "it": "Ordine"
@@ -495,6 +494,10 @@
         },
         "Camera Operator":{
             "it": "Operatore di Camera"
+        },
+        "Camera":{
+            "it": "Fotografia",
+            "en": "Recording"
         },
         "Additional Photography":{
             "it": "Fotografia Addizionale"
@@ -682,6 +685,93 @@
         },
         "Episodes":{
             "it": "Episodi"
+        },
+        "Type":{
+            "it": "Tipo"
+        },
+        "Template":{
+            "it": "Modello"
+        },
+        "Save Template":{
+            "it": "Salva Modello"
+        },
+        "Choose Template":{
+            "it": "Scegli Modello"
+        },
+        "Load":{
+            "it": "Carica"
+        },
+        "Delete":{
+            "it": "Elimina"
+        },
+        "Save":{
+            "it": "Salva"
+        },
+        "Years":{
+            "it": "Anni"
+        },
+        "Release Year":{
+            "it": "Data d'uscita"
+        },
+        "Release Years":{
+            "it": "Date d'uscita"
+        },
+        "Votes":{
+            "it": "Votazioni"
+        },
+        "With keywords":{
+            "it": "Con parole chiave"
+        },
+        "Without keywords":{
+            "it": "Senza parole chiave"
+        },
+        "Companies":{
+            "it": "Case di produzione"
+        },
+        "Production companies":{
+            "it": "Case di produzione"
+        },
+        "With companies":{
+            "it": "Con case di produzione"
+        },
+        "Without companies":{
+            "it": "Senza case di produzione"
+        },
+        "With cast":{
+            "it": "Con cast"
+        },
+        "With crew":{
+            "it": "Con staff"
+        },
+        "With people":{
+            "it": "Con persone"
+        },
+        "Crew":{
+            "it": "Staff"
+        },
+        "Sorting":{
+            "it": "Ordinamento"
+        },
+        "Action & Adventure":{
+            "it": "Azione & Avventura"
+        },
+        "Kids":{
+            "it": "Bambini"
+        },
+        "News":{
+            "it": "Notizie"
+        },
+        "Sci-Fi & Fantasy":{
+            "it": "Fantascienza & Fantasia"
+        },
+        "War & Politics":{
+            "it": "Guerra & Politica"
+        },
+        "Talk":{
+            "it": "Talk Show"
+        },
+        "Soap":{
+            "it": "Soap Opera"
         }
 
     }

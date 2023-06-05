@@ -52,7 +52,6 @@ export const PersonPopup = ({id, onClose}) => {
         try{
             const personInfo = await getPerson(id, websiteLang)
             setPerson(personInfo);
-            console.log(personInfo)
         }catch(error){
             console.error(error);
         }finally{
@@ -70,34 +69,38 @@ export const PersonPopup = ({id, onClose}) => {
     const deathAge = person && person[websiteLang] && person[websiteLang].deathday && Math.floor((moment(person[websiteLang].deathday, "YYYY-MM-DD").valueOf() - moment(person[websiteLang].birthday, "YYYY-MM-DD").valueOf()) / 1000 / 60 / 60 / 24 / 365);
 
     const [availableRoles, setAvailableRoles] = useState([]);
-    const excludeRoles = ["Thanks", "In Memory Of", "Cinematography", "Casting", "Novel"];
+    const [selectedMedias, setSelectedMedias] = useState(["movie"]);
+    const [selectedRoles, setSelectedRoles] = useState([]);
     useEffect(()=>{
         if(!person){return;}
         const roles = [];
         if(person && person.movie){
             if(person.movie.cast.length > 0){
-                roles.push("Actor");
+                roles.push("Cast");
             }
             person.movie.crew.forEach(m => {
-                if(!excludeRoles.includes(m.job) && !roles.includes(m.job)){
-                    roles.push(m.job);
+                if(m.department !== "Actors" && !roles.includes(m.department)){
+                    roles.push(m.department);
                 }
             });
         }
         if(person && person.tv){
-            if(person.tv.cast.length > 0 && !roles.includes("Actor")){
-                roles.push("Actor");
+            if(person.tv.cast.length > 0 && !roles.includes("Cast")){
+                roles.push("Cast");
             }
             person.tv.crew.forEach(m => {
-                if(!excludeRoles.includes(m.job) && !roles.includes(m.job)){
-                    roles.push(m.job);
+                if(m.department !== "Actors" && !roles.includes(m.department)){
+                    roles.push(m.department);
                 }
             });
         }
         setAvailableRoles(roles);
+        if(person?.en?.known_for_department){
+            setSelectedRoles([person.en.known_for_department === "Acting" ? "Cast" : person.en.known_for_department]);
+        }
     },[person]);
-    const [selectedMedias, setSelectedMedias] = useState(["movie"]);
-    const [selectedRoles, setSelectedRoles] = useState([]);
+
+
     const possibleSorting = ["release_date", "popularity", "title", "vote_average", "vote_count"];
     const [sortBy, setSortBy] = useState("release_date");
     const [orderBy, setOrderBy] = useState(1);
@@ -109,10 +112,10 @@ export const PersonPopup = ({id, onClose}) => {
         selectedMedias.forEach(media => {
             if(!person[media]){return;}
             selectedRoles.forEach(role => {
-                if(role === "Actor" && person[media].cast){
+                if(role === "Cast" && person[media].cast){
                     credits = [...credits, ...person[media].cast.map(m=>({...m, mediaType: media}))];
                 }else if(person[media].crew){
-                    credits = [...credits, ...person[media].crew.filter(m=>m.job === role).map(m=>({...m, mediaType: media}))];
+                    credits = [...credits, ...person[media].crew.filter(m=>m.department === role).map(m=>({...m, mediaType: media}))];
                 }
             })
         });
@@ -223,7 +226,7 @@ export const PersonPopup = ({id, onClose}) => {
                                 <div className="voice"><strong>{translate("Death day")}</strong> {moment(person[websiteLang].deathday, "YYYY-MM-DD").format("DD/MM/YYYY")} {`(${deathAge} ${translate("years old")})`}</div>
                             }
                             <div className="voice"><strong>{translate("Place of birth")}</strong> {person[websiteLang].place_of_birth}</div>
-                            <div className="voice"><strong>{translate("Known for")}</strong> {translate(person[websiteLang].known_for_department)}</div>
+                            <div className="voice"><strong>{translate("Mostly known for")}</strong> {translate(person[websiteLang].known_for_department)}</div>
                             <div className="voice"><strong>{translate("Popularity")}</strong> {getPopularName(person[websiteLang].popularity)}</div>
                         </div>
                     </div>
@@ -288,7 +291,7 @@ export const PersonPopup = ({id, onClose}) => {
                             })}}
                         >{translate("TV Shows")}</div>
                     </div>
-                    <h4>{translate("Role")}</h4>
+                    <h4>{translate("Department")}</h4>
                     <div className="media-select left margined wrapped">
                         {availableRoles.map((role, r) => (
                             <div 
@@ -351,7 +354,7 @@ export const PersonPopup = ({id, onClose}) => {
                                                 });
                                                 window.history.pushState({}, "", `/${data.mediaType}/${data.id}`);
                                             }}
-                                            headline={!data.job ? `${translate("Actor").toUpperCase()}${data.character ? ` - ${data.character}` : ""}` : translate(data.job).toUpperCase()} 
+                                            headline={!data.department ? `${translate("Cast").toUpperCase()}${data.character ? ` - ${data.character}` : ""}` : translate(data.department).toUpperCase()} 
                                             data={data} 
                                             showTitle 
                                             mediaType={data.mediaType}

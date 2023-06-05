@@ -253,7 +253,7 @@ export const MediaCover = ({sagaIndex, highlight, data, headline, showTitle, hre
             <div className="count">{data.gender === 1 ? "F" : data.gender === 2 ? "M" : "NB"}</div>
           </div>
           {data.known_for_department &&
-            <div className={`${data.known_for_department.replaceAll(" ","").split("&")[0].toLowerCase()} person alert`}>{translate(data.known_for_department.split("&")[0])}</div>
+            <div className={`${data.known_for_department.replaceAll(" ","").split("&")[0].toLowerCase()} person alert`}>{translate(data.known_for_department)}</div>
           }
         </>}
         {showStatus && mediaType === 'movie' && data.status &&

@@ -38,7 +38,10 @@ export default function DiscoverForm({
         loadingMedias,
         translate, websiteLang,
         fromValue, toValue,
+        User,
     } = useContext(Context);
+
+    const {user, addTemplateToUser, removeTemplateFromUser} = User;
 
     const [availableGenres, setAvailableGenres] = useState([]);
     const [availableVotes, setAvailableVotes] = useState([]);
@@ -82,9 +85,9 @@ export default function DiscoverForm({
     },[tmdbConfig, websiteLang, selectedMediaType]);
 
     const [formValues, setFormValues] = useLocalStorage('discoverValues', null);
-    useEffect(()=>{
-      console.log({formValues})
-    },[formValues]);
+    // useEffect(()=>{
+    //   console.log({formValues})
+    // },[formValues]);
     useEffect(()=>{
       if(formValues?.mediaType && tmdbConfig?.genres){
         setSelectedMediaType(formValues.mediaType.value);
@@ -249,9 +252,102 @@ export default function DiscoverForm({
       }
     }
 
+    const [templates, setTemplates] = useState([]);
+    useEffect(()=>{
+      setTemplates(user.templates.discover || []);
+    },[user]);
+    const [saveTemplate, setSaveTemplate] = useLocalStorage("saveTemplate-discover", true);
+    const [templateName, setTemplateName] = useState("");
+    const [selectedTemplate, setSelectedTemplate] = useState({label: `${translate("Choose Template")}...`, value: -1});
+
+    const [templateDeleteMode, setTemplateDeleteMode] = useState(false);
+
     return isMounted && formOptions && formValues && (
       <div className="form">
+
         <Accordion open={accordionOpen} toggle={accordionToggle}>
+          {/* TEMPLATES */}
+          <AccordionItem>
+            <AccordionHeader targetId="showTemplates">
+              <span>{translate("Template")}</span>
+            </AccordionHeader>
+            <AccordionBody accordionId="showTemplates">
+              <div className="media-select" style={{margin: "0"}}>
+                  <div className={`media-option ${saveTemplate ? 'active' : ''}`} onClick={()=>{setSaveTemplate(true)}}>{translate("Save Template")}</div>
+                  <div className={`media-option ${!saveTemplate ? 'active' : ''}`} onClick={()=>{setSaveTemplate(false)}}>{translate("Choose Template")}</div>
+              </div>
+              {/* Save template */}
+              {saveTemplate &&
+                <div className="template-group">
+                  <Input
+                    type="text"
+                    value={templateName}
+                    onChange={(e)=>{setTemplateName(e.target.value)}}
+                  />
+                  <button 
+                    style={{justifySelf: "center"}}
+                    disabled={templateName.trim().length === 0}
+                    className="c-button" 
+                    onClick={()=>{
+                      if(templateName.trim().length === 0){return;}
+                      addTemplateToUser({
+                        templateName, formValues: JSON.parse(JSON.stringify(formValues))
+                      }, "discover");
+                      setTemplateName("");
+                  }}>{translate("Save")}</button>
+                </div>
+              }
+              {/* Load template */}
+              {!saveTemplate &&
+                <div className="template-group">
+                  {!templateDeleteMode &&
+                    <Select
+                      options={[{label: `${translate("Choose Template")}...`, value: -1}, ...templates.map((t, value) => ({data: t, label: t.templateName, value}))]}
+                      value={selectedTemplate}
+                      onChange={(e)=>{setSelectedTemplate(e)}}
+                    />
+                  }
+                  {templateDeleteMode &&
+                    <h3 style={{color: "white"}}>{translate("Are you sure?")}</h3>
+                  }
+                  <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap", gap: ".5rem"}}>
+                    {!templateDeleteMode && <>
+                      <button 
+                        disabled={selectedTemplate.value === -1}
+                        className="c-button" 
+                        onClick={()=>{
+                          if(selectedTemplate.value === -1){return;}
+                          setSelectedTemplate({label: `${translate("Choose Template")}...`, value: -1});
+                          setFormValues(selectedTemplate.data.formValues);
+                      }}>{translate("Load")}</button>
+                      <button 
+                        disabled={selectedTemplate.value === -1}
+                        className="c-button red" 
+                        onClick={()=>{
+                          if(selectedTemplate.value === -1){return;}
+                          setTemplateDeleteMode(true);
+                      }}>{translate("Delete")}</button>
+                    </>}
+                    {templateDeleteMode && <>
+                      <button 
+                        className="c-button red" 
+                        onClick={()=>{
+                          if(selectedTemplate.value === -1){return;}
+                          setSelectedTemplate({label: `${translate("Choose Template")}...`, value: -1});
+                          removeTemplateFromUser(selectedTemplate.data, "discover");
+                          setTemplateDeleteMode(false);
+                      }}>{translate("Delete")}</button>
+                      <button 
+                        className="c-button" 
+                        onClick={()=>{
+                          setTemplateDeleteMode(false);
+                      }}>{translate("Cancel")}</button>
+                    </>}
+                  </div>
+                </div>
+              }
+            </AccordionBody>
+          </AccordionItem>
           {/* MEDIA */}
           <AccordionItem>
             <AccordionHeader targetId="showMedia">
@@ -336,7 +432,7 @@ export default function DiscoverForm({
           {/* YEARS */}
           <AccordionItem>
             <AccordionFilterHeader targetId="showYears" switchKey={"filterYears"} values={{formValues, setFormValues}}>
-              <span>{translate("Years")}</span>
+              <span>{translate(`Release Year${isYearRange ? "s" : ""}`)}</span>
             </AccordionFilterHeader>
             <AccordionBody accordionId="showYears">
               {/* Year/Years */}
@@ -381,7 +477,7 @@ export default function DiscoverForm({
           {/* VOTE*/}
           <AccordionItem>
             <AccordionFilterHeader targetId="showVote" switchKey={"filterVote"} values={{formValues, setFormValues}}>
-              <span>{translate("Vote")}</span>
+              <span>{translate("Votes")}</span>
             </AccordionFilterHeader>
             <AccordionBody accordionId="showVote">
               {/* Vote average */}
@@ -627,8 +723,8 @@ export default function DiscoverForm({
               </div>
             </AccordionBody>
           </AccordionItem>
-
         </Accordion>
+
         <div className="form-group submit">
           <button 
             className="c-button" 
@@ -643,6 +739,7 @@ export default function DiscoverForm({
               resetFormValues(formOptions);
           }}>{translate("Reset")}</button>
         </div>
+
       </div>
     )
 }
