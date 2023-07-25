@@ -1202,3 +1202,35 @@ header{
   padding: .75rem 1.5rem;
 }
 
+.index-nav{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  font-size: 2em;
+  margin: 2rem 0;
+  @media screen and (max-width: 800px){
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    font-size: 1.5em;
+  }
+  @media screen and (max-width: 360px){
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+    font-size: 1.5em;
+  }
+  >a{
+    border: 1px solid white;
+    padding: .5rem;
+    transition: all .5s;
+    &:hover{
+      background-color: white;
+      color: #333333 !important;
+    }
+    .content{
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+    }
+  }
+}
+

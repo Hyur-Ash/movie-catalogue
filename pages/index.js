@@ -13,6 +13,7 @@ import {MediaCover} from '/components/MediaCover';
 import Header from '/components/Header';
 import {FaStar} from 'react-icons/fa';
 import Link from 'next/link';
+import { usePassportUpdates } from '../lib/usePassportUpdates';
 
 export default function Discover() {
 
@@ -23,7 +24,7 @@ export default function Discover() {
 
   const {
     User,
-    translate, 
+    translate, menuVoices
   } = useContext(Context);
 
   const {user, subscribeUser, loginUser, logoutUser, updatePasswordUser} = User;
@@ -50,6 +51,8 @@ export default function Discover() {
   const [newPassword, setNewPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [passDates, firstAvailableDate] = usePassportUpdates();
 
   return isMounted && (<>
     <Head>
@@ -130,8 +133,13 @@ export default function Discover() {
             <button className="c-button" onClick={logoutUser}>
                 {translate("Log out")}
             </button>
-            <div style={{color:"white"}}>
-                <h3>{translate("Change password")}</h3>
+            <div style={{color:"white", padding: "1rem"}}>
+                <nav className="index-nav">
+                    {menuVoices.map((voice, i) => (
+                        <Link key={`menu-voice-${i}`} className="menu-voice" href={voice.href}><div className="content">{voice.icon}<span>{voice.name}</span></div></Link>
+                    ))}
+                </nav>
+                <h4>{translate("Change password")}?</h4>
                 <div style={{margin:"1rem 0"}}>
                     <p>{translate("Old password")}</p>
                     <input style={{padding:".25em .75em"}} type="password" value={oldPassword} onChange={(e)=>{setOldPassword(e.target.value)}}/>
@@ -156,6 +164,15 @@ export default function Discover() {
                 }}>
                     {translate("Change")}
                 </button>
+                {firstAvailableDate && <>
+                    <div style={{margin: "1rem 0"}}>
+                        Prima data disponibile: {firstAvailableDate.date}
+                    </div>
+                    <div style={{margin: "1rem 0"}}>
+                        Ultimo update: {moment(firstAvailableDate.last_recorded).format("DD/MM/YYYY HH:mm:ss")}
+                    </div>
+                </>
+                }
             </div>
         </>}
 
