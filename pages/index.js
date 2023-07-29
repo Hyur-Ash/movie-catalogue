@@ -13,7 +13,6 @@ import {MediaCover} from '/components/MediaCover';
 import Header from '/components/Header';
 import {FaStar} from 'react-icons/fa';
 import Link from 'next/link';
-import { usePassportUpdates } from '../lib/usePassportUpdates';
 
 export default function Discover() {
 
@@ -51,8 +50,6 @@ export default function Discover() {
   const [newPassword, setNewPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
-
-  const [passDates, firstAvailableDate] = usePassportUpdates();
 
   return isMounted && (<>
     <Head>
@@ -164,15 +161,6 @@ export default function Discover() {
                 }}>
                     {translate("Change")}
                 </button>
-                {firstAvailableDate && <>
-                    <div style={{margin: "1rem 0"}}>
-                        Prima data disponibile: {firstAvailableDate.date}
-                    </div>
-                    <div style={{margin: "1rem 0"}}>
-                        Ultimo update: {moment(firstAvailableDate.last_recorded).format("DD/MM/YYYY HH:mm:ss")}
-                    </div>
-                </>
-                }
             </div>
         </>}
 
